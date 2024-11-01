@@ -15,7 +15,7 @@ class BookTypeController extends Controller
     public function index()
     {
 
-        return BookTypeResource::collection(BookType::paginate(10));
+        return BookTypeResource::collection(BookType::with('subMedia')->get());
     }
 
     /**

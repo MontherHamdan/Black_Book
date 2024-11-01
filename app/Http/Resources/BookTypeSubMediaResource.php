@@ -18,8 +18,6 @@ class BookTypeSubMediaResource extends JsonResource
             'id' => $this->id,
             'media' => $this->media,
             'type' => $this->type,
-            'created_at' => $this->created_at->toDateTimeString(),
-            'updated_at' => $this->updated_at->toDateTimeString(),
         ];
     }
 }

@@ -19,8 +19,6 @@ class BookTypeResource extends JsonResource
             'image' => $this->image,
             'price' => $this->price,
             'description' => $this->description,
-            'created_at' => $this->created_at->toDateTimeString(),
-            'updated_at' => $this->updated_at->toDateTimeString(),
             'sub_media' => BookTypeSubMediaResource::collection($this->subMedia),
         ];
     }

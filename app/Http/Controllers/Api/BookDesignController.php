@@ -27,8 +27,10 @@ class BookDesignController extends Controller
             });
         }
 
+        $perPage = $request->input('per_page', 10);
+
         // Fetch filtered designs with relationships
-        $designs = $query->with(['category', 'subcategory'])->get();
+        $designs = $query->with(['category', 'subcategory'])->paginate($perPage);
 
         return BookDesignResource::collection($designs);
     }

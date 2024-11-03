@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class BookDesignCategories extends Model
+class BookDesignCategory extends Model
 {
     use HasFactory;
 
@@ -13,8 +13,8 @@ class BookDesignCategories extends Model
 
     protected $fillable = ['name'];
 
-    public function bookDesignSubCategory()
+    public function subCategories()
     {
-        return $this->hasMany(BookDesignSubCategories::class);
+        return $this->hasMany(BookDesignSubCategory::class, 'category_id');
     }
 }

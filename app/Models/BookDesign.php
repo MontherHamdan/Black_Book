@@ -12,13 +12,13 @@ class BookDesign extends Model
     protected $table = 'book_designs';
     protected $fillable = ['image', 'category_id', 'sub_category_id'];
 
-    public function BookDesigncategory()
+    public function category()
     {
-        return $this->belongsTo(BookDesignCategories::class);
+        return $this->belongsTo(BookDesignCategory::class, 'category_id');
     }
 
-    public function BookDesignsubCategory()
+    public function subCategory()
     {
-        return $this->belongsTo(BookDesignSubCategories::class);
+        return $this->belongsTo(BookDesignSubCategory::class, 'sub_category_id');
     }
 }

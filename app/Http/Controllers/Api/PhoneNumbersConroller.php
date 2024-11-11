@@ -30,7 +30,13 @@ class PhoneNumbersConroller extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'phone_number' => 'required|string|size:10|unique:phone_numbers|regex:/^[0-9]+$/',
+            'phone_number' => [
+                'required' => 'رقم الهاتف مطلوب',
+                'string' => 'رقم الهاتف يجب أن يكون نصاً',
+                'size' => 'رقم الهاتف يجب أن يتكون من 10 أرقام',
+                'unique' => 'رقم الهاتف مسجل بالفعل',
+                'regex' => 'رقم الهاتف يجب أن يحتوي على أرقام فقط',
+            ]
         ]);
 
         if ($validator->fails()) {
@@ -42,11 +48,12 @@ class PhoneNumbersConroller extends Controller
         ]);
 
         if ($phone_number) {
-            return response()->json(['message' => 'Phone Number Assigned Successfully', 'data' => $phone_number], 201);
+            return response()->json(['message' => 'تم تسجيل رقم الهاتف بنجاح', 'data' => $phone_number], 201);
         } else {
-            return response()->json(['message' => "Failed to Assign the Phone Number Please try again"], 500);
+            return response()->json(['message' => 'فشل في تسجيل رقم الهاتف. الرجاء المحاولة مرة أخرى'], 500);
         }
     }
+
 
     /**
      * Display the specified resource.

@@ -1,7 +1,11 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ProfileController;
+use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -13,5 +17,15 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+Route::get('/dashboard',[AdminController::class,'dashboard'])->name('dashboard');
 
+// Login routes
+Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('auth.login');
+Route::post('/', [AuthenticatedSessionController::class, 'store'])->name('login');
+
+// Admin routes with auth and admin middleware
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+});
+
+Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');

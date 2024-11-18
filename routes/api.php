@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\BookTypeController;
 use App\Http\Controllers\Api\BookDesignController;
 use App\Http\Controllers\Api\PhoneNumbersConroller;
 use App\Http\Controllers\Api\BookDesginCategoryController;
+use App\Http\Controllers\Api\BookDesginSubCategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,5 +27,6 @@ Route::prefix('v1')->group(function () {
     Route::resource('/book_type', BookTypeController::class);
     Route::resource('/book_design', BookDesignController::class);
     Route::resource('/book_design_categories', BookDesginCategoryController::class);
+    Route::resource('/book_design_subCategories', BookDesginSubCategoryController::class);
     Route::resource('/phone_numbers', PhoneNumbersConroller::class);
 });

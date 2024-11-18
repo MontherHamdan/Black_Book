@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('book_design_sub_categories', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('arabic_name');
             $table->foreignId('category_id')->constrained('book_design_categories')->onDelete('cascade');
             $table->timestamps();
         });

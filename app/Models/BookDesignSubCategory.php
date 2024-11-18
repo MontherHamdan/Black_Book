@@ -11,7 +11,7 @@ class BookDesignSubCategory extends Model
 
     protected $table = 'book_design_sub_categories';
 
-    protected $fillable = ['name', 'category_id'];
+    protected $fillable = ['name', 'arabic_name', 'category_id'];
 
     public function category()
     {

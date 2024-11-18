@@ -2,61 +2,38 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Models\BookDesignSubCategory;
 
 class BookDesginSubCategoryController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the sub categoris based on category id.
      */
-    public function index() {}
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function index(Request $request)
     {
-        //
-    }
+        // Validate the category_id input
+        $validated = $request->validate([
+            'category_id' => 'required|exists:book_design_categories,id',
+        ]);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        // Fetch subcategories by category_id
+        $subcategories = BookDesignSubCategory::where('category_id', $validated['category_id'])->get();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+        // Check if subcategories are found
+        if ($subcategories->isEmpty()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'No subcategories found for the given category.',
+                'data' => [],
+            ], 200);
+        }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Subcategories fetched successfully.',
+            'data' => $subcategories,
+        ], 200);
     }
 }

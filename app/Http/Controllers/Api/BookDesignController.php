@@ -13,24 +13,18 @@ class BookDesignController extends Controller
     {
         $query = BookDesign::query();
 
-        // Filter by category
-        if ($request->has('category')) {
-            $query->whereHas('category', function ($q) use ($request) {
-                $q->where('name', $request->input('category'));
-            });
+        // Filter by category_id
+        if ($request->has('category_id')) {
+            $query->where('category_id', $request->input('category_id'));
         }
 
-        // Filter by subcategory
-        if ($request->has('subcategory')) {
-            $query->whereHas('subcategory', function ($q) use ($request) {
-                $q->where('name', $request->input('subcategory'));
-            });
+        // Filter by sub_category_id
+        if ($request->has('sub_category_id')) {
+            $query->where('sub_category_id', $request->input('sub_category_id'));
         }
-
-        $perPage = $request->input('per_page', 10);
 
         // Fetch filtered designs with relationships
-        $designs = $query->with(['category', 'subcategory'])->paginate($perPage);
+        $designs = $query->with(['category', 'subcategory'])->get();
 
         return BookDesignResource::collection($designs);
     }

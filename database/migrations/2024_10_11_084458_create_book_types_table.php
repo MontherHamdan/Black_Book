@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('image');
             $table->integer('price');
-            $table->longText('description');
+            $table->longText('description_en')->nullable();
+            $table->longText('description_ar')->nullable();
             $table->timestamps();
         });
     }

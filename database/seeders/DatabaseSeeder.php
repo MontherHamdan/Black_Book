@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
             [
                 BookTypeSeeder::class,
                 BookDesignSeeder::class,
+                AdminUserSeeder::class,
+
             ]
         );
     }

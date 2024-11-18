@@ -7,9 +7,17 @@
 
     <!-- POPPER JS -->
     <script src="{{ asset('build/assets/libs/%40popperjs/core/umd/popper.min.js') }}"></script>
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
 
-    <!-- BOOTSTRAP JS -->
-    <script src="{{ asset('build/assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+<!-- DataTables JavaScript -->
+<script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+
+<!-- Add jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- BOOTSTRAP JS (already included) -->
+<script src="{{ asset('build/assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
     <!-- NODE WAVES JS -->
     <script src="{{ asset('build/assets/libs/node-waves/waves.min.js') }}"></script>

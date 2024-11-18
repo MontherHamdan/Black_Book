@@ -507,7 +507,7 @@
             <li><a class="dropdown-item d-flex" href="mail-settings.html"><i class="ti ti-adjustments-horizontal fs-18 me-2 op-7"></i>Settings</a></li>
             <li><a class="dropdown-item d-flex border-block-end" href="javascript:void(0);"><i class="ti ti-wallet fs-18 me-2 op-7"></i>Bal: $7,12,950</a></li>
             <li><a class="dropdown-item d-flex" href="chat.html"><i class="ti ti-headset fs-18 me-2 op-7"></i>Support</a></li>
-            <li><a class="dropdown-item d-flex" href="{{ route('auth.login') }}"><i class="ti ti-headset fs-18 me-2 op-7"></i>Support</a></li>
+            <li><a class="dropdown-item d-flex" href="{{ route('auth.login') }}"><i class="ti ti-logout fs-18 me-2 op-7"></i>Logout</a></li>
             
                     </ul>
     </div>  

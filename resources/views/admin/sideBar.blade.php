@@ -38,6 +38,9 @@
                             <a href="javascript:void(0);">Dashboards</a>
                         </li>
                         <li class="slide">
+                            <a href="{{ route('admin.users.list') }}" class="side-menu__item">Users</a>
+                        </li>
+                        <li class="slide">
                             <a href="index.html" class="side-menu__item">CRM</a>
                         </li>
                         <li class="slide">

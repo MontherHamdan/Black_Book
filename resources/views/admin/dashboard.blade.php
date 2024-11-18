@@ -21,7 +21,9 @@
                 <!-- Page Header -->
                 @include('admin.pageHeader')
                 <!-- Page Header Close -->
-                @include('admin.row')
+                {{-- @include('admin.row') --}}
+
+                @yield('content')
             </div>
         </div>
         <!-- END MAIN-CONTENT -->

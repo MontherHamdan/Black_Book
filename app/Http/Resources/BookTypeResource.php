@@ -18,7 +18,8 @@ class BookTypeResource extends JsonResource
             'id' => $this->id,
             'image' => $this->image,
             'price' => $this->price,
-            'description' => $this->description,
+            'description_en' => $this->description_en,
+            'description_ar' => $this->description_ar,
             'sub_media' => BookTypeSubMediaResource::collection($this->subMedia),
         ];
     }

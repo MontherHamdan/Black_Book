@@ -22,7 +22,14 @@ class BookTypeSeeder extends Seeder
             'دفتر تخرج_مع قاعدة اسم اكرليك بالعرض_مع تصاميم دفتر تخرج_إمكانية شراء دفتر التخرج اون لاين_مع عبارات دفتر تخرج-08.webp'
         ];
 
-        $descriptions = [
+        $descriptionsEn = [
+            'Hi-This book type costs- only 13 JOD.',
+            'Hi-This book type costs- only 12 JOD.',
+            'Hi-This book type costs- only 11 JOD.',
+            'Hi-This book type costs- only 10 JOD.',
+        ];
+
+        $descriptionsAr = [
             'اهلا-الدفتر سعره-فقط 13 دينار',
             'اهلا-الدفتر سعره-فقط 12 دينار',
             'اهلا-الدفتر سعره-فقط 11 دينار',
@@ -42,7 +49,8 @@ class BookTypeSeeder extends Seeder
             $bookType = BookType::create([
                 'image' => $imageUrl,
                 'price' => $prices[$key],
-                'description' => $descriptions[$key],
+                'description_en' => $descriptionsEn[$key],
+                'description_ar' => $descriptionsAr[$key],
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

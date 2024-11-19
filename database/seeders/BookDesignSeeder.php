@@ -14,10 +14,17 @@ class BookDesignSeeder extends Seeder
      */
     public function run(): void
     {
+        // Disable foreign key checks
+        \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
+        // Truncate tables
         BookDesign::truncate();
         BookDesignSubCategory::truncate();
         BookDesignCategory::truncate();
+
+        // Re-enable foreign key checks
+        \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+    
 
         // Create categories with Arabic names
         $categories = [

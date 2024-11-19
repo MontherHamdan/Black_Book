@@ -15,8 +15,15 @@ class BookTypeSeeder extends Seeder
      */
     public function run(): void
     {
-        BookType::truncate();
+        // Disable foreign key checks
+        \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+        // Truncate tables
         BookTypeSubMedia::truncate();
+        BookType::truncate();
+
+        // Re-enable foreign key checks
+        \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
 
         $images = [

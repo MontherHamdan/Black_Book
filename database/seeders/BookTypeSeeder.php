@@ -15,6 +15,10 @@ class BookTypeSeeder extends Seeder
      */
     public function run(): void
     {
+        BookType::truncate();
+        BookTypeSubMedia::truncate();
+
+
         $images = [
             'صورة المنتج الأول_دفتر مع قاعدة عادية_دفتر تخرج اون لاين-08.webp',
             'دفتر تخرج_مع قاعدة لاكجري_وتصاميم دفاتر تخرج_وعبارات لدفتر تخرج_شراء دفتر تخرج اون لاين-08.webp',

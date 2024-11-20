@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\SvgController;
+use App\Http\Controllers\Api\SvgController;
 use App\Http\Controllers\Api\BookTypeController;
 use App\Http\Controllers\Api\BookDesignController;
 use App\Http\Controllers\Api\PhoneNumbersConroller;

@@ -1,56 +1,122 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr" data-nav-layout="vertical" data-theme-mode="light" data-header-styles="light" data-menu-styles="dark" data-toggled="close">
-
-    
-<!-- Mirrored from laravelui.spruko.com/ynex/index2 by HTTrack Website Copier/3.x [XR&CO'2014], Mon, 04 Nov 2024 17:04:50 GMT -->
-<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
 <head>
 
-        <!-- META DATA -->
-		<meta charset="UTF-8">
-        <meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=no'>
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="Description" content="Laravel Bootstrap Responsive Admin Web Dashboard Template">
-        <meta name="Author" content="Spruko Technologies Private Limited">
-        <meta name="keywords" content="dashboard bootstrap, laravel template, admin panel in laravel, php admin panel, admin panel for laravel, admin template bootstrap 5, laravel admin panel, admin dashboard template, hrm dashboard, vite laravel, admin dashboard, ecommerce admin dashboard, dashboard laravel, analytics dashboard, template dashboard, admin panel template, bootstrap admin panel template">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css">
+    <!--=========================*
+                Met Data
+    *===========================-->
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Gelr Bootstrap 4 Admin Template">
 
-        <!-- TITLE -->
-		<title> YNEX - Laravel Bootstrap 5 Premium Admin & Dashboard Template </title>
+    <!--=========================*
+              Page Title
+    *===========================-->
+    <title>Gelr Bootstrap 4 Admin Template</title>
 
-        <!-- FAVICON -->
-        <link rel="icon" href="{{ asset('build/assets/images/brand-logos/favicon.ico') }}" type="image/x-icon">
+    <!--=========================*
+                Favicon
+    *===========================-->
+    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.png">
 
-        <!-- BOOTSTRAP CSS -->
-	    <link  id="style" href="{{ asset('build/assets/libs/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+    <!--=========================*
+            Bootstrap Css
+    *===========================-->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
 
-        <!-- ICONS CSS -->
-        <link href="{{ asset('build/assets/icon-fonts/icons.css') }}" rel="stylesheet">
-        
-        <!-- APP SCSS -->
-        <link rel="stylesheet" as="style" href="{{ asset('build/assets/app-fce3f544.css') }}" /><link rel="stylesheet" href="build/assets/app-fce3f544.css" />
+    <!--=========================*
+              Custom CSS
+    *===========================-->
+    <link rel="stylesheet" href="css/style.css">
 
-        <!-- NODE WAVES CSS -->
-        <link href="{{ asset('build/assets/libs/node-waves/waves.min.css') }}" rel="stylesheet"> 
+    <!--=========================*
+               Owl CSS
+    *===========================-->
+    <link href="css/owl.carousel.min.css" rel="stylesheet" type="text/css">
+    <link href="css/owl.theme.default.min.css" rel="stylesheet" type="text/css">
 
-        <!-- SIMPLEBAR CSS -->
-        <link rel="stylesheet" href="{{ asset('build/assets/libs/simplebar/simplebar.min.css') }}">
+    <!--=========================*
+            Font Awesome
+    *===========================-->
+    <link rel="stylesheet" href="css/font-awesome.min.css">
 
-        <!-- COLOR PICKER CSS -->
-        <link rel="stylesheet" href="{{ asset('build/assets/libs/flatpickr/flatpickr.min.css') }}">
-        <link rel="stylesheet" href="{{ asset('build/assets/libs/%40simonwep/pickr/themes/nano.min.css') }}">
+    <!--=========================*
+             Themify Icons
+    *===========================-->
+    <link rel="stylesheet" href="css/themify-icons.css">
 
-        <!-- CHOICES CSS -->
-        <link rel="stylesheet" href="{{ asset('build/assets/libs/choices.js/public/assets/styles/choices.min.css') }}">
+    <!--=========================*
+               Ionicons
+    *===========================-->
+    <link href="css/ionicons.min.css" rel="stylesheet"/>
 
-        <!-- CHOICES JS -->
-        <script src="{{ asset('build/assets/libs/choices.js/public/assets/scripts/choices.min.js')}}"></script>
+    <!--=========================*
+              EtLine Icons
+    *===========================-->
+    <link href="css/et-line.css" rel="stylesheet"/>
 
-        <!-- MAIN JS -->
-        <script src="{{asset('build/assets/main.js')}}"></script>
+    <!--=========================*
+              Feather Icons
+    *===========================-->
+    <link href="css/feather.css" rel="stylesheet"/>
 
-         
-      
+    <!--=========================*
+              Flag Icons
+    *===========================-->
+    <link href="css/flag-icon.min.css" rel="stylesheet"/>
 
-	</head>
+    <!--=========================*
+               Slick Menu
+    *===========================-->
+    <link rel="stylesheet" href="css/slicknav.min.css">
+
+    <!--=========================*
+              Modernizer
+    *===========================-->
+    <script src="js/modernizr-2.8.3.min.js"></script>
+
+    <!--=========================*
+               Metis Menu
+    *===========================-->
+    <link rel="stylesheet" href="css/metisMenu.css">
+
+    <!--=========================*
+               Perfect SB
+    *===========================-->
+    <link rel="stylesheet" href="css/perfect-scrollbar.min.css">
+
+    <!--=========================*
+              Flag Icons
+    *===========================-->
+    <link href="css/flag-icon.min.css" rel="stylesheet"/>
+
+    <!--=========================*
+               Slick Menu
+    *===========================-->
+    <link rel="stylesheet" href="css/slicknav.min.css">
+
+    <!--=========================*
+               AM Chart
+    *===========================-->
+    <link rel="stylesheet" href="vendors/am-charts/css/am-charts.css" type="text/css" media="all" />
+
+    <!--=========================*
+               Morris Css
+    *===========================-->
+    <link rel="stylesheet" href="vendors/charts/morris-bundle/morris.css">
+
+    <!--=========================*
+            Google Fonts
+    *===========================-->
+
+    <!-- Montserrat USE: font-family: 'Montserrat', sans-serif;-->
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:100,200,300,400,500,600,700,800,900"
+          rel="stylesheet">
+
+    <!-- HTML5 shiv and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+
+</head>

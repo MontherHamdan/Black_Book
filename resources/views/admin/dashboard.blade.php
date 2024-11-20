@@ -1,48 +1,112 @@
+<!DOCTYPE html>
+<html class="no-js" lang="zxx">
+
+
+<!-- Mirrored from rtsolutz.com/raven/demo-gelr/gelr-html/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 20 Nov 2024 19:47:56 GMT -->
 @include('admin.head')
+
 <body>
-    @include('admin.switcher')
-    @include('admin.loader')
-    <!-- PAGE -->
-    <div class="page">
-        <!-- HEADER -->
-        <header class="app-header">
-            @include('admin.headerContentLeft')
-            @include('admin.headerContentRight')
-        </header>
-        <!-- END HEADER -->
+<!--[if lt IE 8]>
+<p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+<![endif]-->
 
-        <!-- SIDEBAR -->
-        @include('admin.sideBar')
-        <!-- END SIDEBAR -->
 
-        <!-- MAIN-CONTENT -->
-        <div class="main-content app-content">
-            <div class="container-fluid">
-                <!-- Page Header -->
-                @include('admin.pageHeader')
-                <!-- Page Header Close -->
-                {{-- @include('admin.row') --}}
+<!--=========================*
+         Page Content
+*===========================-->
+<div class="vz_main_sec">
+    <!--=========================*
+               Sidebar
+   *===========================-->
+    @include('admin.sideBar')
+    <!--=========================*
+               End Sidebar
+   *===========================-->
 
-                @yield('content')
-            </div>
+    <!--=========================*
+               Header
+   *===========================-->
+    @include('admin.header')
+    <!--=========================*
+               End Header
+   *===========================-->
+
+    <!--=========================*
+           Main Section
+   *===========================-->
+    <div class="vz_main_container">
+        <div class="vz_main_content">
+         {{--  --}}
+         @yield('admin.content')
         </div>
-        <!-- END MAIN-CONTENT -->
-
-        <!-- SEARCH-MODAL -->
-        @include('admin.searchModal')
-        <!-- END SEARCH-MODAL -->
-
-        <!-- FOOTER -->
-        @include('admin.footer')
-        <!-- END FOOTER -->
-
+        <!--=========================*
+                    Footer
+       *===========================-->
+       @include('admin.footer')
+        <!--=========================*
+                End Footer
+       *===========================-->
     </div>
-    <!-- END PAGE-->
+    <!--=========================*
+            End Main Section
+   *===========================-->
 
-    <!-- SCRIPTS -->
-    @include('admin.scripts')
-    <!-- END SCRIPTS -->
+</div>
+<!--=========================*
+        End Page Content
+*===========================-->
+
+
+<!--=========================*
+            Scripts
+*===========================-->
+
+<!-- Jquery Js -->
+<script src="js/jquery.min.js"></script>
+<!-- bootstrap 4 js -->
+<script src="js/popper.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<!-- Owl Carousel Js -->
+<script src="js/owl.carousel.min.js"></script>
+<!-- Metis Menu Js -->
+<script src="js/metisMenu.min.js"></script>
+<!-- SlimScroll Js -->
+<script src="js/jquery.slimscroll.min.js"></script>
+<!-- Slick Nav -->
+<script src="js/jquery.slicknav.min.js"></script>
+<!-- start amchart js -->
+<script src="vendors/am-charts/am4/core.js"></script>
+<script src="vendors/am-charts/am4/charts.js"></script>
+<script src="vendors/am-charts/am4/animated.js"></script>
+
+<!-- flot chart -->
+<script src="vendors/flot/jquery.flot.min.js"></script>
+<script src="vendors/flot/jquery.flot.pie.js"></script>
+<script src="vendors/flot/jquery.flot.resize.min.js"></script>
+
+<!--Morris Chart-->
+<script src="vendors/charts/morris-bundle/raphael.min.js"></script>
+<script src="vendors/charts/morris-bundle/morris.js"></script>
+
+<!--Chart Js-->
+<script src="vendors/charts/charts-bundle/Chart.bundle.js"></script>
+
+<!--Apex Chart-->
+<script src="vendors/apex/js/apexcharts.min.js"></script>
+
+<!--EChart-->
+<script src="vendors/charts/echarts/echarts-en.min.js"></script>
+
+<!--Home Script-->
+<script src="js/home.js"></script>
+
+<!--Perfect Scrollbar-->
+<script src="js/perfect-scrollbar.min.js"></script>
+<!-- Main Js -->
+<script src="js/main.js"></script>
+
 
 </body>
 
+<!-- Mirrored from rtsolutz.com/raven/demo-gelr/gelr-html/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 20 Nov 2024 19:47:56 GMT -->
 </html>

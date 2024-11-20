@@ -25,21 +25,13 @@ Route::get('/', function () {
     return redirect('/login');
 });
 
-Route::put('/admin/users/{id}', [AdminController::class, 'updateUser'])->name('admin.users.update');
-Route::delete('/admin/users/{id}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
 
-
-Route::prefix('admin')->middleware('auth')->group(function () {
-    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-    Route::get('/users', [AdminController::class, 'listUsers'])->name('admin.users.list');
-    Route::get('/users/create', [AdminController::class, 'createUser'])->name('admin.users.create');
-    Route::post('/users', [AdminController::class, 'storeUser'])->name('admin.users.store');
-});
-
+Route::get('/test', [AdminController::class, 'test'])->name('admin.test');
 
 // Admin routes with auth and admin middleware
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+
 });
 
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');

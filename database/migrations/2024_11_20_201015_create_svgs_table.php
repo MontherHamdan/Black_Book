@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('svgs', function (Blueprint $table) {
             $table->id();
             $table->string('title'); // Optional title for the SVG
-            $table->text('svg_code'); // SVG content
+            $table->longText('svg_code'); // SVG content
             $table->timestamps();
         });
     }

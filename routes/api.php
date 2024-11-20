@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SvgController;
 use App\Http\Controllers\Api\BookTypeController;
 use App\Http\Controllers\Api\BookDesignController;
 use App\Http\Controllers\Api\PhoneNumbersConroller;
@@ -29,4 +30,10 @@ Route::prefix('v1')->group(function () {
     Route::resource('/book_design_categories', BookDesginCategoryController::class);
     Route::resource('/book_design_subCategories', BookDesginSubCategoryController::class);
     Route::resource('/phone_numbers', PhoneNumbersConroller::class);
+    Route::resource('/svgs', SvgController::class);
 });
+
+Route::middleware('throttle:60,1')->group(function () {
+    Route::resource('svgs', SvgController::class);
+});
+

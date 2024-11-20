@@ -14,6 +14,18 @@ class BookDesignSeeder extends Seeder
      */
     public function run(): void
     {
+        // Disable foreign key checks
+        \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+        // Truncate tables
+        BookDesign::truncate();
+        BookDesignSubCategory::truncate();
+        BookDesignCategory::truncate();
+
+        // Re-enable foreign key checks
+        \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+    
+
         // Create categories with Arabic names
         $categories = [
             ['name' => 'Palestine', 'arabic_name' => 'فلسطين'],
@@ -71,60 +83,40 @@ class BookDesignSeeder extends Seeder
         // Additional designs with subcategories
         $bookDesigns = [
             // Multiple Images
-            [
-                'image' => 'images/design2.jpg',
-                'category_id' => $categoryIds['multiple image'],
-                'sub_category_id' => BookDesignSubCategory::where('name', 'four pictures on the back')->first()->id
-            ],
-            [
-                'image' => 'images/design_multi1.jpg',
-                'category_id' => $categoryIds['multiple image'],
-                'sub_category_id' => BookDesignSubCategory::where('name', 'three pictures on the back')->first()->id
-            ],
-            [
-                'image' => 'images/design_multi2.jpg',
-                'category_id' => $categoryIds['multiple image'],
-                'sub_category_id' => BookDesignSubCategory::where('name', 'two pictures on the back')->first()->id
-            ],
+            ['image' => 'images/design1.jpg', 'category_id' => $categoryIds['multiple image'], 'sub_category_id' => BookDesignSubCategory::where('name', 'many pictures')->first()->id],
+            ['image' => 'images/design2.jpg', 'category_id' => $categoryIds['multiple image'], 'sub_category_id' => BookDesignSubCategory::where('name', 'four pictures on the back')->first()->id],
+            ['image' => 'images/design3.jpg', 'category_id' => $categoryIds['multiple image'], 'sub_category_id' => BookDesignSubCategory::where('name', 'three pictures on the back')->first()->id],
 
             // Medical Majors
-            [
-                'image' => 'images/design6.jpg',
-                'category_id' => $categoryIds['Medical majors'],
-                'sub_category_id' => BookDesignSubCategory::where('name', 'Pharmacy')->first()->id
-            ],
-            [
-                'image' => 'images/design_medical1.jpg',
-                'category_id' => $categoryIds['Medical majors'],
-                'sub_category_id' => BookDesignSubCategory::where('name', 'Human medicine')->first()->id
-            ],
-            [
-                'image' => 'images/design_medical2.jpg',
-                'category_id' => $categoryIds['Medical majors'],
-                'sub_category_id' => BookDesignSubCategory::where('name', 'dentistry')->first()->id
-            ],
-            [
-                'image' => 'images/design_medical3.jpg',
-                'category_id' => $categoryIds['Medical majors'],
-                'sub_category_id' => BookDesignSubCategory::where('name', 'Nursing')->first()->id
-            ],
+            ['image' => 'images/design4.jpg', 'category_id' => $categoryIds['Medical majors'], 'sub_category_id' => BookDesignSubCategory::where('name', 'Human medicine')->first()->id],
+            ['image' => 'images/design5.jpg', 'category_id' => $categoryIds['Medical majors'], 'sub_category_id' => BookDesignSubCategory::where('name', 'Pharmacy')->first()->id],
+            ['image' => 'images/design6.jpg', 'category_id' => $categoryIds['Medical majors'], 'sub_category_id' => BookDesignSubCategory::where('name', 'dentistry')->first()->id],
+
+            // Palestine
+            ['image' => 'images/design7.jpg', 'category_id' => $categoryIds['Palestine'], 'sub_category_id' => null],
+            ['image' => 'images/design8.jpg', 'category_id' => $categoryIds['Palestine'], 'sub_category_id' => null],
+            ['image' => 'images/design9.jpg', 'category_id' => $categoryIds['Palestine'], 'sub_category_id' => null],
+
+            // Classy and Simple
+            ['image' => 'images/design10.jpg', 'category_id' => $categoryIds['Classy and simple'], 'sub_category_id' => null],
+            ['image' => 'images/design11.jpg', 'category_id' => $categoryIds['Classy and simple'], 'sub_category_id' => null],
+
+            // Graduation
+            ['image' => 'images/design12.jpg', 'category_id' => $categoryIds['joy of graduation'], 'sub_category_id' => null],
+            ['image' => 'images/design13.jpg', 'category_id' => $categoryIds['joy of graduation'], 'sub_category_id' => null],
+
+            // Law
+            ['image' => 'images/design14.jpg', 'category_id' => $categoryIds['law'], 'sub_category_id' => null],
+            ['image' => 'images/design15.jpg', 'category_id' => $categoryIds['law'], 'sub_category_id' => null],
 
             // Sports
-            [
-                'image' => 'images/design_sports1.jpg',
-                'category_id' => $categoryIds['Sports'],
-                'sub_category_id' => null
-            ],
-            [
-                'image' => 'images/design_sports2.jpg',
-                'category_id' => $categoryIds['Sports'],
-                'sub_category_id' => null
-            ],
-            [
-                'image' => 'images/design_sports3.jpg',
-                'category_id' => $categoryIds['Sports'],
-                'sub_category_id' => null
-            ]
+            ['image' => 'images/design16.jpg', 'category_id' => $categoryIds['Sports'], 'sub_category_id' => null],
+            ['image' => 'images/design17.jpg', 'category_id' => $categoryIds['Sports'], 'sub_category_id' => null],
+
+            // Diverse Designs
+            ['image' => 'images/design18.jpg', 'category_id' => $categoryIds['multiple image'], 'sub_category_id' => BookDesignSubCategory::where('name', 'one picture on the back')->first()->id],
+            ['image' => 'images/design19.jpg', 'category_id' => $categoryIds['Medical majors'], 'sub_category_id' => BookDesignSubCategory::where('name', 'Medical laboratories')->first()->id],
+            ['image' => 'images/design20.jpg', 'category_id' => $categoryIds['Classy and simple'], 'sub_category_id' => null]
         ];
 
         foreach ($bookDesigns as $bookDesignData) {

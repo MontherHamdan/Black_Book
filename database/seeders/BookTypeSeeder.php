@@ -15,6 +15,17 @@ class BookTypeSeeder extends Seeder
      */
     public function run(): void
     {
+        // Disable foreign key checks
+        \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+        // Truncate tables
+        BookTypeSubMedia::truncate();
+        BookType::truncate();
+
+        // Re-enable foreign key checks
+        \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+
         $images = [
             'صورة المنتج الأول_دفتر مع قاعدة عادية_دفتر تخرج اون لاين-08.webp',
             'دفتر تخرج_مع قاعدة لاكجري_وتصاميم دفاتر تخرج_وعبارات لدفتر تخرج_شراء دفتر تخرج اون لاين-08.webp',

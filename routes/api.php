@@ -5,9 +5,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\SvgController;
 use App\Http\Controllers\Api\BookTypeController;
 use App\Http\Controllers\Api\BookDesignController;
+use App\Http\Controllers\Api\UniversityController;
 use App\Http\Controllers\Api\PhoneNumbersConroller;
 use App\Http\Controllers\Api\BookDesginCategoryController;
 use App\Http\Controllers\Api\BookDesginSubCategoryController;
+use App\Http\Controllers\Api\MajorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,9 +33,11 @@ Route::prefix('v1')->group(function () {
     Route::resource('/book_design_subCategories', BookDesginSubCategoryController::class);
     Route::resource('/phone_numbers', PhoneNumbersConroller::class);
     Route::resource('/svgs', SvgController::class);
-});
 
-Route::middleware('throttle:60,1')->group(function () {
-    Route::resource('svgs', SvgController::class);
-});
+    Route::middleware('throttle:60,1')->group(function () {
+        Route::resource('svgs', SvgController::class);
+    });
 
+    Route::resource('universities', UniversityController::class);
+    Route::resource('/universities/{university_id}/majors', MajorController::class);
+});

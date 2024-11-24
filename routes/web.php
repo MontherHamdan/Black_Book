@@ -19,17 +19,15 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 // Login routes
 Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('auth.login');
-Route::post('/', [AuthenticatedSessionController::class, 'store'])->name('login');
-Route::get('/', function () {
-    return redirect('/login');
-});
+Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('auth.store');
+
+// Logout route
+Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('auth.logout');
 
 
 
 // Admin routes with auth and admin middleware
 Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
     Route::resource('book-designs', BookDesignController::class);
 });
-
-Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');

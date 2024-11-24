@@ -34,7 +34,7 @@ class AuthenticatedSessionController extends Controller
         if (Auth::user()->is_admin) {
             return redirect()->route('admin.dashboard');
         }
-        return redirect()->intended(RouteServiceProvider::HOME);
+        return redirect()->intended('admin.dashboard');
     }
 
     /**
@@ -50,6 +50,4 @@ class AuthenticatedSessionController extends Controller
 
         return redirect('/');
     }
-
-    
 }

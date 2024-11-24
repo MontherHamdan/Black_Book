@@ -1,9 +1,8 @@
 <?php
 
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\ProfileController;
-use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\BookDesignController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 /*
@@ -26,12 +25,11 @@ Route::get('/', function () {
 });
 
 
-Route::get('/test', [AdminController::class, 'test'])->name('admin.test');
 
 // Admin routes with auth and admin middleware
 Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::resource('book-designs', BookDesignController::class);
 });
 
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');

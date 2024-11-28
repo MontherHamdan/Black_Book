@@ -1,68 +1,91 @@
 @extends('admin.layout')
 
-@section('admin.content')
-    <div class="container">
-        <h1>Edit Book Design</h1>
+@section('content')
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <!-- Display Errors if any -->
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
 
-        <form action="{{ route('book-designs.update', $bookDesign->id) }}" method="POST" enctype="multipart/form-data">
-            @csrf
-            @method('PUT')
+                    <!-- Form for Editing Book Design -->
+                    <form action="{{ route('book-designs.update', $bookDesign->id) }}" method="POST"
+                        enctype="multipart/form-data">
+                        @csrf
+                        @method('PUT')
 
-            <!-- Book Design Image -->
-            <div class="form-group">
-                <label for="image">Book Design Image</label>
-                <div>
-                    <!-- Display the current image -->
-                    <img src="{{ $bookDesign->image }}" alt="Current Image" width="150">
+                        <!-- Section Title -->
+                        <h4 class="mb-4 text-primary">Edit Book Design</h4>
+
+                        <!-- Book Design Image -->
+                        <div class="form-group mb-3">
+                            <label for="image" class="form-label fw-bold">Book Design Image</label>
+                            <input type="file" data-plugins="dropify" data-height="200"
+                                class="form-control @error('image') is-invalid @enderror" name="image" id="image"
+                                data-default-file="{{ $bookDesign->image }}" accept="image/*">
+                            @error('image')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- Category and Subcategory Selection -->
+                        <div class="row mb-3">
+                            <!-- Category -->
+                            <div class="col-md-6">
+                                <label for="category_id" class="form-label fw-bold">Category</label>
+                                <select name="category_id" id="category_id"
+                                    class="form-select @error('category_id') is-invalid @enderror">
+                                    <option value="" disabled>Select Category</option>
+                                    @foreach ($categories as $category)
+                                        <option value="{{ $category->id }}"
+                                            {{ $category->id == $bookDesign->category_id ? 'selected' : '' }}>
+                                            {{ $category->arabic_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('category_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <!-- Subcategory -->
+                            <div class="col-md-6">
+                                <label for="sub_category_id" class="form-label fw-bold">Subcategory</label>
+                                <select name="sub_category_id" id="sub_category_id"
+                                    class="form-select @error('sub_category_id') is-invalid @enderror">
+                                    <option value="">Select Subcategory</option>
+                                    @foreach ($subCategories as $subCategory)
+                                        <option value="{{ $subCategory->id }}"
+                                            {{ $subCategory->id == $bookDesign->sub_category_id ? 'selected' : '' }}>
+                                            {{ $subCategory->arabic_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('sub_category_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary px-4">Update Design</button>
+                        </div>
+                    </form>
                 </div>
-                <input type="file" class="form-control @error('image') is-invalid @enderror" name="image" id="image"
-                    accept="image/*">
-                @error('image')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
             </div>
-
-            <!-- Category Selection -->
-            <div class="form-group">
-                <label for="category_id">Category</label>
-                <select name="category_id" id="category_id" class="form-control @error('category_id') is-invalid @enderror">
-                    <option value="" disabled>Select Category</option>
-                    @foreach ($categories as $category)
-                        <option value="{{ $category->id }}"
-                            {{ $category->id == $bookDesign->category_id ? 'selected' : '' }}>
-                            {{ $category->name }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('category_id')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <!-- Subcategory Selection -->
-            <div class="form-group">
-                <label for="sub_category_id">Subcategory</label>
-                <select name="sub_category_id" id="sub_category_id"
-                    class="form-control @error('sub_category_id') is-invalid @enderror">
-                    <option value="">Select Subcategory</option>
-                    @foreach ($subCategories as $subCategory)
-                        <option value="{{ $subCategory->id }}"
-                            {{ $subCategory->id == $bookDesign->sub_category_id ? 'selected' : '' }}>
-                            {{ $subCategory->name }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('sub_category_id')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary">Update Design</button>
-            </div>
-        </form>
+        </div>
     </div>
 
+    <!-- Script for dynamic subcategory population -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const categorySelect = document.getElementById('category_id');
@@ -85,7 +108,7 @@
                                 subCategories.forEach(subCategory => {
                                     const option = document.createElement('option');
                                     option.value = subCategory.id;
-                                    option.textContent = subCategory.name;
+                                    option.textContent = subCategory.arabic_name;
                                     subCategorySelect.appendChild(option);
                                 });
 

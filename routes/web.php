@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BookDesignController;
+use App\Http\Controllers\BookDesignCategoryController;
+use App\Http\Controllers\BookDesignSubCategoryController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 /*
@@ -30,4 +32,10 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
     Route::resource('book-designs', BookDesignController::class);
+
+    // Categories
+    Route::resource('categories', BookDesignCategoryController::class);
+
+    // Subcategories
+    Route::resource('subcategories', BookDesignSubCategoryController::class);
 });

@@ -33,12 +33,11 @@
                      <!-- item-->
                      <form action="{{ route('auth.logout') }}" method="POST">
                          @csrf
-                         <a class="dropdown-item notify-item">
-                             <i type="submit" class="fe-log-out me-1"></i>
+                         <button type="submit" class="dropdown-item notify-item">
+                             <i class="fe-log-out me-1"></i>
                              <span>Logout</span>
-                         </a>
+                         </button>
                      </form>
-
 
                  </div>
              </div>
@@ -78,14 +77,21 @@
                  <li class="menu-title mt-2">Apps</li>
 
                  <li>
-                     <a href="apps-calendar.html">
+                     <a href="{{ route('book-designs.index') }}">
                          <i class="mdi mdi-calendar-blank-outline"></i>
                          <span> Calendar </span>
                      </a>
                  </li>
 
                  <li>
-                     <a href="apps-chat.html">
+                     <a href="{{ route('categories.index') }}">
+                         <i class="mdi mdi-forum-outline"></i>
+                         <span> Chat </span>
+                     </a>
+                 </li>
+
+                 <li>
+                     <a href="{{ route('subcategories.index') }}">
                          <i class="mdi mdi-forum-outline"></i>
                          <span> Chat </span>
                      </a>

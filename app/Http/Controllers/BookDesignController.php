@@ -36,13 +36,14 @@ class BookDesignController extends Controller
     {
         // Validate incoming request
         $validated = $request->validate([
-            'image' => 'required|image|mimes:jpg,png,jpeg,gif|max:2048',
+            'image' => 'required|image|mimes:jpg,png,jpeg,gif,webp|max:2048',
             'category_id' => 'required|exists:book_design_categories,id',
             'sub_category_id' => 'nullable|exists:book_design_sub_categories,id',
         ]);
 
         // Store the uploaded image in the "book_designs" folder under the "public" disk
         $imageFile = $request->file('image');
+
         $imageName = $imageFile->getClientOriginalName(); // Get original file name
         $imagePath = $imageFile->storeAs('book_designs', $imageName, 'public'); // Store image with original name
 
@@ -95,7 +96,7 @@ class BookDesignController extends Controller
     {
         // Validate the input
         $validated = $request->validate([
-            'image' => 'nullable|image|mimes:jpg,png,jpeg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpg,png,jpeg,gif,webp|max:2048',
             'category_id' => 'required|exists:book_design_categories,id',
             'sub_category_id' => 'nullable|exists:book_design_sub_categories,id',
         ]);

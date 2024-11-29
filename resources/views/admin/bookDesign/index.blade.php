@@ -39,24 +39,35 @@
                                     <td class="text-center">{{ $design->category->arabic_name }}</td>
                                     <td class="text-center">{{ $design->subCategory->arabic_name ?? 'N/A' }}</td>
                                     <td class="text-center">
-                                        <!-- Actions -->
-                                        <div class="d-flex justify-content-center align-items-center gap-2">
-                                            <!-- Edit Button -->
-                                            <a href="{{ route('book-designs.edit', $design) }}"
-                                                class="btn btn-warning btn-sm" title="Edit Design">
-                                                <i class="fas fa-edit"></i>
+                                        <!-- Actions Dropdown -->
+                                        <div class="dropdown">
+                                            <a class="dropdown-toggle" id="dropdownMenuButton{{ $design->id }}"
+                                                data-bs-toggle="dropdown" style="cursor: pointer;" aria-expanded="false"
+                                                title="Actions">
+                                                <i class="fas fa-ellipsis-h"></i>
                                             </a>
-
-                                            <!-- Delete Button -->
-                                            <form action="{{ route('book-designs.destroy', $design) }}" method="POST"
-                                                style="display:inline;" id="delete-form-{{ $design->id }}">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="button" class="btn btn-danger btn-sm sa-warning-btn">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
-
+                                            <ul class="dropdown-menu dropdown-menu-end"
+                                                aria-labelledby="dropdownMenuButton{{ $design->id }}">
+                                                <!-- Edit Action -->
+                                                <li>
+                                                    <a href="{{ route('book-designs.edit', $design) }}"
+                                                        class="dropdown-item" title="Edit Design">
+                                                        <i class="fas fa-edit me-2"></i>Edit
+                                                    </a>
+                                                </li>
+                                                <!-- Delete Action -->
+                                                <li>
+                                                    <form action="{{ route('book-designs.destroy', $design) }}"
+                                                        method="POST" id="delete-form-{{ $design->id }}">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="button"
+                                                            class="dropdown-item text-danger sa-warning-btn">
+                                                            <i class="fas fa-trash me-2"></i>Delete
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            </ul>
                                         </div>
                                     </td>
                                 </tr>

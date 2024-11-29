@@ -28,10 +28,13 @@ class BookDesignCategoryController extends Controller
             'arabic_name' => 'required|string|max:255',
         ]);
 
+        $validated['type'] = $request->has('type') ? 'multiple' : 'single';
+
         BookDesignCategory::create($validated);
 
         return redirect()->route('categories.index')->with('success', 'Category created successfully.');
     }
+
 
     // Show the form for editing the specified category
     public function edit(BookDesignCategory $category)
@@ -47,10 +50,14 @@ class BookDesignCategoryController extends Controller
             'arabic_name' => 'required|string|max:255',
         ]);
 
+        // Add the type field to the validated data
+        $validated['type'] = $request->has('type') ? 'multiple' : 'single';
+
         $category->update($validated);
 
         return redirect()->route('categories.index')->with('success', 'Category updated successfully.');
     }
+
 
     // Remove the specified category
     public function destroy(BookDesignCategory $category)

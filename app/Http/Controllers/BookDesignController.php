@@ -88,7 +88,6 @@ class BookDesignController extends Controller
         return view('admin.bookDesign.edit', compact('bookDesign', 'categories', 'subCategories'));
     }
 
-
     /**
      * Update the specified resource in storage.
      */
@@ -101,30 +100,47 @@ class BookDesignController extends Controller
             'sub_category_id' => 'nullable|exists:book_design_sub_categories,id',
         ]);
 
-        // If a new image is uploaded, store it and update the image path
+        // If a new image is uploaded
         if ($request->hasFile('image')) {
-            $storedImage = $request->file('image')->store('book_designs', 'public');
-            $bookDesign->image = url('storage/' . $storedImage); // Store the full URL
+            // Delete the old image if it exists
+            if ($bookDesign->image) {
+                $oldImagePath = str_replace(url('storage') . '/', '', $bookDesign->image); // Extract relative path
+                if (Storage::disk('public')->exists($oldImagePath)) {
+                    Storage::disk('public')->delete($oldImagePath);
+                }
+            }
+
+            // Store the new image
+            $imageFile = $request->file('image');
+            $imageName = $imageFile->getClientOriginalName(); // Get the original file name
+            $imagePath = $imageFile->storeAs('book_designs', $imageName, 'public'); // Store with original name
+            $validated['image'] = url('storage/' . $imagePath); // Generate full URL
         }
 
-        // Update the BookDesign record with the new data
-        $bookDesign->category_id = $validated['category_id'];
-        $bookDesign->sub_category_id = $validated['sub_category_id'] ?? null;
-        $bookDesign->save();
+        // Update the BookDesign record
+        $bookDesign->update([
+            'image' => $validated['image'] ?? $bookDesign->image,
+            'category_id' => $validated['category_id'],
+            'sub_category_id' => $validated['sub_category_id'] ?? null,
+        ]);
 
         return redirect()->route('book-designs.index')->with('success', 'Book Design updated successfully.');
     }
-
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(BookDesign $bookDesign)
     {
+        // Delete the image from storage if it exists
         if ($bookDesign->image) {
-            Storage::disk('public')->delete($bookDesign->image);
+            $oldImagePath = str_replace(url('storage') . '/', '', $bookDesign->image); // Extract relative path
+            if (Storage::disk('public')->exists($oldImagePath)) {
+                Storage::disk('public')->delete($oldImagePath);
+            }
         }
 
+        // Delete the BookDesign record
         $bookDesign->delete();
 
         return redirect()->route('book-designs.index')->with('success', 'Book Design deleted successfully.');

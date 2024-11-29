@@ -22,7 +22,6 @@
                         <h4 class="mb-4 text-primary">Edit Category</h4>
 
                         <div class="row mb-3">
-
                             <div class="col-md-6">
                                 <label for="name" class="form-label fw-bold">English Name</label>
                                 <input type="text" class="form-control @error('name') is-invalid @enderror"
@@ -42,6 +41,13 @@
                             </div>
                         </div>
 
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" name="type" id="type" value="multiple"
+                                {{ $category->type === 'multiple' ? 'checked' : '' }}>
+                            <label class="form-check-label fw-bold" for="type">
+                                Is Multiple?
+                            </label>
+                        </div>
 
                         <div class="text-end">
                             <button type="submit" class="btn btn-primary px-4">Update Category</button>

@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
         $this->call(
             [
                 BookTypeSeeder::class,
-                BookDesignSeeder::class,
+                // BookDesignSeeder::class,
                 AdminUserSeeder::class,
                 SvgSeeder::class,
                 UniversityMajorSeeder::class

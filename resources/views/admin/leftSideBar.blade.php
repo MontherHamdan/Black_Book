@@ -79,21 +79,28 @@
                  <li>
                      <a href="{{ route('book-designs.index') }}">
                          <i class="mdi mdi-calendar-blank-outline"></i>
-                         <span> Calendar </span>
+                         <span> book design </span>
                      </a>
                  </li>
 
                  <li>
                      <a href="{{ route('categories.index') }}">
                          <i class="mdi mdi-forum-outline"></i>
-                         <span> Chat </span>
+                         <span> categories </span>
                      </a>
                  </li>
 
                  <li>
                      <a href="{{ route('subcategories.index') }}">
                          <i class="mdi mdi-forum-outline"></i>
-                         <span> Chat </span>
+                         <span> sub categories </span>
+                     </a>
+                 </li>
+
+                 <li>
+                     <a href="{{ route('book-types.index') }}">
+                         <i class="mdi mdi-forum-outline"></i>
+                         <span> Book type </span>
                      </a>
                  </li>
 

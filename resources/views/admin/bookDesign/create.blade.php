@@ -1,5 +1,4 @@
 @extends('admin.layout')
-<!-- Plugins css -->
 
 @section('content')
     <div class="row">

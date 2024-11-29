@@ -1,8 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BookTypeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BookDesignController;
+use App\Http\Controllers\BookTypeSubMediaController;
 use App\Http\Controllers\BookDesignCategoryController;
 use App\Http\Controllers\BookDesignSubCategoryController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -31,6 +33,8 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name
 // Admin routes with auth and admin middleware
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
+
+    // book design
     Route::resource('book-designs', BookDesignController::class);
 
     // Categories
@@ -38,4 +42,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // Subcategories
     Route::resource('subcategories', BookDesignSubCategoryController::class);
+
+    // book type
+    Route::resource('book-types', BookTypeController::class);
+
+    Route::post('book-types/{bookType}/submedia', [BookTypeController::class, 'storeSubMedia'])->name('book-types.submedia.store');
 });

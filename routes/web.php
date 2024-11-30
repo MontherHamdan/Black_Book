@@ -46,5 +46,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // book type
     Route::resource('book-types', BookTypeController::class);
 
-    Route::post('book-types/{bookType}/submedia', [BookTypeController::class, 'storeSubMedia'])->name('book-types.submedia.store');
+    // book type sub media
+    Route::post('book-type-sub-media', [BookTypeSubMediaController::class, 'store'])->name('book-type-sub-media.store');
+    Route::delete('book-type-sub-media/{subMedia}', [BookTypeSubMediaController::class, 'destroy'])->name('book-type-sub-media.destroy');
 });

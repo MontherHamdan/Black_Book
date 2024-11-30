@@ -10,11 +10,11 @@ class BookDesignResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'image' => $this->image,
-            'category_en' => $this->category->name,
-            'category_ar' => $this->category->arabic_name,
-            'subcategory_en' => optional($this->subcategory)->name,
-            'subcategory_ar' => optional($this->subcategory)->arabic_name,
+            'image' => $this->image ?? 'N/A', // Full image URL
+            'category_en' => $this->category->name ?? 'N/A',
+            'category_ar' => $this->category->arabic_name ?? 'غير متوفر',
+            'subcategory_en' => $this->subcategory->name ?? 'N/A',
+            'subcategory_ar' => $this->subcategory->arabic_name ?? 'غير متوفر',
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
         ];

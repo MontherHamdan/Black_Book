@@ -11,7 +11,7 @@ class BookTypeSubMedia extends Model
 
     protected $table = 'book_type_sub_media';
 
-    protected $fillable = ['media','type'];
+    protected $fillable = ['book_type_id', 'media', 'type'];
 
     public function bookType()
     {

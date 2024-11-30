@@ -24,7 +24,7 @@
                         <h4 class="mb-4 text-primary">Add New Book Type</h4>
 
                         <!-- Book Type Image -->
-                        <div class="form-group mb-3">
+                        <div class="form-group mb-4">
                             <label for="image" class="form-label fw-bold">Book Type Image</label>
                             <input type="file" data-plugins="dropify" data-height="200"
                                 class="form-control @error('image') is-invalid @enderror" name="image" id="image"
@@ -35,31 +35,36 @@
                         </div>
 
                         <!-- Price -->
-                        <div class="form-group mb-3">
-                            <label for="price" class="form-label fw-bold">Price</label>
-                            <input type="number" class="form-control @error('price') is-invalid @enderror" id="price"
-                                name="price" required>
-                            @error('price')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="price" class="form-label fw-bold">Price</label>
+                                <input type="number" min="0" value="0" class="form-control @error('price') is-invalid @enderror"
+                                    id="price" name="price" required>
+                                @error('price')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
 
-                        <!-- Description in English -->
-                        <div class="form-group mb-3">
-                            <label for="description_en" class="form-label fw-bold">Description (EN)</label>
-                            <textarea class="form-control @error('description_en') is-invalid @enderror" id="description_en" name="description_en"></textarea>
-                            @error('description_en')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <div></div>
                         </div>
 
                         <!-- Description in Arabic -->
-                        <div class="form-group mb-3">
-                            <label for="description_ar" class="form-label fw-bold">Description (AR)</label>
-                            <textarea class="form-control @error('description_ar') is-invalid @enderror" id="description_ar" name="description_ar"></textarea>
-                            @error('description_ar')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="description_ar" class="form-label fw-bold">Description (AR)</label>
+                                <textarea class="form-control @error('description_ar') is-invalid @enderror" id="description_ar" name="description_ar"></textarea>
+                                @error('description_ar')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <!-- Description in English -->
+                            <div class="col-md-6">
+                                <label for="description_en" class="form-label fw-bold">Description (EN)</label>
+                                <textarea class="form-control @error('description_en') is-invalid @enderror" id="description_en" name="description_en"></textarea>
+                                @error('description_en')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
 
                         <!-- Submit Button -->

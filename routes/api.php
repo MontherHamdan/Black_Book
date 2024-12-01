@@ -27,11 +27,23 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::prefix('v1')->group(function () {
+    // *******************book type **********************************
     Route::resource('/book_type', BookTypeController::class);
-    Route::resource('/book_design', BookDesignController::class);
+
+    // *******************book_design **********************************
+    Route::resource('/book_design', BookDesignController::class)->only(['index']);
+    Route::get('/book_design/all', [BookDesignController::class, 'all'])->name('book_design.all');
+
+    // *******************book_design_categoriese **********************************
     Route::resource('/book_design_categories', BookDesginCategoryController::class);
+
+    // *******************book_design_subCategories **********************************
     Route::resource('/book_design_subCategories', BookDesginSubCategoryController::class);
+
+    // *******************phone_numbers **********************************
     Route::resource('/phone_numbers', PhoneNumbersConroller::class);
+
+    // *******************book type **********************************
     Route::resource('/svgs', SvgController::class);
 
     Route::middleware('throttle:60,1')->group(function () {

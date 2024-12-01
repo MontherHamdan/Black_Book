@@ -10,7 +10,13 @@ use App\Http\Resources\BookDesignResource;
 
 class BookDesignController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * Build a query for fetching book designs.
+     *
+     * @param  Request  $request
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    protected function buildQuery(Request $request)
     {
         $query = BookDesign::query();
 
@@ -24,13 +30,27 @@ class BookDesignController extends Controller
             $query->where('sub_category_id', $request->input('sub_category_id'));
         }
 
+        // Include relationships
+        return $query->with(['category', 'subcategory']);
+    }
+
+    /**
+     * Fetch paginated book designs with filters and relationships.
+     *
+     * @param  Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function index(Request $request)
+    {
+        $query = $this->buildQuery($request);
+
         // Determine items per page (default is 10)
-        $perPage = $request->input('per_page', 10); // Default to 10 items per page
+        $perPage = $request->input('per_page', 10);
 
-        // Fetch paginated designs with relationships
-        $designs = $query->with(['category', 'subcategory'])->paginate($perPage);
+        // Fetch paginated designs
+        $designs = $query->paginate($perPage);
 
-        // Return paginated response with resources
+        // Return paginated response
         return response()->json([
             'data' => BookDesignResource::collection($designs->items()), // Items for the current page
             'pagination' => [
@@ -40,6 +60,26 @@ class BookDesignController extends Controller
                 'current_page' => $designs->currentPage(),
                 'total_pages' => $designs->lastPage(),
             ],
+        ]);
+    }
+
+    /**
+     * Fetch all book designs with filters and relationships.
+     *
+     * @param  Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function all(Request $request)
+    {
+        $query = $this->buildQuery($request);
+
+        // Fetch all designs without pagination
+        $designs = $query->get();
+
+        // Return the full collection
+        return response()->json([
+            'data' => BookDesignResource::collection($designs),
+            'total' => $designs->count(), // Optional metadata
         ]);
     }
 }

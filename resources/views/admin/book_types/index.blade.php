@@ -32,7 +32,7 @@
                                     <td class="text-center">{{ $bookType->id }}</td>
                                     <td class="text-center">
                                         <img class="img-fluid img-thumbnail rounded-circle" src="{{ $bookType->image }}"
-                                            alt="Book Type Image" width="70" height="70">
+                                            alt="Book Type" width="70" height="70">
                                     </td>
                                     <td class="text-center">{{ $bookType->price }}</td>
                                     <td class="text-center">{{ $bookType->description_en }}</td>

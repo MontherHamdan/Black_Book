@@ -77,27 +77,6 @@
                  <li class="menu-title mt-2">Apps</li>
 
                  <li>
-                     <a href="{{ route('book-designs.index') }}">
-                         <i class="mdi mdi-calendar-blank-outline"></i>
-                         <span> book design </span>
-                     </a>
-                 </li>
-
-                 <li>
-                     <a href="{{ route('categories.index') }}">
-                         <i class="mdi mdi-forum-outline"></i>
-                         <span> categories </span>
-                     </a>
-                 </li>
-
-                 <li>
-                     <a href="{{ route('subcategories.index') }}">
-                         <i class="mdi mdi-forum-outline"></i>
-                         <span> sub categories </span>
-                     </a>
-                 </li>
-
-                 <li>
                      <a href="{{ route('book-types.index') }}">
                          <i class="mdi mdi-forum-outline"></i>
                          <span> Book type </span>
@@ -107,16 +86,25 @@
                  <li>
                      <a href="#email" data-bs-toggle="collapse">
                          <i class="mdi mdi-email-outline"></i>
-                         <span> Email </span>
+                         <span> Book Design </span>
                          <span class="menu-arrow"></span>
                      </a>
                      <div class="collapse" id="email">
                          <ul class="nav-second-level">
                              <li>
-                                 <a href="email-inbox.html">Inbox</a>
+                                 <a href="{{ route('book-designs.index') }}">
+                                     Book Design
+                                 </a>
                              </li>
                              <li>
-                                 <a href="email-templates.html">Email Templates</a>
+                                 <a href="{{ route('categories.index') }}">
+                                     Categories
+                                 </a>
+                             </li>
+                             <li>
+                                 <a href="{{ route('subcategories.index') }}">
+                                     Sub Categories
+                                 </a>
                              </li>
                          </ul>
                      </div>

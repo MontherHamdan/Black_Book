@@ -111,6 +111,26 @@
                  </li>
 
                  <li>
+                     <a href="{{ route('book-decorations.index') }}">
+                         <i class="mdi mdi-forum-outline"></i>
+                         <span> Book Decoration </span>
+                     </a>
+                 </li>
+
+                 <li>
+                     <a href="{{ route('governorates.index') }}">
+                         <i class="mdi mdi-forum-outline"></i>
+                         <span> Governorates </span>
+                     </a>
+                 </li>
+
+                 <li>
+                     <a href="{{ route('discount-codes.index') }}">
+                         <i class="mdi mdi-forum-outline"></i>
+                         <span> Discount Codes </span>
+                     </a>
+                 </li>
+                 <li>
                      <a href="#sidebarTasks" data-bs-toggle="collapse">
                          <i class="mdi mdi-clipboard-outline"></i>
                          <span> Tasks </span>

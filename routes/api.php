@@ -3,13 +3,17 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\SvgController;
+use App\Http\Controllers\Api\MajorController;
+use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\BookTypeController;
 use App\Http\Controllers\Api\BookDesignController;
 use App\Http\Controllers\Api\UniversityController;
+use App\Http\Controllers\Api\GovernorateController;
 use App\Http\Controllers\Api\PhoneNumbersConroller;
+use App\Http\Controllers\Api\DiscountCodeController;
+use App\Http\Controllers\Api\BookDecorationController;
 use App\Http\Controllers\Api\BookDesginCategoryController;
 use App\Http\Controllers\Api\BookDesginSubCategoryController;
-use App\Http\Controllers\Api\MajorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -43,13 +47,23 @@ Route::prefix('v1')->group(function () {
     // *******************phone_numbers **********************************
     Route::resource('/phone_numbers', PhoneNumbersConroller::class);
 
-    // *******************book type **********************************
+    // *******************book type ********************************************
     Route::resource('/svgs', SvgController::class);
 
     Route::middleware('throttle:60,1')->group(function () {
         Route::resource('svgs', SvgController::class);
     });
 
+    // *******************Universities and majors **********************************
     Route::resource('universities', UniversityController::class);
     Route::resource('/universities/{university_id}/majors', MajorController::class);
+
+    // *******************Book Decorations **********************************
+    Route::resource('/book_decorations', BookDecorationController::class)->only(['index']);
+
+    // *******************governorates and addresses **********************************
+    Route::get('/governorates', [GovernorateController::class, 'index']);
+    Route::get('/governorates/{id}/addresses', [AddressController::class, 'getAddressesByGovernorate']);
+
+    Route::resource('/discount_codes', DiscountCodeController::class)->only(['index']);
 });

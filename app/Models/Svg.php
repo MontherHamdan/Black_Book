@@ -8,4 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Svg extends Model
 {
     use HasFactory;
+
+    protected $fillable = ['title', 'svg_code'];
 }

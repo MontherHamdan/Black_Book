@@ -1,10 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SvgController;
 use App\Http\Controllers\BookTypeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BookDesignController;
+use App\Http\Controllers\UniversityController;
 use App\Http\Controllers\GovernorateController;
+use App\Http\Controllers\PhoneNumberController;
 use App\Http\Controllers\DiscountCodeController;
 use App\Http\Controllers\BookDecorationController;
 use App\Http\Controllers\BookTypeSubMediaController;
@@ -63,4 +66,16 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // Discount Code 
     Route::resource('discount-codes', DiscountCodeController::class);
+
+    // Svg 
+    Route::resource('svgs', SvgController::class);
+
+    // univeristies majors  
+    Route::resource('universities', UniversityController::class);
+    Route::get('/universities/{university}/majors', [UniversityController::class, 'fetchMajors']);
+    Route::post('/universities/{university}/add-major', [UniversityController::class, 'storeMajor']);
+    Route::delete('/universities/{university}/delete-major/{major}', [UniversityController::class, 'deleteMajor'])->name('majors.delete');
+
+    // phone numbers 
+    Route::resource('phone-numbers', PhoneNumberController::class)->only(['index', 'destroy']);
 });

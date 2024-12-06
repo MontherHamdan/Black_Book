@@ -14,7 +14,7 @@
 
                 <div class="card-body">
 
-                    <table id="responsive-datatable" class="table table-striped table-bordered dt-responsive nowrap">
+                        <table id="responsive-datatable" class="table table-striped table-bordered dt-responsive nowrap">
                         <thead>
                             <tr>
                                 <th>ID</th>

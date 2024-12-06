@@ -4,8 +4,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\SvgController;
 use App\Http\Controllers\Api\MajorController;
+use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\BookTypeController;
+use App\Http\Controllers\Api\UserImageController;
 use App\Http\Controllers\Api\BookDesignController;
 use App\Http\Controllers\Api\UniversityController;
 use App\Http\Controllers\Api\GovernorateController;
@@ -50,10 +52,6 @@ Route::prefix('v1')->group(function () {
     // *******************book type ********************************************
     Route::resource('/svgs', SvgController::class);
 
-    Route::middleware('throttle:60,1')->group(function () {
-        Route::resource('svgs', SvgController::class);
-    });
-
     // *******************Universities and majors **********************************
     Route::resource('universities', UniversityController::class);
     Route::resource('/universities/{university_id}/majors', MajorController::class);
@@ -65,5 +63,13 @@ Route::prefix('v1')->group(function () {
     Route::get('/governorates', [GovernorateController::class, 'index']);
     Route::get('/governorates/{id}/addresses', [AddressController::class, 'getAddressesByGovernorate']);
 
+    // ******************* Discount Codes **********************************
     Route::resource('/discount_codes', DiscountCodeController::class)->only(['index']);
+
+    // *******************User Upload Image ******************************************
+    Route::post('/user_upload_image', [UserImageController::class, 'store']);
+
+    // create orders
+    Route::resource('orders', OrderController::class)->only(['store']);
+
 });

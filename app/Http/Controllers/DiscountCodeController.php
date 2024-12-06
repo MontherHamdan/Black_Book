@@ -22,7 +22,8 @@ class DiscountCodeController extends Controller
     {
         $request->validate([
             'discount_code' => 'required|string|unique:discount_codes,discount_code',
-            'discount_value' => 'required|integer',
+            'discount_value' => 'required|integer|min:0',
+            'discount_type' => 'required|in:percentage,byJd', // Validate discount_type
         ]);
 
         DiscountCode::create($request->all());
@@ -38,7 +39,8 @@ class DiscountCodeController extends Controller
     {
         $request->validate([
             'discount_code' => 'required|string|unique:discount_codes,discount_code,' . $discountCode->id,
-            'discount_value' => 'required|integer',
+            'discount_value' => 'required|integer|min:0',
+            'discount_type' => 'required|in:percentage,byJd', // Validate discount_type
         ]);
 
         $discountCode->update($request->all());

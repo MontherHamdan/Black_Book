@@ -21,6 +21,7 @@
                                 <th class="text-center">ID</th>
                                 <th class="text-center">Discount Code</th>
                                 <th class="text-center">Discount Value</th>
+                                <th class="text-center">Discount Type</th>
                                 <th class="text-center">Actions</th>
                             </tr>
                         </thead>
@@ -29,7 +30,13 @@
                                 <tr>
                                     <td class="text-center">{{ $code->id }}</td>
                                     <td class="text-center">{{ $code->discount_code }}</td>
-                                    <td class="text-center">{{ $code->discount_value }}%</td>
+                                    <td class="text-center">
+                                        {{ $code->discount_value }}
+                                        {{ $code->discount_type === 'percentage' ? '%' : 'JOD' }}
+                                    </td>
+                                    <td class="text-center">
+                                        {{ ucfirst($code->discount_type) }}
+                                    </td>
                                     <td class="text-center">
                                         <!-- Actions Dropdown -->
                                         <div class="dropdown">
@@ -65,7 +72,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted">No discount codes found.</td>
+                                    <td colspan="5" class="text-center text-muted">No discount codes found.</td>
                                 </tr>
                             @endforelse
                         </tbody>

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SvgController;
+use App\Http\Controllers\DiplomaController;
 use App\Http\Controllers\BookTypeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BookDesignController;
@@ -78,4 +79,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // phone numbers 
     Route::resource('phone-numbers', PhoneNumberController::class)->only(['index', 'destroy']);
+
+    // diploma and majors 
+    Route::resource('diplomas', DiplomaController::class);
+    Route::post('diplomas/{diplomaId}/majors', [DiplomaController::class, 'storeMajor'])->name('diplomas.storeMajor');
+    Route::delete('diplomas/{diplomaId}/majors/{majorId}', [DiplomaController::class, 'deleteMajor'])->name('diplomas.deleteMajor');
+    Route::get('diplomas/{diplomaId}/majors', [DiplomaController::class, 'fetchMajors'])->name('diplomas.fetchMajors');
 });

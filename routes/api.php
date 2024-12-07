@@ -6,12 +6,14 @@ use App\Http\Controllers\Api\SvgController;
 use App\Http\Controllers\Api\MajorController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\AddressController;
+use App\Http\Controllers\Api\DiplomaController;
 use App\Http\Controllers\Api\BookTypeController;
 use App\Http\Controllers\Api\UserImageController;
 use App\Http\Controllers\Api\BookDesignController;
 use App\Http\Controllers\Api\UniversityController;
 use App\Http\Controllers\Api\GovernorateController;
 use App\Http\Controllers\Api\PhoneNumbersConroller;
+use App\Http\Controllers\Api\DiplomaMajorController;
 use App\Http\Controllers\Api\DiscountCodeController;
 use App\Http\Controllers\Api\BookDecorationController;
 use App\Http\Controllers\Api\BookDesginCategoryController;
@@ -71,5 +73,13 @@ Route::prefix('v1')->group(function () {
 
     // create orders
     Route::resource('orders', OrderController::class)->only(['store']);
+
+    // Diplomas Routes
+    Route::resource('diplomas', DiplomaController::class);
+
+    // Diploma Majors Routes
+    Route::get('diplomas/{diploma_id}/majors',
+        [DiplomaMajorController::class, 'index']
+    );
 
 });

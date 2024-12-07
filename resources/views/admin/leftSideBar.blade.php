@@ -148,6 +148,13 @@
                  </li>
 
                  <li>
+                     <a href="{{ route('diplomas.index') }}">
+                         <i class="mdi mdi-forum-outline"></i>
+                         <span> Colleges </span>
+                     </a>
+                 </li>
+
+                 <li>
                      <a href="{{ route('phone-numbers.index') }}">
                          <i class="mdi mdi-forum-outline"></i>
                          <span> Phone numbers </span>

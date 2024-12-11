@@ -82,4 +82,6 @@ Route::prefix('v1')->group(function () {
         [DiplomaMajorController::class, 'index']
     );
 
+    Route::resource('orders', OrderController::class)->only(['store']);
+
 });

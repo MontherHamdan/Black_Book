@@ -45,4 +45,34 @@ class Order extends Model
     protected $casts = [
         'back_image_ids' => 'array', // Handle JSON arrays as PHP arrays
     ];
+
+    public function discountCode()
+    {
+        return $this->belongsTo(DiscountCode::class);
+    }
+
+    public function bookType()
+    {
+        return $this->belongsTo(BookType::class);
+    }
+
+    public function bookDesign()
+    {
+        return $this->belongsTo(BookDesign::class);
+    }
+
+    public function frontImage()
+    {
+        return $this->belongsTo(UserImage::class, 'front_image_id');
+    }
+
+    public function additionalImage()
+    {
+        return $this->belongsTo(UserImage::class, 'additional_image_id');
+    }
+
+    public function transparentPrinting()
+    {
+        return $this->belongsTo(UserImage::class, 'transparent_printing_id');
+    }
 }

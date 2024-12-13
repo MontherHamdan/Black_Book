@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SvgController;
 use App\Http\Controllers\DiplomaController;
 use App\Http\Controllers\BookTypeController;
+use App\Http\Controllers\OrderWebController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BookDesignController;
 use App\Http\Controllers\UniversityController;
@@ -85,4 +86,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('diplomas/{diplomaId}/majors', [DiplomaController::class, 'storeMajor'])->name('diplomas.storeMajor');
     Route::delete('diplomas/{diplomaId}/majors/{majorId}', [DiplomaController::class, 'deleteMajor'])->name('diplomas.deleteMajor');
     Route::get('diplomas/{diplomaId}/majors', [DiplomaController::class, 'fetchMajors'])->name('diplomas.fetchMajors');
+
+    // orders
+    Route::get('/orders', [OrderWebController::class, 'index'])->name('orders.index');
+    Route::get('/orders/fetch', [OrderWebController::class, 'fetchOrders'])->name('orders.fetch');
+    Route::post('/orders/update-status', [OrderWebController::class, 'updateStatus'])->name('orders.updateStatus');
 });

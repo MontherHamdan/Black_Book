@@ -74,9 +74,14 @@
                      </a>
                  </li>
                  <li class="menu-title mt-2">Orders</li>
+                 <li>
+                     <a href="{{ route('orders.index') }}">
+                         <i class="mdi mdi-forum-outline"></i>
+                         <span> Orders </span>
+                     </a>
+                 </li>
 
-
-                 <li class="menu-title mt-2">Database</li>
+                 <li class="menu-title mt-2">Pages</li>
 
                  <li>
                      <a href="{{ route('book-types.index') }}">

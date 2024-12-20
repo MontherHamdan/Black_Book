@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
+use App\Models\Note;
 use App\Models\Order;
 use Illuminate\Http\Request;
 
@@ -31,6 +32,9 @@ class OrderWebController extends Controller
         // Search filter
         $searchValue = $request->input('search.value');
 
+        // Status filter
+        $statusFilter = $request->input('status'); // Get the selected status filter
+
         $query = Order::with([
             'discountCode',
             'bookType',
@@ -52,6 +56,11 @@ class OrderWebController extends Controller
                     ->orWhere('status', 'like', "%$searchValue%")
                     ->orWhere('final_price_with_discount', 'like', "%$searchValue%");
             });
+        }
+
+        // Apply status filter if set
+        if (!empty($statusFilter)) {
+            $query->where('status', $statusFilter);
         }
 
         // Apply sorting and pagination
@@ -98,5 +107,62 @@ class OrderWebController extends Controller
         $order->save();
 
         return response()->json(['success' => true]);
+    }
+
+    public function destroy($id)
+    {
+        $order = Order::findOrFail($id);
+        $order->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order deleted successfully!',
+        ]);
+    }
+
+    public function addNote(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required|exists:orders,id',
+            'note' => 'required|string|max:1000',
+        ]);
+
+        $note = new Note();
+        $note->order_id = $request->order_id;
+        $note->user_id = auth()->id();
+        $note->content = $request->note;
+
+        if ($note->save()) {
+            return response()->json([
+                'success' => true,
+                'note' => [
+                    'id' => $note->id,
+                    'content' => $note->content,
+                    'created_at' => $note->created_at->format('d M Y h:i A'),
+                    'user_name' => $note->user->name, // Assuming you have a relationship set up
+                ],
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Failed to save note.'], 500);
+    }
+
+    public function getNotes($orderId)
+    {
+        $notes = Note::where('order_id', $orderId)
+            ->with('user:id,name') // Assuming there's a relationship with User
+            ->latest()
+            ->get(['id', 'content', 'created_at', 'user_id']);
+
+        return response()->json([
+            'notes' => $notes->map(function ($note) {
+                return [
+                    'id' => $note->id,
+                    'content' => $note->content,
+                    'created_at' => $note->created_at->format('d M Y , h:i A'),
+                    'user_name' => $note->user->name,
+                ];
+            }),
+        ]);
     }
 }

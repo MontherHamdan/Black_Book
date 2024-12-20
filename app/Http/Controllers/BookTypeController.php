@@ -32,7 +32,9 @@ class BookTypeController extends Controller
         // Validate incoming request
         $validated = $request->validate([
             'image' => 'required|image|mimes:jpg,png,jpeg,gif,webp|max:2048',
-            'price' => 'required|numeric',
+            'name_en' => 'required|string|max:255',
+            'name_ar' => 'required|string|max:255',
+            'price' => 'required|numeric|max:255',
             'description_en' => 'nullable|string',
             'description_ar' => 'nullable|string',
         ]);
@@ -49,6 +51,8 @@ class BookTypeController extends Controller
         // Save the image URL and other data in the database
         BookType::create([
             'image' => $imageUrl, // Store the full URL instead of just the path
+            'name_en' => $validated['name_en'],
+            'name_ar' => $validated['name_ar'],
             'price' => $validated['price'],
             'description_en' => $validated['description_en'],
             'description_ar' => $validated['description_ar'],
@@ -75,6 +79,8 @@ class BookTypeController extends Controller
         // Validate the incoming request
         $validated = $request->validate([
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'name_en' => 'required|string|max:255',
+            'name_ar' => 'required|string|max:255',
             'price' => 'required|numeric',
             'description_en' => 'nullable|string',
             'description_ar' => 'nullable|string',

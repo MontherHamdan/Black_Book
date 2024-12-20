@@ -27,39 +27,54 @@
                             </thead>
                         </table>
                     </div>
-
                 </div>
             </div>
         </div>
     </div>
-    <!-- Modal -->
-    <div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+
+    {{-- Add Notes Modal --}}
+    <div class="modal fade" id="addNoteModal" tabindex="-1" aria-labelledby="addNoteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="statusModalLabel">Change Order Status</h5>
+                    <h5 class="modal-title" id="addNoteModalLabel">Order Notes</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="statusChangeForm">
-                        <input type="hidden" id="modalOrderId">
-                        <div class="mb-3">
-                            <label for="newStatus" class="form-label">Select Status</label>
-                            <select id="newStatus" class="form-select">
-                                <option value="Pending">Pending</option>
-                                <option value="Preparing">Preparing</option>
-                                <option value="Out for Delivery">Out for Delivery</option>
-                                <option value="Completed">Completed</option>
-                                <option value="Canceled">Canceled</option>
-                            </select>
+                    <!-- Add Note Card -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <form id="addNoteForm">
+                                <input type="hidden" id="noteOrderId">
+                                <div class="mb-3">
+                                    <label for="noteContent" class="form-label">Enter your note</label>
+                                    <textarea class="form-control" id="noteContent" rows="3" placeholder="Write your note here..."></textarea>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i> Save Note
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" id="clearNoteBtn">
+                                        <i class="fas fa-eraser me-2"></i> Clear
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
-                    </form>
+                    </div>
+
+                    <!-- Existing Notes Card -->
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <ul id="notesList" class="list-group">
+                                <li class="text-muted">no notes yet</li>
+                                {{-- notes will fetch here  --}}
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
 
     <link href="https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
@@ -76,8 +91,12 @@
                 ],
                 ajax: {
                     url: '{{ route('orders.fetch') }}',
+                    data: function(d) {
+                        // Append the selected status filter value to the request data
+                        d.status = $('#statusFilter').val(); // Get the selected status filter
+                    },
                     error: function(xhr, error, code) {
-                        alert('An error occurred while fetching data. Please contact with it team.');
+                        alert('An error occurred while fetching data. Please contact IT support.');
                     }
                 },
                 lengthMenu: [10, 25, 50, 100],
@@ -126,41 +145,42 @@
                         name: 'status',
                         render: function(data, type, row) {
                             const statusColors = {
-                                'Pending': 'bg-warning', // Yellow
-                                'preparing': 'bg-primary', // Blue
-                                'Out for Delivery': 'bg-info', // Teal
-                                'Completed': 'bg-success', // Green
-                                'Canceled': 'bg-danger' // Red
+                                Pending: 'bg-warning',
+                                preparing: 'bg-primary',
+                                'Out for Delivery': 'bg-info',
+                                Completed: 'bg-success',
+                                Canceled: 'bg-danger'
                             };
 
                             const dropdownItems = ['Pending', 'preparing', 'Out for Delivery',
                                     'Completed', 'Canceled'
                                 ]
-                                .filter(status => status !== data) // Exclude the current status
+                                .filter(status => status !== data)
                                 .map(status => `
-                                    <li>
-                                        <a class="dropdown-item change-status-item" 
-                                        href="#" 
-                                        data-order-id="${row.id}" 
-                                        data-new-status="${status}">
-                                            ${status}
-                                        </a>
-                                    </li>
-                                `).join('');
+                                <li>
+                                    <a class="dropdown-item change-status-item" 
+                                       href="#" 
+                                       data-order-id="${row.id}" 
+                                       data-new-status="${status}">
+                                       ${status}
+                                    </a>
+                                </li>
+                            `).join('');
+
                             return `
-                                <div class="dropdown">
-                                    <span 
-                                        class="badge ${statusColors[data]} dropdown-toggle" 
-                                        id="statusDropdown${row.id}" 
-                                        data-bs-toggle="dropdown" 
-                                        aria-expanded="false" 
-                                        style="cursor: pointer;">
-                                        ${data}
-                                    </span>
-                                    <ul class="dropdown-menu" aria-labelledby="statusDropdown${row.id}">
-                                        ${dropdownItems}
-                                    </ul>
-                                </div>`;
+                            <div class="dropdown">
+                                <span 
+                                    class="badge ${statusColors[data]} dropdown-toggle" 
+                                    id="statusDropdown${row.id}" 
+                                    data-bs-toggle="dropdown" 
+                                    aria-expanded="false" 
+                                    style="cursor: pointer;">
+                                    ${data}
+                                </span>
+                                <ul class="dropdown-menu" aria-labelledby="statusDropdown${row.id}">
+                                    ${dropdownItems}
+                                </ul>
+                            </div>`;
                         },
                         orderable: false
                     },
@@ -175,39 +195,202 @@
                         className: 'text-center',
                         orderable: false,
                         searchable: false
-                    },
+                    }
                 ],
                 language: {
                     search: "Search Orders:",
                     processing: '<div class="spinner-border text-primary"></div>'
-                }
+                },
+                initComplete: function() {
+                    // Create the status filter dropdown
+                    var statusDropdown = $(
+                        '<select id="statusFilter" class="form-control" style="width: 150px;height:34px; margin-left: 15px;">' +
+                        '<option value="">Filter by Status</option>' +
+                        '<option value="Pending">Pending</option>' +
+                        '<option value="preparing">Preparing</option>' +
+                        '<option value="Out for Delivery">Out for Delivery</option>' +
+                        '<option value="Completed">Completed</option>' +
+                        '<option value="Canceled">Canceled</option>' +
+                        '</select>'
+                    );
 
+                    // Style the dataTables_filter container with flexbox to align items horizontally
+                    $('.dataTables_filter').css({
+                        'display': 'flex',
+                        'justify-content': 'flex-end',
+                        'align-items': 'center'
+                    });
+
+                    // Append the dropdown next to the search input
+                    $('.dataTables_filter').append(statusDropdown);
+
+                    // When the status dropdown value changes, reload the table with the selected filter
+                    $('#statusFilter').on('change', function() {
+                        $('#orders-table').DataTable().ajax.reload();
+                    });
+                }
+            });
+
+            // Change Status Event
+            $(document).on('click', '.change-status-item', function(e) {
+                e.preventDefault();
+
+                const orderId = $(this).data('order-id');
+                const newStatus = $(this).data('new-status');
+
+                $.ajax({
+                    url: '{{ route('orders.updateStatus') }}',
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        id: orderId,
+                        status: newStatus
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#orders-table').DataTable().ajax.reload();
+                        } else {
+                            alert('Failed to update order status. Please try again.');
+                        }
+                    },
+                    error: function() {
+                        alert('An error occurred while updating the status.');
+                    }
+                });
+            });
+
+            // Delete Order Event
+            $(document).on('click', '.delete-order', function() {
+                const orderId = $(this).data('id');
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: `/orders/${orderId}`,
+                            type: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    Swal.fire('Deleted!', response.message, 'success');
+                                    $('#orders-table').DataTable().ajax
+                                        .reload(); // Refresh DataTable
+                                } else {
+                                    Swal.fire('Error!', 'Failed to delete the order.',
+                                        'error');
+                                }
+                            },
+                            error: function() {
+                                Swal.fire('Error!',
+                                    'An error occurred while deleting the order.',
+                                    'error');
+                            }
+                        });
+                    }
+                });
             });
         });
-        $(document).on('click', '.change-status-item', function(e) {
-            e.preventDefault();
 
-            const orderId = $(this).data('order-id');
-            const newStatus = $(this).data('new-status');
+        $(document).ready(function() {
+            // Open Add Note Modal
+            $(document).on('click', '.add-note', function() {
+                const orderId = $(this).data('order-id');
+                $('#noteOrderId').val(orderId); // Set the order id in the hidden input field
 
-            $.ajax({
-                url: '{{ route('orders.updateStatus') }}',
-                method: 'POST',
-                data: {
+                // Clear existing notes and fetch notes for the order
+                $('#notesList').html('<li class="list-group-item text-muted">Loading notes...</li>');
+                $.ajax({
+                    url: `/orders/${orderId}/notes`, // Adjust to your notes-fetching route
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.notes.length > 0) {
+                            let notesHtml = '';
+                            response.notes.forEach(note => {
+                                notesHtml += `
+                            <li class="list-group-item">
+                                <strong>${note.user_name}</strong> 
+                                <span class="text-muted">(${note.created_at})</span>
+                                <p>${note.content}</p>
+                            </li>
+                        `;
+                            });
+                            $('#notesList').html(notesHtml);
+                        } else {
+                            $('#notesList').html(''); // Clear the list if no notes are found
+
+                        }
+                    },
+                    error: function() {
+                        $('#notesList').html(
+                            '<li class="list-group-item text-danger">Failed to load notes.</li>'
+                        );
+                    },
+                });
+
+                $('#addNoteModal').modal('show');
+            });
+
+            // Add Note Form Submission
+            $('#addNoteForm').on('submit', function(e) {
+                e.preventDefault();
+
+                const formData = {
                     _token: '{{ csrf_token() }}',
-                    id: orderId,
-                    status: newStatus
-                },
-                success: function(response) {
-                    if (response.success) {
-                        $('#orders-table').DataTable().ajax.reload(); // Reload table data
-                    } else {
-                        alert('Failed to update order status. Please try again.');
-                    }
-                },
-                error: function() {
-                    alert('An error occurred while updating the status.');
-                }
+                    order_id: $('#noteOrderId').val(),
+                    note: $('#noteContent').val(),
+                };
+
+                $.ajax({
+                    url: '{{ route('orders.addNote') }}',
+                    method: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        if (response.success) {
+                            // Add the new note to the top of the notes list
+                            const newNoteHtml = `
+                        <li class="list-group-item">
+                            <strong>${response.note.user_name}</strong> 
+                            <span class="text-muted">(${response.note.created_at})</span>
+                            <p>${response.note.content}</p>
+                        </li>
+                    `;
+                            $('#notesList').prepend(newNoteHtml);
+                            $('#noteContent').val(''); // Clear the note input
+
+                            // Check if the list is now empty and update the message accordingly
+                            if ($('#notesList li').length === 1 && $('#notesList li').hasClass(
+                                    'text-muted')) {
+                                $('#notesList').html(
+                                    '<li class="list-group-item text-muted">No notes yet.</li>'
+                                );
+                            }
+                        }
+                    },
+                    error: function(xhr) {
+                        const errors = xhr.responseJSON?.errors || {};
+                        if (errors.order_id) {
+                            alert(errors.order_id[0]); // Show validation error
+                        } else {
+                            alert(
+                                'An error occurred while adding the note.'
+                            ); // Show general error
+                        }
+                    },
+                });
+            });
+
+            // Clear the note input
+            $('#clearNoteBtn').on('click', function() {
+                $('#noteContent').val('');
             });
         });
     </script>

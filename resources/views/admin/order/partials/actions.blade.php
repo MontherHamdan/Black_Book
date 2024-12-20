@@ -10,8 +10,14 @@
             </a>
         </li>
         <li>
-            <button type="button" class="dropdown-item text-danger sa-warning-btn">
+            <button class="dropdown-item text-danger delete-order" data-id="{{ $order->id }}">
                 <i class="fas fa-trash me-2"></i>Delete
+            </button>
+        </li>
+        <li>
+            <button class="dropdown-item add-note" data-order-id="{{ $order->id }}" data-bs-toggle="modal"
+                data-bs-target="#addNoteModal">
+                <i class="fas fa-sticky-note me-2"></i>Add Notes
             </button>
         </li>
     </ul>

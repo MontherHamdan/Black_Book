@@ -12,7 +12,7 @@
                 </div>
 
                 <div class="card-body">
-                    <table id="responsive-datatable" class="table table-striped table-bordered dt-responsive nowrap">
+                    <table id="responsive-datatable" class="table table-striped table-bordered dt-responsive ">
                         <thead>
                             <tr>
                                 <th class="text-center">ID</th>

@@ -15,11 +15,13 @@
                 <!-- Table Section -->
                 <div class="card-body">
                     <!-- DataTable -->
-                    <table id="responsive-datatable" class="table table-striped table-bordered dt-responsive nowrap">
+                    <table id="responsive-datatable" class="table table-striped table-bordered dt-responsive ">
                         <thead>
                             <tr>
                                 <th class="text-center">ID</th>
                                 <th class="text-center">Image</th>
+                                <th class="text-center">Arabic Name</th>
+                                <th class="text-center">English Name</th>
                                 <th class="text-center">Price</th>
                                 <th class="text-center">Description (EN)</th>
                                 <th class="text-center">Description (AR)</th>
@@ -34,6 +36,8 @@
                                         <img class="img-fluid img-thumbnail rounded-circle" src="{{ $bookType->image }}"
                                             alt="Book Type" width="70" height="70">
                                     </td>
+                                    <td class="text-center">{{ $bookType->name_ar }}</td>
+                                    <td class="text-center">{{ $bookType->name_en }}</td>
                                     <td class="text-center">{{ $bookType->price }}</td>
                                     <td class="text-center">{{ $bookType->description_en }}</td>
                                     <td class="text-center">{{ $bookType->description_ar }}</td>

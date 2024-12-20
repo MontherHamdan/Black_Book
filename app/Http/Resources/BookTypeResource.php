@@ -17,6 +17,8 @@ class BookTypeResource extends JsonResource
         return [
             'id' => $this->id,
             'image' => $this->image,
+            'name_en' => $this->name_en,
+            'name_ar' => $this->name_ar,
             'price' => $this->price,
             'description_en' => $this->description_en,
             'description_ar' => $this->description_ar,

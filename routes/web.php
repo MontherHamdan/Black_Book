@@ -91,4 +91,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/orders', [OrderWebController::class, 'index'])->name('orders.index');
     Route::get('/orders/fetch', [OrderWebController::class, 'fetchOrders'])->name('orders.fetch');
     Route::post('/orders/update-status', [OrderWebController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::delete('/orders/{id}', [OrderWebController::class, 'destroy'])->name('orders.destroy');
+    Route::post('orders/add-note', [OrderWebController::class, 'addNote'])->name('orders.addNote');
+    Route::get('/orders/{order}/notes', [OrderWebController::class, 'getNotes'])->name('orders.getNotes');
 });

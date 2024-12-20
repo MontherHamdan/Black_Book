@@ -10,7 +10,7 @@ class BookType extends Model
 {
     protected $table = "book_types";
 
-    protected $fillable = ['image', 'price', 'description_en', 'description_ar'];
+    protected $fillable = ['image', 'name_en', 'name_ar', 'price', 'description_en', 'description_ar'];
 
 
     use HasFactory;

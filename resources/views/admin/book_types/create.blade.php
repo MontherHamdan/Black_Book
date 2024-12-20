@@ -34,19 +34,27 @@
                             @enderror
                         </div>
 
-                        <!-- Price -->
+                        <!-- name en -->
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label for="price" class="form-label fw-bold">Price</label>
-                                <input type="number" min="0" value="0" class="form-control @error('price') is-invalid @enderror"
-                                    id="price" name="price" required>
-                                @error('price')
+                                <label for="name_en" class="form-label fw-bold">English Name</label>
+                                <input type="text" class="form-control @error('name_en') is-invalid @enderror"
+                                    id="name_en" name="name_en" required>
+                                @error('name_en')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <div></div>
+                            <div class="col-md-6">
+                                <label for="name_ar" class="form-label fw-bold">Arabic Name</label>
+                                <input type="text" class="form-control @error('name_ar') is-invalid @enderror"
+                                    id="name_ar" name="name_ar" required>
+                                @error('name_ar')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
+
 
                         <!-- Description in Arabic -->
                         <div class="row mb-3">
@@ -62,6 +70,19 @@
                                 <label for="description_en" class="form-label fw-bold">Description (EN)</label>
                                 <textarea class="form-control @error('description_en') is-invalid @enderror" id="description_en" name="description_en"></textarea>
                                 @error('description_en')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <!-- Price -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="price" class="form-label fw-bold">Price</label>
+                                <input type="number" min="0" value="0"
+                                    class="form-control @error('price') is-invalid @enderror" id="price" name="price"
+                                    required>
+                                @error('price')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>

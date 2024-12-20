@@ -51,7 +51,7 @@ Route::prefix('v1')->group(function () {
     // *******************phone_numbers **********************************
     Route::resource('/phone_numbers', PhoneNumbersConroller::class);
 
-    // *******************book type ********************************************
+    // *******************svgs ********************************************
     Route::resource('/svgs', SvgController::class);
 
     // *******************Universities and majors **********************************

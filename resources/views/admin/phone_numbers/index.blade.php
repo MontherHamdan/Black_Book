@@ -25,7 +25,7 @@
 
                     <h4 class="mb-4 text-primary">Phone Numbers</h4>
 
-                    <table id="responsive-datatable" class="table table-striped table-bordered dt-responsive nowrap">
+                    <table id="responsive-datatable" class="table table-striped table-bordered dt-responsive ">
                         <thead>
                             <tr>
                                 <th>ID</th>

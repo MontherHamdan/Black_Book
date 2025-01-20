@@ -14,6 +14,21 @@ class OrderWebController extends Controller
         return view('admin.order.index');
     }
 
+    public function show($id)
+    {
+        $order = Order::with([
+            'discountCode',
+            'bookType',
+            'bookDesign',
+            'frontImage',
+            'additionalImage',
+            'transparentPrinting'
+        ])->findOrFail($id);
+
+        return view('admin.order.show', compact('order'));
+    }
+
+
     /**
      * Fetch orders for DataTable.
      *
@@ -73,9 +88,9 @@ class OrderWebController extends Controller
 
             return [
                 'id' => $order->id,
-                'data' => $createdAt->format('d-m-Y h:i A'),
+                'data' => $createdAt->format('d M Y, h:i A'),
                 'username' => $order->username_ar . ' / ' . $order->username_en,
-                'order' => $order->bookType->description_en ?? '',
+                'order' => $order->bookType->name_ar ?? '',
                 'governorate' => $order->governorate,
                 'address' => $order->address,
                 'phone' => $order->user_phone_number,

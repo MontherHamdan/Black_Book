@@ -103,7 +103,14 @@
                 pageLength: 10,
                 columns: [{
                         data: 'id',
-                        name: 'id'
+                        name: 'id',
+                        render: function(data, type, row) {
+                            return `<a href="/orders/${data}" class="btn btn-primary btn-sm">
+                                            ${data}
+                                    </a>`;
+                        },
+                        orderable: false,
+                        searchable: false
                     },
                     {
                         data: 'data',

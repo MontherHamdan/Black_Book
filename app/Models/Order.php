@@ -79,4 +79,33 @@ class Order extends Model
     {
         return $this->belongsTo(UserImage::class, 'transparent_printing_id');
     }
+
+    public function svg()
+    {
+        return $this->belongsTo(Svg::class, 'svg_id');
+    }
+
+    public function backImages()
+    {
+        // Ensure back_image_ids is an array
+        $backImageIds = $this->back_image_ids;
+
+        if (is_string($backImageIds)) {
+            $backImageIds = json_decode($backImageIds, true);
+        }
+
+        if (!is_array($backImageIds) || empty($backImageIds)) {
+            return collect(); // Return an empty collection if not valid
+        }
+
+        return UserImage::whereIn('id', $backImageIds)->get();
+    }
+
+    public function handleBackImages()
+    {
+        // Assuming 'UserImage' is the related model and 'back_image_ids' stores the image IDs
+        return $this->hasMany(UserImage::class, 'id', 'back_image_ids');
+    }
+
+
 }

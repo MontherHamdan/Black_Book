@@ -22,9 +22,9 @@ class OrderWebController extends Controller
             'bookDesign',
             'frontImage',
             'additionalImage',
-            'transparentPrinting'
+            'transparentPrinting',
+            'svg',
         ])->findOrFail($id);
-
         return view('admin.order.show', compact('order'));
     }
 
@@ -180,4 +180,46 @@ class OrderWebController extends Controller
             }),
         ]);
     }
+
+    // download All BackImages
+    public function downloadAllBackImages($orderId)
+    {
+        // Find the order
+        $order = Order::findOrFail($orderId);
+    
+        // Fetch the back images using the relationship method
+        $backImages = $order->backImages();
+    
+        if ($backImages->isEmpty()) {
+            return back()->with('error', 'No back images available');
+        }
+    
+        // Create a zip archive
+        $zip = new \ZipArchive();
+        $zipFileName = 'back_images_' . $orderId . '.zip';
+        $zipFilePath = storage_path('app/public/' . $zipFileName);
+    
+        if ($zip->open($zipFilePath, \ZipArchive::CREATE) === TRUE) {
+            // Loop through each back image and add it to the zip file
+            foreach ($backImages as $image) {
+                // Extract the local image path from the URL
+                $imagePath = str_replace('http://127.0.0.1:8000/storage/', '', $image->image_path);
+                $localPath = storage_path('app/public/' . $imagePath); // Get the full local file path
+    
+                // Ensure the file exists before adding it to the zip
+                if (file_exists($localPath)) {
+                    $zip->addFile($localPath, basename($localPath)); // Add the file to the zip with its original filename
+                }
+            }
+            $zip->close();
+    
+            // Return the zip file as a download
+            return response()->download($zipFilePath)->deleteFileAfterSend(true);
+        }
+    
+        return back()->with('error', 'Failed to create ZIP file.');
+    }
+    
+    
+
 }

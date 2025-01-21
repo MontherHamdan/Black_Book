@@ -95,5 +95,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('orders/add-note', [OrderWebController::class, 'addNote'])->name('orders.addNote');
     Route::get('/orders/{order}/notes', [OrderWebController::class, 'getNotes'])->name('orders.getNotes');
     Route::get('/orders/{id}', [OrderWebController::class, 'show'])->name('orders.show');
+    Route::get('/orders/{order}/back-images/download', [OrderWebController::class, 'downloadAllBackImages'])->name('orders.backImages.download');
 
 });

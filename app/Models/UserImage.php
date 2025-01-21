@@ -10,4 +10,5 @@ class UserImage extends Model
     use HasFactory;
 
     protected $fillable = ['image_path'];
+    
 }

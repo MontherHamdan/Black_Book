@@ -18,7 +18,7 @@ class BookDesignController extends Controller
      */
     protected function buildQuery(Request $request)
     {
-        $query = BookDesign::query();
+        $query = BookDesign::where('is_uploaded_by_user', false);
 
         // Filter by category_id
         if ($request->has('category_id')) {
@@ -82,4 +82,34 @@ class BookDesignController extends Controller
             'total' => $designs->count(), // Optional metadata
         ]);
     }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'image' => 'required|image|mimes:jpg,png,jpeg,gif,webp|max:1048',
+            'category_id' => 'required|exists:book_design_categories,id',
+            'sub_category_id' => 'nullable|exists:book_design_sub_categories,id',
+        ]);
+
+        // Store the image
+        $imageFile = $request->file('image');
+        $imageName = time() . '_' . $imageFile->getClientOriginalName();
+        $imagePath = $imageFile->storeAs('book_designs', $imageName, 'public');
+        $imageUrl = url('storage/' . $imagePath);
+        
+        // Save to database
+        $bookDesign = BookDesign::create([
+            'image' => $imageUrl,
+            'category_id' => $request->category_id,
+            'sub_category_id' => $request->sub_category_id,
+            'is_uploaded_by_user' => true, // Always set to true for user uploads
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Book design uploaded successfully.',
+            'data' => new BookDesignResource($bookDesign),
+        ]);
+    }
+
 }

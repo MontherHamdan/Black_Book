@@ -24,6 +24,7 @@ class OrderController extends Controller
             'book_type_id' => 'required|exists:book_types,id',
             'book_design_id' => 'required|exists:book_designs,id',
             'front_image_id' => 'nullable|exists:user_images,id',
+            'book_decorations_id' => 'nullable|exists:book_decorations,id',
             'back_image_ids' => 'nullable|array',
             'back_image_ids.*' => 'exists:user_images,id',
             'user_type' => 'required|in:university,diploma',
@@ -47,6 +48,7 @@ class OrderController extends Controller
             'final_price' => 'required|numeric|min:0',
             'final_price_with_discount' => 'required|numeric|min:0',
             'status' => 'nullable|in:preparing,shipping,completed,canceled',
+            'gift_title' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {

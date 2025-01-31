@@ -10,7 +10,7 @@ class BookDesign extends Model
     use HasFactory;
 
     protected $table = 'book_designs';
-    protected $fillable = ['image', 'category_id', 'sub_category_id'];
+    protected $fillable = ['image', 'category_id', 'sub_category_id','is_uploaded_by_user'];
 
     public function category()
     {

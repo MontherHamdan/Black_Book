@@ -39,7 +39,7 @@ Route::prefix('v1')->group(function () {
     Route::resource('/book_type', BookTypeController::class);
 
     // *******************book_design **********************************
-    Route::resource('/book_design', BookDesignController::class)->only(['index']);
+    Route::resource('/book_design', BookDesignController::class)->only(['index', 'store']);
     Route::get('/book_design/all', [BookDesignController::class, 'all'])->name('book_design.all');
 
     // *******************book_design_categoriese **********************************

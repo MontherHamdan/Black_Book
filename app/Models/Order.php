@@ -21,6 +21,7 @@ class Order extends Model
         'book_type_id',
         'book_design_id',
         'front_image_id',
+        'book_decorations_id', 
         'back_image_ids',
         'user_type',
         'username_ar',
@@ -43,7 +44,8 @@ class Order extends Model
         'final_price',
         'final_price_with_discount',
         'status',
-        'deleted_at'
+        'deleted_at',
+        'gift_title',
     ];
 
     protected $casts = [

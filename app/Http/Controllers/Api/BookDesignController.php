@@ -104,7 +104,7 @@ class BookDesignController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Book design uploaded successfully.',
-            'data' => new BookDesignResource($bookDesign),
+            'data' => $bookDesign,
         ]);
     }
 

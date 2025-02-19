@@ -241,7 +241,7 @@
 
           <!-- LOGO -->
           <div class="logo-box">
-              <a href="index.html" class="logo logo-light text-center">
+              <a href="{{ route('admin.dashboard') }}" class="logo logo-light text-center">
                   <span class="logo-sm">
                       <img src="{{ asset('assets/images/logo-sm.png') }}" alt="" height="22">
                   </span>
@@ -249,7 +249,7 @@
                       <img src="{{ asset('assets/images/logo-light.png') }}" alt="" height="16">
                   </span>
               </a>
-              <a href="index.html" class="logo logo-dark text-center">
+              <a href="{{ route('admin.dashboard') }}" class="logo logo-dark text-center">
                   <span class="logo-sm">
                       <img src="{{ asset('assets/images/logo-sm.png') }}" alt="" height="22">
                   </span>

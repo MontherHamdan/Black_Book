@@ -1,162 +1,137 @@
 @extends('admin.layout')
 @section('content')
     <div class="row">
-        <div class="col-xl-3 col-md-6">
+        <!-- Pending Order Card -->
+        <div class="col">
             <div class="card">
                 <div class="card-body">
                     <div class="dropdown float-end">
-                        <a href="#" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown"
-                            aria-expanded="false">
+                        <a href="#" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="mdi mdi-dots-vertical"></i>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end">
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item">Action</a>
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item">Another action</a>
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item">Something else</a>
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item">Separated link</a>
+                            <a href="{{ route('orders.index') }}" class="dropdown-item">Orders Page</a>
                         </div>
                     </div>
-
-                    <h4 class="header-title mt-0 mb-4">Total Revenue</h4>
-
-                    <div class="widget-chart-1">
-                        <div class="widget-chart-box-1 float-start" dir="ltr">
-                            <input data-plugin="knob" data-width="70" data-height="70" data-fgColor="#f05050 "
-                                data-bgColor="#F9B9B9" value="58" data-skin="tron" data-angleOffset="180"
-                                data-readOnly=true data-thickness=".15" />
+                    <h4 class="header-title mt-0 mb-4">Pending Order</h4>
+                    <div class="d-flex align-items-center">
+                        <!-- Circular Icon Container -->
+                        <div class="icon-circle bg-warning text-white me-3" style="width:70px; height:70px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                            <i class="mdi mdi-clock-outline" style="font-size:28px;"></i>
                         </div>
-
-                        <div class="widget-detail-1 text-end">
-                            <h2 class="fw-normal pt-2 mb-1"> 256 </h2>
-                            <p class="text-muted mb-1">Revenue today</p>
+                        <!-- Order Count and Label -->
+                        <div>
+                            <h2 class="fw-normal pt-2 mb-1">{{ $pendingCount }}</h2>
+                            <p class="text-muted mb-1">Pending Order</p>
                         </div>
                     </div>
                 </div>
             </div>
-        </div><!-- end col -->
+        </div>
 
-        <div class="col-xl-3 col-md-6">
+        <!-- Preparing Order Card -->
+        <div class="col">
             <div class="card">
                 <div class="card-body">
                     <div class="dropdown float-end">
-                        <a href="#" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown"
-                            aria-expanded="false">
+                        <a href="#" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="mdi mdi-dots-vertical"></i>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end">
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item">Action</a>
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item">Another action</a>
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item">Something else</a>
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item">Separated link</a>
+                            <a href="{{ route('orders.index') }}" class="dropdown-item">Orders Page</a>
                         </div>
                     </div>
-
-                    <h4 class="header-title mt-0 mb-3">Sales Analytics</h4>
-
-                    <div class="widget-box-2">
-                        <div class="widget-detail-2 text-end">
-                            <span class="badge bg-success rounded-pill float-start mt-3">32% <i
-                                    class="mdi mdi-trending-up"></i> </span>
-                            <h2 class="fw-normal mb-1"> 8451 </h2>
-                            <p class="text-muted mb-3">Revenue today</p>
+                    <h4 class="header-title mt-0 mb-4">Preparing Order</h4>
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-purple text-white me-3" style="width:70px; height:70px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                            <i class="mdi mdi-cog-outline" style="font-size:28px;"></i>
                         </div>
-                        <div class="progress progress-bar-alt-success progress-sm">
-                            <div class="progress-bar bg-success" role="progressbar" aria-valuenow="77" aria-valuemin="0"
-                                aria-valuemax="100" style="width: 77%;">
-                                <span class="visually-hidden">77% Complete</span>
-                            </div>
+                        <div>
+                            <h2 class="fw-normal pt-2 mb-1">{{ $preparingCount }}</h2>
+                            <p class="text-muted mb-1">Preparing Order</p>
                         </div>
                     </div>
                 </div>
             </div>
-        </div><!-- end col -->
+        </div>
 
-        <div class="col-xl-3 col-md-6">
+        <!-- Out for Delivery Card -->
+        <div class="col">
             <div class="card">
                 <div class="card-body">
                     <div class="dropdown float-end">
-                        <a href="#" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown"
-                            aria-expanded="false">
+                        <a href="#" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="mdi mdi-dots-vertical"></i>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end">
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item">Action</a>
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item">Another action</a>
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item">Something else</a>
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item">Separated link</a>
+                            <a href="{{ route('orders.index') }}" class="dropdown-item">Orders Page</a>
                         </div>
                     </div>
-
-                    <h4 class="header-title mt-0 mb-4">Statistics</h4>
-
-                    <div class="widget-chart-1">
-                        <div class="widget-chart-box-1 float-start" dir="ltr">
-                            <input data-plugin="knob" data-width="70" data-height="70" data-fgColor="#ffbd4a"
-                                data-bgColor="#FFE6BA" value="80" data-skin="tron" data-angleOffset="180"
-                                data-readOnly=true data-thickness=".15" />
+                    <h4 class="header-title mt-0 mb-4">Out for Delivery</h4>
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-pink text-white me-3" style="width:70px; height:70px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                            <i class="mdi mdi-truck-delivery-outline" style="font-size:28px;"></i>
                         </div>
-                        <div class="widget-detail-1 text-end">
-                            <h2 class="fw-normal pt-2 mb-1"> 4569 </h2>
-                            <p class="text-muted mb-1">Revenue today</p>
+                        <div>
+                            <h2 class="fw-normal pt-2 mb-1">{{ $outForDeliveryCount }}</h2>
+                            <p class="text-muted mb-1">Out for Delivery</p>
                         </div>
                     </div>
                 </div>
             </div>
-        </div><!-- end col -->
+        </div>
 
-        <div class="col-xl-3 col-md-6">
+        <!-- Completed Order Card -->
+        <div class="col">
             <div class="card">
                 <div class="card-body">
                     <div class="dropdown float-end">
-                        <a href="#" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown"
-                            aria-expanded="false">
+                        <a href="#" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="mdi mdi-dots-vertical"></i>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end">
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item">Action</a>
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item">Another action</a>
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item">Something else</a>
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item">Separated link</a>
+                            <a href="{{ route('orders.index') }}" class="dropdown-item">Orders Page</a>
                         </div>
                     </div>
-
-                    <h4 class="header-title mt-0 mb-3">Daily Sales</h4>
-
-                    <div class="widget-box-2">
-                        <div class="widget-detail-2 text-end">
-                            <span class="badge bg-pink rounded-pill float-start mt-3">32% <i
-                                    class="mdi mdi-trending-up"></i> </span>
-                            <h2 class="fw-normal mb-1"> 158 </h2>
-                            <p class="text-muted mb-3">Revenue today</p>
+                    <h4 class="header-title mt-0 mb-4">Completed Order</h4>
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-success text-white me-3" style="width:70px; height:70px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                            <i class="mdi mdi-check-circle-outline" style="font-size:28px;"></i>
                         </div>
-                        <div class="progress progress-bar-alt-pink progress-sm">
-                            <div class="progress-bar bg-pink" role="progressbar" aria-valuenow="77" aria-valuemin="0"
-                                aria-valuemax="100" style="width: 77%;">
-                                <span class="visually-hidden">77% Complete</span>
-                            </div>
+                        <div>
+                            <h2 class="fw-normal pt-2 mb-1">{{ $completedCount }}</h2>
+                            <p class="text-muted mb-1">Completed Order</p>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-        </div><!-- end col -->
-
+        <!-- Canceled Order Card -->
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <div class="dropdown float-end">
+                        <a href="#" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="mdi mdi-dots-vertical"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a href="{{ route('orders.index') }}" class="dropdown-item">Orders Page</a>
+                        </div>
+                    </div>
+                    <h4 class="header-title mt-0 mb-4">Canceled Order</h4>
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-danger text-white me-3" style="width:70px; height:70px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                            <i class="mdi mdi-close-circle-outline" style="font-size:28px;"></i>
+                        </div>
+                        <div>
+                            <h2 class="fw-normal pt-2 mb-1">{{ $canceledCount }}</h2>
+                            <p class="text-muted mb-1">Canceled Order</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <!-- end row -->
 

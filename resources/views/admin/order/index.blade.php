@@ -153,8 +153,8 @@
                         render: function(data, type, row) {
                             const statusColors = {
                                 Pending: 'bg-warning',
-                                preparing: 'bg-primary',
-                                'Out for Delivery': 'bg-info',
+                                preparing: 'bg-purple',
+                                'Out for Delivery': 'bg-pink',
                                 Completed: 'bg-success',
                                 Canceled: 'bg-danger'
                             };

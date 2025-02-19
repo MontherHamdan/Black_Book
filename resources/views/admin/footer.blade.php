@@ -4,8 +4,8 @@
                 <div class="col-md-6">
                     <script>
                         document.write(new Date().getFullYear())
-                    </script> &copy; Adminto theme by <a href="https://coderthemes.com/"
-                        target="_blank">Coderthemes</a>
+                    </script> &copy; Black Book by <a href="https://www.instagram.com/monther_hamdan2000/"
+                        target="_blank">Monther Hamdan</a>
                 </div>
                 <div class="col-md-6">
                     <div class="text-md-end footer-links d-none d-sm-block">

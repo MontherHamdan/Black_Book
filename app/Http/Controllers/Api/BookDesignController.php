@@ -86,7 +86,7 @@ class BookDesignController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'image' => 'required|image|mimes:jpg,png,jpeg,gif,webp|max:1048',
+            'image' => 'required|image|mimes:jpg,png,jpeg,gif,webp|max:20480',
         ]);
 
         // Store the image

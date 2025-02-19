@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BookDecoration;
 use Carbon\Carbon;
 use App\Models\Note;
 use App\Models\Order;
@@ -20,11 +21,13 @@ class OrderWebController extends Controller
             'discountCode',
             'bookType',
             'bookDesign',
+            'bookDecoration',
             'frontImage',
             'additionalImage',
             'transparentPrinting',
             'svg',
         ])->findOrFail($id);
+        
         return view('admin.order.show', compact('order'));
     }
 

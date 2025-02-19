@@ -15,6 +15,7 @@ use App\Http\Controllers\BookDecorationController;
 use App\Http\Controllers\BookTypeSubMediaController;
 use App\Http\Controllers\BookDesignCategoryController;
 use App\Http\Controllers\BookDesignSubCategoryController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 /*
@@ -40,6 +41,8 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name
 // Admin routes with auth and admin middleware
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
+
+    Route::resource('users', UserController::class);
 
     // book design
     Route::resource('book-designs', BookDesignController::class);

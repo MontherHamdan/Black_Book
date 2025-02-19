@@ -2,22 +2,56 @@
 
 @section('content')
 <div class="container">
-    <h1 class="my-4 text-center">Order Details</h1>
+    <!-- Custom Styling -->
+    <style>
+        /* Ensure images have a consistent size */
+        .img-fluid.img-thumbnail {
+            max-width: 250px;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        /* Fix carousel images to a uniform size */
+        #backImagesCarousel img {
+            max-width: 500px;
+            height: 350px;
+            object-fit: contain;
+        }
+
+        /* Center carousel controls & make them red */
+        .custom-carousel-control {
+            width: 5%;
+        }
+        .custom-carousel-control .carousel-control-prev-icon,
+        .custom-carousel-control .carousel-control-next-icon {
+            background-color: red;
+            border-radius: 50%;
+        }
+
+        /* SVG preview container */
+        .svg-preview-container {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            background: #f8f9fa;
+        }
+</style>
+    <h1 class="my-4 text-center ">Order Details</h1>
 
     <div class="row">
         <!-- Left Side: Order Details and Other Information -->
         <div class="col-md-6">
             <div class="card shadow-sm mb-4">
-                <div class="card-header d-flex align-items-center">
-                    <i class="bi bi-box-seam me-2"></i> Order Details
+                <div class="card-header d-flex align-items-center bg-primary">
+                    <h5 class="">Order Detatils</h5>
                 </div>
                 <div class="card-body">
                     <p><strong>Book Type:</strong> {{ $order->bookType->name_ar ?? 'N/A' }}</p>
                     <p><strong>Design:</strong></p>
                     <div class="d-flex justify-content-start">
-                        <img class="img-fluid img-thumbnail" src="{{ $order->bookDesign->image }}" alt="Design Image" style="max-width: 200px;">
+                        <img class="img-fluids img-thumbnail" src="{{ $order->bookDesign->image }}" alt="Design Image" style="width:500px;">
                     </div>
-                    <p class="mt-1"><strong>Pages Number:</strong> {{ $order->pages_number }}</p>
+                    <p class="mt-3"><strong>Pages Number:</strong> {{ $order->pages_number }}</p>
                     <p><strong>Price:</strong> {{ $order->final_price }}</p>
                     <p><strong>Price with discount:</strong> {{ $order->final_price_with_discount }}</p>
                     <p><strong>Accessory:</strong> {{ $order->book_accessory ? 'Yes' : 'No' }}</p>
@@ -93,86 +127,119 @@
                 </div>
             </div>
         </div>
-<!-- Full-width: Images Section -->
-<div class="col-12">
-    <div class="card shadow-sm mb-4">
-        <div class="card-header d-flex align-items-center">
-            <i class="bi bi-images me-2"></i> Images
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <p><strong>Front Image:</strong></p>
-                    @if ($order->frontImage)
-                        <div class="d-flex justify-content-start align-items-center">
-                            <img src="{{ $order->frontImage->image_path }}" class="img-fluid img-thumbnail mb-2" alt="Front Image" style="max-width: 100%; height: auto;">
-                            <a href="{{ $order->frontImage->image_path }}" class="btn btn-secondary btn-sm ms-3" download>
-                                <i class="fas fa-download me-1"></i> Download
-                            </a>
-                        </div>
-                    @else
-                        <p>No image available</p>
-                    @endif
+        <!-- Full-width: Images Section -->
+        <div class="col-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex align-items-center">
+                    <i class="bi bi-images me-2"></i> Images
                 </div>
-
-                <div class="col-md-6">
-                    <p><strong>Additional Image:</strong></p>
-                    @if ($order->additionalImage)
-                    <div class="d-flex justify-content-start align-items-center">
-                        <img src="{{ $order->additionalImage->image_path }}" class="img-fluid img-thumbnail mb-2" alt="Additional Image" style="max-width: 100%; height: auto;">
-                            <a href="{{ $order->additionalImage->image_path }}" class="btn btn-secondary btn-sm ms-3" download>
-                                <i class="fas fa-download me-1"></i> Download
-                            </a>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Front Image -->
+                        <div class="col-md-6">
+                            <p><strong>Front Image:</strong></p>
+                            @if ($order->frontImage)
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ $order->frontImage->image_path }}" class="img-fluid img-thumbnail mb-2" alt="Front Image">
+                                    <a href="{{ $order->frontImage->image_path }}" class="btn btn-secondary btn-sm ms-3" download>
+                                        <i class="fas fa-download me-1"></i> Download
+                                    </a>
+                                </div>
+                            @else
+                                <p>No image available</p>
+                            @endif
                         </div>
-                    @else
-                        <p>No image available</p>
-                    @endif
-                </div>
-            </div>
 
-            <div class="row mb-2">
-                <p><strong>SVG:</strong></p>
-                <div class="d-flex align-items-center svg-preview-container">
-                    <div class="img-fluid img-thumbnail svg-preview mb-2" style="width: 80%; height: auto;">
-                        {!! $order->svg->svg_code !!}
+                        <!-- Additional Image -->
+                        <div class="col-md-6">
+                            <p><strong>Additional Image:</strong></p>
+                            @if ($order->additionalImage)
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ $order->additionalImage->image_path }}" class="img-fluid img-thumbnail mb-2" alt="Additional Image">
+                                    <a href="{{ $order->additionalImage->image_path }}" class="btn btn-secondary btn-sm ms-3" download>
+                                        <i class="fas fa-download me-1"></i> Download
+                                    </a>
+                                </div>
+                            @else
+                                <p>No image available</p>
+                            @endif
+                        </div>
+
+                        <!-- Book Decoration -->
+                        <div class="col-md-6">
+                            <p><strong>Book Decoration:</strong></p>
+                            @if ($order->bookDecoration)
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ $order->bookDecoration->image }}" class="img-fluid img-thumbnail mb-2" alt="Book Decoration">
+                                    <a href="{{ $order->bookDecoration->image }}" class="btn btn-secondary btn-sm ms-3" download>
+                                        <i class="fas fa-download me-1"></i> Download
+                                    </a>
+                                </div>
+                            @else
+                                <p>No image available</p>
+                            @endif
+                        </div>
+
+                        <!-- Transparent Printing -->
+                        <div class="col-md-6">
+                            <p><strong>Transparent Printing:</strong></p>
+                            @if ($order->transparentPrinting)
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ $order->transparentPrinting->image_path }}" class="img-fluid img-thumbnail mb-2" alt="Transparent Printing">
+                                    <a href="{{ $order->transparentPrinting->image_path }}" class="btn btn-secondary btn-sm ms-3" download>
+                                        <i class="fas fa-download me-1"></i> Download
+                                    </a>
+                                </div>
+                            @else
+                                <p>No image available</p>
+                            @endif
+                        </div>
                     </div>
-                    <button class="btn btn-primary btn-sm copy-svg-button ms-3">
-                        <i class="fas fa-copy me-1"></i> Copy
-                    </button>
-                </div>
-            </div>
 
-            <p><strong>Back Images:</strong></p>
-            @if ($order->backImages()->isNotEmpty())
-                <div id="backImagesCarousel" class="carousel slide" data-bs-ride="carousel">
-                    <div class="carousel-inner">
-                        @foreach ($order->backImages() as $index => $backImage)
-                            <div class="carousel-item {{ $index == 0 ? 'active' : '' }}">
-                                <img src="{{ $backImage->image_path }}" class="d-block w-100 img-thumbnail" alt="Back Image" style="max-height: 500px;">
+                    <!-- SVG Section -->
+                    <div class="row mb-2">
+                        <p><strong>SVG:</strong></p>
+                        <div class="d-flex align-items-center svg-preview-container">
+                            <div class="img-fluid img-thumbnail svg-preview mb-2" style="width: 80%; height: auto;">
+                                {!! $order->svg->svg_code !!}
                             </div>
-                        @endforeach
+                            <button class="btn btn-primary btn-sm copy-svg-button ms-3">
+                                <i class="fas fa-copy me-1"></i> Copy
+                            </button>
+                        </div>
                     </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#backImagesCarousel" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#backImagesCarousel" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
-                    </button>
-                </div>
-                <div class="mt-3 text-center">
-                    <a href="{{ route('orders.backImages.download', $order->id) }}" class="btn btn-success btn-sm">
-                        <i class="fas fa-download me-1"></i> Download All
-                    </a>
-                </div>
-            @else
-                <p>No back images available</p>
-            @endif
-        </div>
-    </div>
-</div>
 
+                    <!-- Back Images Carousel -->
+                    <p><strong>Back Images:</strong></p>
+                    @if ($order->backImages()->isNotEmpty())
+                        <div id="backImagesCarousel" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner text-center">
+                                @foreach ($order->backImages() as $index => $backImage)
+                                    <div class="carousel-item {{ $index == 0 ? 'active' : '' }}">
+                                        <img src="{{ $backImage->image_path }}" class="d-block mx-auto img-fluid rounded shadow" alt="Back Image">
+                                    </div>
+                                @endforeach
+                            </div>
+                            <button class="carousel-control-prev custom-carousel-control" type="button" data-bs-target="#backImagesCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next custom-carousel-control" type="button" data-bs-target="#backImagesCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
+                        <div class="mt-3 text-center">
+                            <a href="{{ route('orders.backImages.download', $order->id) }}" class="btn btn-success btn-sm">
+                                <i class="fas fa-download me-1"></i> Download All
+                            </a>
+                        </div>
+                    @else
+                        <p>No back images available</p>
+                    @endif            
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 <script>

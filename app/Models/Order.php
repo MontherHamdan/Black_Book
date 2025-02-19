@@ -67,6 +67,11 @@ class Order extends Model
         return $this->belongsTo(BookDesign::class);
     }
 
+    public function bookDecoration()
+    {
+        return $this->belongsTo(BookDecoration::class,'book_decorations_id');
+    }
+
     public function frontImage()
     {
         return $this->belongsTo(UserImage::class, 'front_image_id');

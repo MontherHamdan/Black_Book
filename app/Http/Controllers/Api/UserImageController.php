@@ -12,7 +12,7 @@ class UserImageController extends Controller
     {
         // Validate the uploaded file
         $validated = $request->validate([
-            'image' => 'required|image|mimes:jpg,png,jpeg,gif,webp|max:2048',
+            'image' => 'required|image|mimes:jpg,png,jpeg,gif,webp|max:20480',
         ]);
     
         // Retrieve the uploaded image

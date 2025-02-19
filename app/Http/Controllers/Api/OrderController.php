@@ -22,7 +22,7 @@ class OrderController extends Controller
             'user_gender' => 'required|in:male,female,group',
             'discount_code_id' => 'nullable|exists:discount_codes,id',
             'book_type_id' => 'required|exists:book_types,id',
-            'book_design_id' => 'required|exists:book_designs,id',
+            'book_design_id' => 'required',
             'front_image_id' => 'nullable|exists:user_images,id',
             'book_decorations_id' => 'nullable|exists:book_decorations,id',
             'back_image_ids' => 'nullable|array',

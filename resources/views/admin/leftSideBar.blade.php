@@ -61,117 +61,120 @@
 
          <!--- Sidemenu -->
          <div id="sidebar-menu">
-
-             <ul id="side-menu">
-
-                 <li class="menu-title">Navigation</li>
-
-                 <li>
-                     <a href="{{ route('admin.dashboard') }}">
-                         <i class="mdi mdi-view-dashboard-outline"></i>
-                         <span class="badge bg-success rounded-pill float-end">9+</span>
-                         <span> Dashboard </span>
-                     </a>
-                 </li>
-                 <li class="menu-title mt-2">Orders</li>
-                 <li>
-                     <a href="{{ route('orders.index') }}">
-                         <i class="mdi mdi-forum-outline"></i>
-                         <span> Orders </span>
-                     </a>
-                 </li>
-
-                 <li class="menu-title mt-2">Pages</li>
-
-                 <li>
-                     <a href="{{ route('book-types.index') }}">
-                         <i class="mdi mdi-forum-outline"></i>
-                         <span> Book type </span>
-                     </a>
-                 </li>
-
-                 <li>
-                     <a href="#email" data-bs-toggle="collapse">
-                         <i class="mdi mdi-email-outline"></i>
-                         <span> Book Design </span>
-                         <span class="menu-arrow"></span>
-                     </a>
-                     <div class="collapse" id="email">
-                         <ul class="nav-second-level">
-                             <li>
-                                 <a href="{{ route('book-designs.index') }}">
-                                     Book Design
-                                 </a>
-                             </li>
-                             <li>
-                                 <a href="{{ route('categories.index') }}">
-                                     Categories
-                                 </a>
-                             </li>
-                             <li>
-                                 <a href="{{ route('subcategories.index') }}">
-                                     Sub Categories
-                                 </a>
-                             </li>
-                         </ul>
-                     </div>
-                 </li>
-
-                 <li>
-                     <a href="{{ route('book-decorations.index') }}">
-                         <i class="mdi mdi-forum-outline"></i>
-                         <span> Book Decoration </span>
-                     </a>
-                 </li>
-
-                 <li>
-                     <a href="{{ route('governorates.index') }}">
-                         <i class="mdi mdi-forum-outline"></i>
-                         <span> Governorates </span>
-                     </a>
-                 </li>
-
-                 <li>
-                     <a href="{{ route('discount-codes.index') }}">
-                         <i class="mdi mdi-forum-outline"></i>
-                         <span> Discount Codes </span>
-                     </a>
-                 </li>
-
-                 <li>
-                     <a href="{{ route('svgs.index') }}">
-                         <i class="mdi mdi-forum-outline"></i>
-                         <span> SVG's </span>
-                     </a>
-                 </li>
-
-                 <li>
-                     <a href="{{ route('universities.index') }}">
-                         <i class="mdi mdi-forum-outline"></i>
-                         <span> Universities </span>
-                     </a>
-                 </li>
-
-                 <li>
-                     <a href="{{ route('diplomas.index') }}">
-                         <i class="mdi mdi-forum-outline"></i>
-                         <span> Colleges </span>
-                     </a>
-                 </li>
-
-                 <li>
-                     <a href="{{ route('phone-numbers.index') }}">
-                         <i class="mdi mdi-forum-outline"></i>
-                         <span> Phone numbers </span>
-                     </a>
-                 </li>
-
-
-             </ul>
-         </div>
-         </li>
+            <ul id="side-menu">
+                <li class="menu-title">Navigation</li>
+                <li>
+                    <a href="{{ route('admin.dashboard') }}">
+                        <i class="mdi mdi-view-dashboard-outline"></i>
+                        <span class="badge bg-success rounded-pill float-end">9+</span>
+                        <span> Dashboard </span>
+                    </a>
+                </li>
+        
+                <li class="menu-title mt-2">Orders</li>
+                <li>
+                    <a href="{{ route('orders.index') }}">
+                        <i class="mdi mdi-cart-outline"></i>
+                        <span> Orders </span>
+                    </a>
+                </li>
+        
+                <li class="menu-title mt-2">Pages</li>
+                <li>
+                    <a href="{{ route('book-types.index') }}">
+                        <i class="mdi mdi-book-open-page-variant-outline"></i>
+                        <span> Book Type </span>
+                    </a>
+                </li>
+        
+                <li>
+                    <a href="#bookDesign" data-bs-toggle="collapse">
+                        <i class="mdi mdi-pencil-box-outline"></i>
+                        <span> Book Design </span>
+                        <span class="menu-arrow"></span>
+                    </a>
+                    <div class="collapse" id="bookDesign">
+                        <ul class="nav-second-level">
+                            <li>
+                                <a href="{{ route('book-designs.index') }}">
+                                    <i class="mdi mdi-book-edit-outline"></i>
+                                    Book Design
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('categories.index') }}">
+                                    <i class="mdi mdi-shape-outline"></i>
+                                    Categories
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('subcategories.index') }}">
+                                    <i class="mdi mdi-shape-plus-outline"></i>
+                                    Sub Categories
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+        
+                <li>
+                    <a href="{{ route('book-decorations.index') }}">
+                        <i class="mdi mdi-format-color-fill"></i>
+                        <span> Book Decoration </span>
+                    </a>
+                </li>
+        
+                <li>
+                    <a href="{{ route('governorates.index') }}">
+                        <i class="mdi mdi-map-marker-outline"></i>
+                        <span> Governorates </span>
+                    </a>
+                </li>
+        
+                <li>
+                    <a href="{{ route('discount-codes.index') }}">
+                        <i class="mdi mdi-tag-outline"></i>
+                        <span> Discount Codes </span>
+                    </a>
+                </li>
+        
+                <li>
+                    <a href="{{ route('svgs.index') }}">
+                        <i class="mdi mdi-vector-triangle"></i>
+                        <span> SVG's </span>
+                    </a>
+                </li>
+        
+                <li>
+                    <a href="{{ route('universities.index') }}">
+                        <i class="mdi mdi-school-outline"></i>
+                        <span> Universities </span>
+                    </a>
+                </li>
+        
+                <li>
+                    <a href="{{ route('diplomas.index') }}">
+                        <i class="mdi mdi-office-building-outline"></i>
+                        <span> Colleges </span>
+                    </a>
+                </li>
+        
+                <li class="menu-title mt-2">Manager</li>
+                <li>
+                    <a href="{{ route('users.index') }}">
+                        <i class="mdi mdi-account-group-outline"></i>
+                        <span> Users </span>
+                    </a>
+                </li>
+        
+                <li>
+                    <a href="{{ route('phone-numbers.index') }}">
+                        <i class="mdi mdi-phone-outline"></i>
+                        <span> Phone Numbers </span>
+                    </a>
+                </li>
+            </ul>
          </ul>
-
      </div>
      <!-- End Sidebar -->
 

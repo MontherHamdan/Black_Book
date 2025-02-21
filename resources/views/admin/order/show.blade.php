@@ -42,8 +42,8 @@
         <!-- Left Side: Order Details and Other Information -->
         <div class="col-md-6">
             <div class="card shadow-sm mb-4">
-                <div class="card-header d-flex align-items-center bg-primary">
-                    <h5 class="">Order Detatils</h5>
+                <div class="card-header d-flex align-items-center">
+                    Order Detatils
                 </div>
                 <div class="card-body">
                     <p><strong>Book Type:</strong> {{ $order->bookType->name_ar ?? 'N/A' }}</p>
@@ -61,7 +61,7 @@
 
             <div class="card shadow-sm mb-4">
                 <div class="card-header d-flex align-items-center">
-                    <i class="bi bi-info-circle me-2"></i> Other Details
+                    Other Details
                 </div>
                 <div class="card-body">
                     <p><strong>Discount Code:</strong> {{ $order->discountCode->discount_code ?? 'N/A' }}</p>
@@ -95,7 +95,7 @@
         <div class="col-md-6">
             <div class="card shadow-sm mb-4">
                 <div class="card-header d-flex align-items-center">
-                    <i class="bi bi-person-circle me-2"></i> User Details
+                    User Details
                 </div>
                 <div class="card-body">
                     <p><strong>Name (AR):</strong> {{ $order->username_ar }}</p>
@@ -109,7 +109,7 @@
 
             <div class="card shadow-sm mb-4">
                 <div class="card-header d-flex align-items-center">
-                    <i class="bi bi-geo-alt me-2"></i> Address
+                    Address
                 </div>
                 <div class="card-body">
                     <p><strong>Governorate:</strong> {{ $order->governorate }}</p>
@@ -131,7 +131,7 @@
         <div class="col-12">
             <div class="card shadow-sm mb-4">
                 <div class="card-header d-flex align-items-center">
-                    <i class="bi bi-images me-2"></i> Images
+                    Images
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -200,7 +200,7 @@
                     <div class="row mb-2">
                         <p><strong>SVG:</strong></p>
                         <div class="d-flex align-items-center svg-preview-container">
-                            <div class="img-fluid img-thumbnail svg-preview mb-2" style="width: 80%; height: auto;">
+                            <div class="img-fluids img-thumbnail svg-preview mb-2" style="width: 80%; height: auto;">
                                 {!! $order->svg->svg_code !!}
                             </div>
                             <button class="btn btn-primary btn-sm copy-svg-button ms-3">

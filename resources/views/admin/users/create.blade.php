@@ -19,10 +19,9 @@
                     </div>
                 @endif
 
-                <!-- Form for Creating User -->
-                <form action="{{ route('users.store') }}" method="POST">
+                <form action="{{ route('users.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
-
+                
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="name" class="form-label">Name</label>
@@ -47,7 +46,7 @@
                                 value="{{ old('email') }}">
                         </div>
                     </div>
-
+                
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="password" class="form-label">Password</label>
@@ -70,7 +69,31 @@
                                 required>
                         </div>
                     </div>
-
+                
+                    <div class="row">
+                        <!-- New Title Field -->
+                        <div class="col-md-6 mb-3">
+                            <label for="title" class="form-label">Title</label>
+                            <input 
+                                type="text" 
+                                name="title" 
+                                id="title" 
+                                class="form-control" 
+                                placeholder="Enter user title" 
+                                value="{{ old('title') }}">
+                        </div>
+                    
+                        <!-- New Image Upload Field -->
+                        <div class="col-md-6 mb-3">
+                            <label for="image" class="form-label">User Image</label>
+                            <input 
+                                type="file" 
+                                name="image" 
+                                id="image" 
+                                class="form-control">
+                        </div>
+                    </div>
+                
                     <div class="form-check mb-3">
                         <input 
                             type="checkbox" 
@@ -80,7 +103,7 @@
                             {{ old('is_admin') ? 'checked' : '' }}>
                         <label for="is_admin" class="form-check-label">Admin</label>
                     </div>
-
+                
                     <div class="text-end">
                         <button type="submit" class="btn btn-success px-4">Add User</button>
                     </div>

@@ -2,7 +2,7 @@
       <div class="container-fluid ps-0">
           <ul class="list-unstyled topnav-menu float-end mb-0">
 
-              <li class="d-none d-lg-block">
+              {{-- <li class="d-none d-lg-block">
                   <form class="app-search">
                       <div class="app-search-box">
                           <div class="input-group">
@@ -71,7 +71,7 @@
                           </div>
                       </div>
                   </form>
-              </li>
+              </li> --}}
 
               <li class="notification-list d-none d-lg-block">
                   <a href="javascript:void(0);" class="nav-link waves-effect waves-light" id="light-dark-mode"
@@ -80,7 +80,7 @@
                   </a>
               </li>
 
-              <li class="dropdown d-inline-block d-lg-none">
+              {{-- <li class="dropdown d-inline-block d-lg-none">
                   <a class="nav-link dropdown-toggle arrow-none waves-effect waves-light" data-bs-toggle="dropdown"
                       href="#" role="button" aria-haspopup="false" aria-expanded="false">
                       <i class="fe-search noti-icon"></i>
@@ -91,9 +91,9 @@
                               aria-label="Recipient's username">
                       </form>
                   </div>
-              </li>
+              </li> --}}
 
-              <li class="dropdown notification-list topbar-dropdown">
+              {{-- <li class="dropdown notification-list topbar-dropdown">
                   <a class="nav-link dropdown-toggle waves-effect waves-light" data-bs-toggle="dropdown" href="#"
                       role="button" aria-haspopup="false" aria-expanded="false">
                       <i class="fe-bell noti-icon"></i>
@@ -188,24 +188,40 @@
                       </a>
 
                   </div>
-              </li>
+              </li> --}}
 
               <li class="dropdown notification-list topbar-dropdown">
-                  <a class="nav-link dropdown-toggle nav-user me-0 waves-effect waves-light" data-bs-toggle="dropdown"
-                      href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                      <img src="{{ asset('assets/images/users/user-1.jpg') }}" alt="user-image"
-                          class="rounded-circle">
-                      <span class="pro-user-name ms-1">
-                          Nowak <i class="mdi mdi-chevron-down"></i>
-                      </span>
-                  </a>
+                    <a class="nav-link dropdown-toggle nav-user me-0 waves-effect waves-light" data-bs-toggle="dropdown"
+                        href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                        @if(Auth::user()->image)
+                            <img src="{{ asset('storage/' . Auth::user()->image) }}" alt="user-image"
+                                class="rounded-circle" style="width:40px; height:40px; object-fit: cover;">
+                        @else
+                            @php
+                                // Get up to two initials from the user's name
+                                $nameParts = explode(' ', Auth::user()->name);
+                                $initials = collect($nameParts)
+                                    ->filter(fn($part) => strlen($part) > 0)
+                                    ->take(2)
+                                    ->map(fn($part) => strtoupper(substr($part, 0, 1)))
+                                    ->implode('');
+                            @endphp
+                            <span class="rounded-circle d-inline-flex align-items-center justify-content-center"
+                                style="width:40px; height:40px; background-color:#6c757d; color:#fff; font-weight:bold; font-size:16px;">
+                                {{ $initials ?: 'U' }}
+                            </span>
+                        @endif
+                        <span class="pro-user-name ms-1">
+                            {{ Auth::user()->name }} <i class="mdi mdi-chevron-down"></i>
+                        </span>
+                    </a>
                   <div class="dropdown-menu dropdown-menu-end profile-dropdown ">
                       <!-- item-->
-                      <div class="dropdown-header noti-title">
+                      {{-- <div class="dropdown-header noti-title">
                           <h6 class="text-overflow m-0">Welcome !</h6>
-                      </div>
+                      </div> --}}
 
-                      <!-- item-->
+                      {{-- <!-- item-->
                       <a href="contacts-profile.html" class="dropdown-item notify-item">
                           <i class="fe-user"></i>
                           <span>My Account</span>
@@ -215,9 +231,9 @@
                       <a href="auth-lock-screen.html" class="dropdown-item notify-item">
                           <i class="fe-lock"></i>
                           <span>Lock Screen</span>
-                      </a>
+                      </a> --}}
 
-                      <div class="dropdown-divider"></div>
+                      {{-- <div class="dropdown-divider"></div> --}}
 
                       <!-- item-->
                       <form action="{{ route('auth.logout') }}" method="POST">
@@ -243,18 +259,18 @@
           <div class="logo-box">
               <a href="{{ route('admin.dashboard') }}" class="logo logo-light text-center">
                   <span class="logo-sm">
-                      <img src="{{ asset('assets/images/logo-sm.png') }}" alt="" height="22">
+                      <img src="{{ asset('assets/images/Asset 3@4x.png') }}" alt="" height="22">
                   </span>
                   <span class="logo-lg">
-                      <img src="{{ asset('assets/images/logo-light.png') }}" alt="" height="16">
+                      <img src="{{ asset('assets/images/Asset 2.svg') }}" alt="" height="16">
                   </span>
               </a>
               <a href="{{ route('admin.dashboard') }}" class="logo logo-dark text-center">
                   <span class="logo-sm">
-                      <img src="{{ asset('assets/images/logo-sm.png') }}" alt="" height="22">
+                      <img src="{{ asset('assets/images/Asset 3@4x.png') }}" alt="" height="22">
                   </span>
                   <span class="logo-lg">
-                      <img src="{{ asset('assets/images/logo-dark.png') }}" alt="" height="16">
+                      <img src="{{ asset('assets/images/Asset 4@4x.png') }}" alt="" height="40">
                   </span>
               </a>
           </div>

@@ -2,63 +2,49 @@
 
      <div class="h-100" data-simplebar>
 
-         <!-- User box -->
-         <div class="user-box text-center">
-
-             <img src="{{ asset('assets/images/users/user-1.jpg') }}" alt="user-img" title="Mat Helme"
-                 class="rounded-circle img-thumbnail avatar-md">
-             <div class="dropdown">
-                 <a href="#" class="user-name dropdown-toggle h5 mt-2 mb-1 d-block" data-bs-toggle="dropdown"
-                     aria-expanded="false">Nowak Helme</a>
-                 <div class="dropdown-menu user-pro-dropdown">
-
-                     <!-- item-->
-                     <a href="javascript:void(0);" class="dropdown-item notify-item">
-                         <i class="fe-user me-1"></i>
-                         <span>My Account</span>
-                     </a>
-
-                     <!-- item-->
-                     <a href="javascript:void(0);" class="dropdown-item notify-item">
-                         <i class="fe-settings me-1"></i>
-                         <span>Settings</span>
-                     </a>
-
-                     <!-- item-->
-                     <a href="javascript:void(0);" class="dropdown-item notify-item">
-                         <i class="fe-lock me-1"></i>
-                         <span>Lock Screen</span>
-                     </a>
-
-                     <!-- item-->
-                     <form action="{{ route('auth.logout') }}" method="POST">
-                         @csrf
-                         <button type="submit" class="dropdown-item notify-item">
-                             <i class="fe-log-out me-1"></i>
-                             <span>Logout</span>
-                         </button>
-                     </form>
-
-                 </div>
-             </div>
-
-             <p class="text-muted left-user-info">Admin Head</p>
-
-             <ul class="list-inline">
-                 <li class="list-inline-item">
-                     <a href="#" class="text-muted left-user-info">
-                         <i class="mdi mdi-cog"></i>
-                     </a>
-                 </li>
-
-                 <li class="list-inline-item">
-                     <a href="#">
-                         <i class="mdi mdi-power"></i>
-                     </a>
-                 </li>
-             </ul>
-         </div>
-
+       <!-- User box -->
+        <div class="user-box text-center">
+            @if(Auth::user()->image)
+                <img src="{{ asset('storage/' . Auth::user()->image) }}" alt="user-img" title="{{ Auth::user()->name }}"
+                    class="rounded-circle img-thumbnail avatar-md">
+            @else
+                @php
+                    // Split the name into parts and extract up to two initials
+                    $nameParts = explode(' ', Auth::user()->name);
+                    $initials = collect($nameParts)
+                        ->filter(fn($part) => strlen($part) > 0)
+                        ->take(2)
+                        ->map(fn($part) => strtoupper(substr($part, 0, 1)))
+                        ->implode('');
+                @endphp
+                <div class="rounded-circle d-inline-flex align-items-center justify-content-center bg-secondary text-white avatar-md" 
+                    style="width: 50px; height: 50px; font-weight: 400; font-size: 1rem;">
+                    {{ $initials ?: 'U' }}
+                </div>
+            @endif
+        
+            <!-- Display user name as plain text -->
+            <h5 class="mt-2 mb-1 d-block">{{ Auth::user()->name }}</h5>
+            <p class="text-muted left-user-info">{{ Auth::user()->title }}</p>
+        
+            <!-- Dropdown triggered by settings icon -->
+            <div class="dropdown">
+                <a href="#" class="text-muted left-user-info" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="mdi mdi-cog"></i>
+                </a>
+                <div class="dropdown-menu user-pro-dropdown">
+                    <!-- item-->
+                    <form action="{{ route('auth.logout') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="dropdown-item notify-item">
+                            <i class="fe-log-out me-1"></i>
+                            <span>Logout</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    
          <!--- Sidemenu -->
          <div id="sidebar-menu">
             <ul id="side-menu">

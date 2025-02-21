@@ -13,7 +13,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::all();
+        $users = User::paginate(8);
         return view('admin.users.index', compact('users'));
     }
 
@@ -34,17 +34,28 @@ class UserController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
+            'title'    => 'nullable|string|max:255',
+            'image'    => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048'
         ]);
-
+    
+        // Handle file upload for image if provided
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('users', 'public');
+        }
+    
         User::create([
             'name'     => $request->name,
             'email'    => $request->email,
             'password' => Hash::make($request->password),
             'is_admin' => $request->has('is_admin'),
+            'title'    => $request->title,
+            'image'    => $imagePath,
         ]);
-
+    
         return redirect()->route('users.index')->with('success', 'User created successfully.');
     }
+    
 
     /**
      * Display the specified user.
@@ -70,14 +81,17 @@ class UserController extends Controller
         $request->validate([
             'name'  => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
+            'title' => 'nullable|string|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
         ]);
-
+    
         $data = [
             'name'     => $request->name,
             'email'    => $request->email,
             'is_admin' => $request->has('is_admin'),
+            'title'    => $request->title,
         ];
-
+    
         // Only update password if provided
         if ($request->filled('password')) {
             $request->validate([
@@ -85,9 +99,15 @@ class UserController extends Controller
             ]);
             $data['password'] = Hash::make($request->password);
         }
-
+    
+        // Process image upload if provided
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('users', 'public');
+            $data['image'] = $imagePath;
+        }
+    
         $user->update($data);
-
+    
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
 

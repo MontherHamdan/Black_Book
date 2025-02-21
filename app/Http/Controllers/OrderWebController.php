@@ -53,6 +53,8 @@ class OrderWebController extends Controller
         // Status filter
         $statusFilter = $request->input('status'); // Get the selected status filter
 
+        $additivesFilter = $request->input('additives'); // Get the selected additives filter
+
         $query = Order::with([
             'discountCode',
             'bookType',
@@ -72,13 +74,22 @@ class OrderWebController extends Controller
                     ->orWhere('user_phone_number', 'like', "%$searchValue%")
                     ->orWhere('delivery_number_two', 'like', "%$searchValue%")
                     ->orWhere('status', 'like', "%$searchValue%")
-                    ->orWhere('final_price_with_discount', 'like', "%$searchValue%");
+                    ->orWhere('final_price_with_discount', 'like', "%$searchValue%")
+                    ->orWhere('school_name', 'like', "%$searchValue%");
             });
         }
 
         // Apply status filter if set
         if (!empty($statusFilter)) {
             $query->where('status', $statusFilter);
+        }
+
+        if (!empty($additivesFilter)) {
+            if($additivesFilter == 'with_additives'){
+                $query->where('is_with_additives', 1);
+            }elseif($additivesFilter == 'with_out_additives'){
+                $query->where('is_with_additives', 0);
+            }
         }
 
         // Apply sorting and pagination
@@ -96,6 +107,7 @@ class OrderWebController extends Controller
                 'order' => $order->bookType->name_ar ?? '',
                 'governorate' => $order->governorate,
                 'address' => $order->address,
+                'school_name' => $order->school_name,
                 'phone' => $order->user_phone_number,
                 'phone2' => $order->delivery_number_two,
                 'status' => $order->status,
@@ -117,7 +129,7 @@ class OrderWebController extends Controller
     {
         $request->validate([
             'id' => 'required|exists:orders,id',
-            'status' => 'required|in:Pending,preparing,Out for Delivery,Completed,Canceled',
+            'status' => 'required|in:Pending,preparing,Completed,Out for Delivery,Received,Canceled',
         ]);
 
         $order = Order::findOrFail($request->id);

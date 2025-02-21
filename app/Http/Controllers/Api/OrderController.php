@@ -49,6 +49,7 @@ class OrderController extends Controller
             'final_price_with_discount' => 'required|numeric|min:0',
             'status' => 'nullable|in:preparing,shipping,completed,canceled',
             'gift_title' => 'nullable|string',
+            'is_with_additives' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -57,7 +58,7 @@ class OrderController extends Controller
 
         // Prepare data
         $data = $request->all();
-        $data['status'] = $data['status'] ?? 'preparing'; // Default status
+        $data['status'] = $data['status'] ?? 'Pending'; // Default status
         $data['back_image_ids'] = json_encode($data['back_image_ids'] ?? []);
 
         // Create the order

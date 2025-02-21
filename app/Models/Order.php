@@ -14,6 +14,13 @@ class Order extends Model
 
     protected $table = "orders";
 
+    // Status constants
+    public const STATUS_PENDING         = 'Pending';
+    public const STATUS_PREPARING       = 'preparing';
+    public const STATUS_COMPLETED        = 'Completed';
+    public const STATUS_OUT_FOR_DELIVERY = 'Out for Delivery';
+    public const STATUS_RECEIVED        = 'Received';
+    public const STATUS_CANCELED        = 'Canceled';
 
     protected $fillable = [
         'user_gender',
@@ -46,6 +53,7 @@ class Order extends Model
         'status',
         'deleted_at',
         'gift_title',
+        'is_with_additives',
     ];
 
     protected $casts = [

@@ -2,7 +2,7 @@
         <div data-simplebar class="h-100">
 
             <div class="rightbar-title">
-                <a href="javascript:void(0);" class="right-bar-toggle float-end">
+                <a href="javascript:void(0);" class="right-bar-toggle float-end" data-bs-dismiss="offcanvas">
                     <i class="mdi mdi-close"></i>
                 </a>
                 <h4 class="font-16 m-0 text-white">Theme Customizer</h4>
@@ -142,8 +142,8 @@
 
                         <div class="d-grid mt-4">
                             <button class="btn btn-primary" id="reset-layout">Reset to Default</button>
-                            <a href="https://1.envato.market/adminto-admin" class="btn btn-danger mt-3"
-                                target="_blank"><i class="mdi mdi-basket me-1"></i> Purchase Now</a>
+                            {{-- <a href="https://1.envato.market/adminto-admin" class="btn btn-danger mt-3"
+                                target="_blank"><i class="mdi mdi-basket me-1"></i> Purchase Now</a> --}}
                         </div>
 
                     </div>

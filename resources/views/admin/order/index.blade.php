@@ -18,6 +18,7 @@
                                     <th>Order</th>
                                     <th>Governorate</th>
                                     <th>Address</th>
+                                    <th>University</th>
                                     <th>Phone</th>
                                     <th>Phone2</th>
                                     <th>Status</th>
@@ -94,6 +95,7 @@
                     data: function(d) {
                         // Append the selected status filter value to the request data
                         d.status = $('#statusFilter').val(); // Get the selected status filter
+                        d.additives = $('#additivesFilter').val(); // Get the selected status filter
                     },
                     error: function(xhr, error, code) {
                         alert('An error occurred while fetching data. Please contact IT support.');
@@ -109,7 +111,7 @@
                                             ${data}
                                     </a>`;
                         },
-                        orderable: false,
+                        orderable: true,
                         searchable: false
                     },
                     {
@@ -138,6 +140,11 @@
                         orderable: false
                     },
                     {
+                        data: 'school_name',
+                        name: 'school_name',
+                        orderable: false
+                    },
+                    {
                         data: 'phone',
                         name: 'phone',
                         orderable: false
@@ -153,14 +160,16 @@
                         render: function(data, type, row) {
                             const statusColors = {
                                 Pending: 'bg-warning',
+                                Completed: 'bg-success',
                                 preparing: 'bg-purple',
                                 'Out for Delivery': 'bg-pink',
                                 Completed: 'bg-success',
+                                Received: 'bg-primary',
                                 Canceled: 'bg-danger'
                             };
 
-                            const dropdownItems = ['Pending', 'preparing', 'Out for Delivery',
-                                    'Completed', 'Canceled'
+                            const dropdownItems = ['Pending', 'preparing', 'Completed', 'Out for Delivery',
+                                     'Received' ,'Canceled'
                                 ]
                                 .filter(status => status !== data)
                                 .map(status => `
@@ -206,18 +215,26 @@
                 ],
                 language: {
                     search: "Search Orders:",
-                    processing: '<div class="spinner-border text-primary"></div>'
+                    // processing: '<div class="spinner-border text-primary"></div>'
                 },
                 initComplete: function() {
                     // Create the status filter dropdown
                     var statusDropdown = $(
-                        '<select id="statusFilter" class="form-control" style="width: 150px;height:34px; margin-left: 15px;">' +
+                        '<select id="statusFilter" class="form-select" style="width: 170px;height:34px; margin-left: 15px;">' +
                         '<option value="">Filter by Status</option>' +
                         '<option value="Pending">Pending</option>' +
                         '<option value="preparing">Preparing</option>' +
                         '<option value="Out for Delivery">Out for Delivery</option>' +
                         '<option value="Completed">Completed</option>' +
                         '<option value="Canceled">Canceled</option>' +
+                        '</select>'
+                    );
+
+                    var additivesDropdown = $(
+                        '<select id="additivesFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">' +
+                        '<option value="">Filter by Additives</option>' +
+                        '<option value="with_additives">With Additives</option>' +
+                        '<option value="with_out_additives">With Out Additives</option>' +
                         '</select>'
                     );
 
@@ -230,9 +247,14 @@
 
                     // Append the dropdown next to the search input
                     $('.dataTables_filter').append(statusDropdown);
+                    $('.dataTables_filter').append(additivesDropdown);
 
                     // When the status dropdown value changes, reload the table with the selected filter
                     $('#statusFilter').on('change', function() {
+                        $('#orders-table').DataTable().ajax.reload();
+                    });
+
+                    $('#additivesFilter').on('change', function() {
                         $('#orders-table').DataTable().ajax.reload();
                     });
                 }

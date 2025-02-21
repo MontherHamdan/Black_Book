@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use DB;
+use App\Models\User;
 
 class DashboardController extends Controller
 {
@@ -13,28 +14,39 @@ class DashboardController extends Controller
         // Get counts for each status
         $pendingCount       = Order::where('status', 'Pending')->count();
         $preparingCount     = Order::where('status', 'preparing')->count();
-        $outForDeliveryCount = Order::where('status', 'Out for Delivery')->count();
         $completedCount     = Order::where('status', 'Completed')->count();
+        $outForDeliveryCount = Order::where('status', 'Out for Delivery')->count();
+        $receivedCount = Order::where('status', 'Received')->count();
         $canceledCount      = Order::where('status', 'Canceled')->count();
-
-        // Daily Sales - grouping orders by date and summing a 'total_price' field
-        $dailySales = Order::select(DB::raw("DATE(created_at) as date"), DB::raw("SUM(final_price_with_discount) as total"))
-        ->groupBy(DB::raw("DATE(created_at)"))
-        ->orderBy('date', 'ASC')
-        ->limit(7)
-        ->get();
-
-        // Statistics - count orders by status
-        $statistics = Order::select('status', DB::raw("COUNT(*) as count"))
+    
+        // Get total order count
+        $totalOrders = Order::count();
+    
+        // Order status counts
+        $orderStatuses = Order::select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
+            ->pluck('count', 'status');
+    
+        // Orders with additives
+        $ordersWithAdditives = Order::where('is_with_additives', 1)->count();
+        $ordersWithoutAdditives = Order::where('is_with_additives', 0)->count();
+    
+        // Get top-selling products based on book_type_id
+        $topSellingProducts = Order::select('book_type_id', DB::raw('count(*) as total_orders'))
+            ->groupBy('book_type_id')
+            ->orderByDesc('total_orders')
+            ->with('bookType') // Eager load bookType relation
+            ->take(5) // Get the top 5 selling book types
             ->get();
-
-        // Total Revenue - similar to daily sales; could be refined further
-        $revenue = Order::select(DB::raw("DATE(created_at) as date"), DB::raw("SUM(final_price_with_discount) as total"))
-            ->groupBy(DB::raw("DATE(created_at)"))
-            ->orderBy('date', 'ASC')
-            ->limit(7)
-            ->get();
+        
+        // Group orders by school_name (university)
+        $ordersBySchool = Order::select('school_name', DB::raw('count(*) as total_orders'))
+        ->groupBy('school_name')
+        ->orderByDesc('total_orders')
+        ->get();
+    
+        // ---Fetch 4 first users ---
+        $recentUsers = User::orderBy('id', 'asc')->take(4)->get();
 
         // Pass the counts to the view
         return view('admin.dashboard', compact(
@@ -42,10 +54,16 @@ class DashboardController extends Controller
             'preparingCount', 
             'outForDeliveryCount', 
             'completedCount', 
+            'receivedCount',
             'canceledCount',
-            'dailySales',
-            'statistics',
-            'revenue'
+            'orderStatuses',
+            'totalOrders',
+            'ordersWithAdditives',
+            'ordersWithoutAdditives',
+            'topSellingProducts',
+            'ordersBySchool',
+            'recentUsers'
         ));
     }
+    
 }

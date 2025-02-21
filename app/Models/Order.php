@@ -41,7 +41,7 @@ class Order extends Model
         'user_phone_number',
         'is_sponge',
         'pages_number',
-        'book_accessory',
+        // 'book_accessory',
         'additional_image_id',
         'transparent_printing_id',
         'delivery_number_one',

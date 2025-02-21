@@ -38,7 +38,7 @@ class OrderController extends Controller
             'user_phone_number' => 'required|string|max:20',
             'is_sponge' => 'required|boolean',
             'pages_number' => 'required|integer',
-            'book_accessory' => 'required|boolean',
+            // 'book_accessory' => 'required|boolean',
             'additional_image_id' => 'nullable|exists:user_images,id',
             'transparent_printing_id' => 'nullable|exists:user_images,id',
             'delivery_number_one' => 'required|string|max:20',

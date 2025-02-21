@@ -54,7 +54,7 @@
                     <p class="mt-3"><strong>Pages Number:</strong> {{ $order->pages_number }}</p>
                     <p><strong>Price:</strong> {{ $order->final_price }}</p>
                     <p><strong>Price with discount:</strong> {{ $order->final_price_with_discount }}</p>
-                    <p><strong>Accessory:</strong> {{ $order->book_accessory ? 'Yes' : 'No' }}</p>
+                    <p><strong>With Additives:</strong> {{ $order->is_with_additives ? 'Yes' : 'No' }}</p>
                     <p><strong>Sponge:</strong> {{ $order->is_sponge ? 'Yes' : 'No' }}</p>
                 </div>
             </div>

@@ -36,18 +36,18 @@
                                         <img class="img-fluid img-thumbnail rounded-circle" src="{{ $design->image }}"
                                             alt="Design Image" width="70" height="70">
                                     </td>
-                                    <td class="text-center">{{ $design->category->arabic_name }}</td>
+                                    <td class="text-center">{{ $design->category->arabic_name ?? 'N/A'}}</td>
                                     <td class="text-center">{{ $design->subCategory->arabic_name ?? 'N/A' }}</td>
                                     <td class="text-center">
                                         <!-- Actions Dropdown -->
                                         <div class="dropdown">
-                                            <a class="dropdown-toggle" id="dropdownMenuButton{{ $design->id }}"
+                                            <a class="dropdown-toggle" id="dropdownMenuButton{{ $design->id ?? 'N/A'}}"
                                                 data-bs-toggle="dropdown" style="cursor: pointer;" aria-expanded="false"
                                                 title="Actions">
                                                 <i class="fas fa-ellipsis-h"></i>
                                             </a>
                                             <ul class="dropdown-menu dropdown-menu-end"
-                                                aria-labelledby="dropdownMenuButton{{ $design->id }}">
+                                                aria-labelledby="dropdownMenuButton{{ $design->id ?? 'N/A' }}">
                                                 <!-- Edit Action -->
                                                 <li>
                                                     <a href="{{ route('book-designs.edit', $design) }}"

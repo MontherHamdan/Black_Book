@@ -40,7 +40,9 @@ class OrderController extends Controller
             'pages_number' => 'required|integer',
             // 'book_accessory' => 'required|boolean',
             'additional_image_id' => 'nullable|exists:user_images,id',
-            'transparent_printing_id' => 'nullable|exists:user_images,id',
+            // Replace the single ID validation with array validation
+            'transparent_printing_ids' => 'nullable|array',
+            'transparent_printing_ids.*' => 'exists:user_images,id',
             'delivery_number_one' => 'required|string|max:20',
             'delivery_number_two' => 'nullable|string|max:20',
             'governorate' => 'required|string',
@@ -51,19 +53,23 @@ class OrderController extends Controller
             'gift_title' => 'nullable|string',
             'is_with_additives' => 'nullable|boolean',
         ]);
-
+    
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
-
+    
         // Prepare data
         $data = $request->all();
         $data['status'] = $data['status'] ?? 'Pending'; // Default status
         $data['back_image_ids'] = json_encode($data['back_image_ids'] ?? []);
-
+        
+        // Handle the new transparent_printing_ids field
+        $data['transparent_printing_ids'] = json_encode($data['transparent_printing_ids'] ?? []);
+        
+    
         // Create the order
         $order = Order::create($data);
-
+    
         return response()->json([
             'message' => 'Order created successfully.',
             'order' => $order

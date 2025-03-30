@@ -58,6 +58,8 @@ class Order extends Model
 
     protected $casts = [
         'back_image_ids' => 'array', // Handle JSON arrays as PHP arrays
+        'transparent_printing_ids' => 'array',
+
     ];
 
     public function discountCode()
@@ -122,5 +124,19 @@ class Order extends Model
         return $this->hasMany(UserImage::class, 'id', 'back_image_ids');
     }
 
+    /**
+     * Get the transparent printing images.
+     *
+     * @return array
+     */
+    public function getTransparentPrintingIdsAttribute($value)
+    {
+        // If using the old field structure and it's not null
+        if (!$value && !is_null($this->transparent_printing_id)) {
+            return [$this->transparent_printing_id];
+        }
+        
+        return json_decode($value, true) ?? [];
+    }
 
 }

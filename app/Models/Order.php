@@ -6,21 +6,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-
 class Order extends Model
 {
     use HasFactory, SoftDeletes;
 
-
     protected $table = "orders";
 
     // Status constants
-    public const STATUS_PENDING         = 'Pending';
-    public const STATUS_PREPARING       = 'preparing';
+    public const STATUS_PENDING          = 'Pending';
+    public const STATUS_PREPARING        = 'preparing';
     public const STATUS_COMPLETED        = 'Completed';
     public const STATUS_OUT_FOR_DELIVERY = 'Out for Delivery';
-    public const STATUS_RECEIVED        = 'Received';
-    public const STATUS_CANCELED        = 'Canceled';
+    public const STATUS_RECEIVED         = 'Received';
+    public const STATUS_CANCELED         = 'Canceled';
 
     protected $fillable = [
         'user_gender',
@@ -28,7 +26,8 @@ class Order extends Model
         'book_type_id',
         'book_design_id',
         'front_image_id',
-        'book_decorations_id', 
+        'internal_image_id ',
+        'book_decorations_id',
         'back_image_ids',
         'user_type',
         'username_ar',
@@ -54,13 +53,27 @@ class Order extends Model
         'deleted_at',
         'gift_title',
         'is_with_additives',
+
+        'gift_type',
+        'designer_id',
+        'designer_done',
+        'designer_done_at',
     ];
 
     protected $casts = [
-        'back_image_ids' => 'array', // Handle JSON arrays as PHP arrays
+        'back_image_ids'          => 'array', // Handle JSON arrays as PHP arrays
         'transparent_printing_ids' => 'array',
-
+        'designer_done'    => 'boolean',
+        'designer_done_at' => 'datetime',
+        'is_with_additives' => 'boolean',
+        'gift_type' => 'string',
     ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relations
+    |--------------------------------------------------------------------------
+    */
 
     public function discountCode()
     {
@@ -79,7 +92,7 @@ class Order extends Model
 
     public function bookDecoration()
     {
-        return $this->belongsTo(BookDecoration::class,'book_decorations_id');
+        return $this->belongsTo(BookDecoration::class, 'book_decorations_id');
     }
 
     public function frontImage()
@@ -104,7 +117,6 @@ class Order extends Model
 
     public function backImages()
     {
-        // Ensure back_image_ids is an array
         $backImageIds = $this->back_image_ids;
 
         if (is_string($backImageIds)) {
@@ -112,16 +124,22 @@ class Order extends Model
         }
 
         if (!is_array($backImageIds) || empty($backImageIds)) {
-            return collect(); // Return an empty collection if not valid
+            return collect();
         }
 
         return UserImage::whereIn('id', $backImageIds)->get();
     }
 
+
     public function handleBackImages()
     {
         // Assuming 'UserImage' is the related model and 'back_image_ids' stores the image IDs
         return $this->hasMany(UserImage::class, 'id', 'back_image_ids');
+    }
+
+    public function additionalImages()
+    {
+        return $this->hasMany(OrderAdditionalImage::class, 'order_id');
     }
 
     /**
@@ -135,8 +153,25 @@ class Order extends Model
         if (!$value && !is_null($this->transparent_printing_id)) {
             return [$this->transparent_printing_id];
         }
-        
+
         return json_decode($value, true) ?? [];
     }
 
+    public function notes()
+    {
+        return $this->hasMany(Note::class);
+    }
+
+    /**
+     * المصمم المعيّن على الطلب
+     */
+    public function designer()
+    {
+        return $this->belongsTo(User::class, 'designer_id');
+    }
+
+    public function internalImage()
+    {
+        return $this->belongsTo(UserImage::class, 'internal_image_id');
+    }
 }

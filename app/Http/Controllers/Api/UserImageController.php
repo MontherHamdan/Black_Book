@@ -10,33 +10,61 @@ class UserImageController extends Controller
 {
     public function store(Request $request)
     {
-        // Validate the uploaded file
         $validated = $request->validate([
-            'image' => 'required|image|mimes:jpg,png,jpeg,gif,webp|max:20480',
+            'image' => 'nullable|image|mimes:jpg,png,jpeg,gif,webp|max:20480',
+            'images.*' => 'nullable|image|mimes:jpg,png,jpeg,gif,webp|max:20480',
         ]);
-    
-        // Retrieve the uploaded image
-        $imageFile = $request->file('image');
-    
-        // Generate a unique name for the image by appending the current timestamp to the original file name
-        $timestamp = time();
-        $originalName = $imageFile->getClientOriginalName();
-        $imageName = $timestamp . '_' . $originalName;
-    
-        // Store the image in the 'user_images' directory within the public storage
-        $imagePath = $imageFile->storeAs('user_images', $imageName, 'public');
-    
-        // Save the image path in the database (without full URL)
-        $userImage = UserImage::create(['image_path' => $imageName]);
-    
-        // Return the ID and image name of the uploaded image
+
+        // لو كانت SINGLE
+        if ($request->hasFile('image')) {
+            $imageFile = $request->file('image');
+            $imageName = time() . '_' . $imageFile->getClientOriginalName();
+            $imagePath = $imageFile->storeAs('user_images', $imageName, 'public');
+
+            $userImage = UserImage::create([
+                'image_path' => $imageName
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'type' => 'single',
+                'message' => 'Image uploaded successfully.',
+                'data' => [
+                    'image_id' => $userImage->id,
+                    'image_name' => $imageName,
+                ],
+            ]);
+        }
+
+        // لو كانت MULTIPLE
+        $uploadedImages = [];
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $img) {
+                $imageName = time() . '_' . $img->getClientOriginalName();
+                $img->storeAs('user_images', $imageName, 'public');
+
+                $userImage = UserImage::create([
+                    'image_path' => $imageName
+                ]);
+
+                $uploadedImages[] = [
+                    'image_id' => $userImage->id,
+                    'image_name' => $imageName
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'type' => 'multiple',
+                'message' => 'Images uploaded successfully.',
+                'data' => $uploadedImages
+            ]);
+        }
+
         return response()->json([
-            'success' => true,
-            'message' => 'Image uploaded successfully.',
-            'data' => [
-                'image_id' => $userImage->id,
-                'image_name' => $imageName, // Send back image name for frontend usage
-            ],
-        ]);
+            'success' => false,
+            'message' => 'No images found in request.'
+        ], 400);
     }
 }

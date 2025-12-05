@@ -31,20 +31,26 @@ class BookDecorationController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'name'  => 'nullable|string|max:255',
             'image' => 'required|image|mimes:jpg,png,jpeg,gif,webp|max:2048',
         ]);
 
         $imageFile = $request->file('image');
-        $timestamp = time(); // Get the current timestamp
+        $timestamp = time();
         $originalName = $imageFile->getClientOriginalName();
-        $imageName = $timestamp . '_' . $originalName; // Append timestamp to the original name
+        $imageName = $timestamp . '_' . $originalName;
         $imagePath = $imageFile->storeAs('book_decorations', $imageName, 'public');
         $imageUrl = url('storage/' . $imagePath);
 
-        BookDecoration::create(['image' => $imageUrl]);
+        BookDecoration::create([
+            'name'  => $validated['name'] ?? pathinfo($originalName, PATHINFO_FILENAME), // لو ما كتب اسم، ناخذ اسم الملف بدون الامتداد
+            'image' => $imageUrl,
+        ]);
 
-        return redirect()->route('book-decorations.index')->with('success', 'Book Decoration created successfully.');
+        return redirect()->route('book-decorations.index')
+            ->with('success', 'Book Decoration created successfully.');
     }
+
 
 
     /**
@@ -61,11 +67,12 @@ class BookDecorationController extends Controller
     public function update(Request $request, BookDecoration $bookDecoration)
     {
         $validated = $request->validate([
+            'name'  => 'nullable|string|max:255',
             'image' => 'nullable|image|mimes:jpg,png,jpeg,gif,webp|max:2048',
         ]);
 
         if ($request->hasFile('image')) {
-            // Delete the old image if it exists
+            // حذف الصورة القديمة
             if ($bookDecoration->image) {
                 $oldImagePath = str_replace(url('storage') . '/', '', $bookDecoration->image);
                 if (file_exists(public_path('storage/' . $oldImagePath))) {
@@ -73,19 +80,26 @@ class BookDecorationController extends Controller
                 }
             }
 
-            // Save the new image with a timestamp in the name
+            // حفظ الصورة الجديدة
             $imageFile = $request->file('image');
-            $timestamp = time(); // Get the current timestamp
+            $timestamp = time();
             $originalName = $imageFile->getClientOriginalName();
-            $imageName = $timestamp . '_' . $originalName; // Append timestamp to the original name
+            $imageName = $timestamp . '_' . $originalName;
             $imagePath = $imageFile->storeAs('book_decorations', $imageName, 'public');
             $validated['image'] = url('storage/' . $imagePath);
+
+            // لو ما فيه اسم مدخل، نستخدم اسم الملف
+            if (empty($validated['name'])) {
+                $validated['name'] = pathinfo($originalName, PATHINFO_FILENAME);
+            }
         }
 
         $bookDecoration->update($validated);
 
-        return redirect()->route('book-decorations.index')->with('success', 'Book Decoration updated successfully.');
+        return redirect()->route('book-decorations.index')
+            ->with('success', 'Book Decoration updated successfully.');
     }
+
 
     /**
      * Remove the specified resource from storage.

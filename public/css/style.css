@@ -53,6 +53,55 @@ This is the file you need to edit to change the look of the theme.
 /* ========================================= */
 /* 		   		General Styling	 			 */
 /* ========================================= */
+
+/* ================================
+   توحيد حجم ولون النص في صفحة الطلب
+   ================================ */
+
+/* 1) كل النصوص حجمها 20px ولونها أسود */
+body,
+.container,
+.card,
+.card * {
+  font-size: 20px !important;
+  color: #000 !important;
+}
+
+/* 2) أي نص كان muted (رمادي باهت) خليه أسود برضه */
+.text-muted {
+  color: #000 !important;
+}
+
+/* 3) نحافظ على لون نص البادجات أبيض (عشان الألوان الغامقة للخلفية) */
+.badge,
+.badge * {
+  color: #fff !important;
+}
+
+/* 4) الأيقونات (Font Awesome) نخليها سوداء برضه */
+i,
+.fas,
+.far,
+.fab,
+.fa {
+  color: #000 !important;
+}
+
+/* 5) تكبير بسيط لعناوين الصفحة (اختياري لكن مريح للعين) */
+h1 {
+  font-size: 26px !important;
+  font-weight: bold;
+}
+
+h2 {
+  font-size: 24px !important;
+  font-weight: bold;
+}
+
+h3 {
+  font-size: 22px !important;
+  font-weight: bold;
+}
 * {
   margin: 0;
   padding: 0;

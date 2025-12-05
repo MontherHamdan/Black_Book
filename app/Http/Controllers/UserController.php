@@ -8,26 +8,17 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the user.
-     */
     public function index()
     {
         $users = User::paginate(8);
         return view('admin.users.index', compact('users'));
     }
 
-    /**
-     * Show the form for creating a new user.
-     */
     public function create()
     {
         return view('admin.users.create');
     }
 
-    /**
-     * Store a newly created user in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -35,47 +26,42 @@ class UserController extends Controller
             'email'    => 'required|email|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
             'title'    => 'nullable|string|max:255',
-            'image'    => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048'
+            'image'    => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+            'role'     => 'required|in:' . User::ROLE_ADMIN . ',' . User::ROLE_DESIGNER,
         ]);
-    
-        // Handle file upload for image if provided
+
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('users', 'public');
         }
-    
+
+        $role = $request->role;
+
         User::create([
             'name'     => $request->name,
             'email'    => $request->email,
             'password' => Hash::make($request->password),
-            'is_admin' => $request->has('is_admin'),
             'title'    => $request->title,
             'image'    => $imagePath,
+            'role'     => $role,
+            // للتوافق مع الكود القديم:
+            'is_admin' => $role === User::ROLE_ADMIN,
         ]);
-    
+
         return redirect()->route('users.index')->with('success', 'User created successfully.');
     }
-    
 
-    /**
-     * Display the specified user.
-     */
+
     public function show(User $user)
     {
         return view('users.show', compact('user'));
     }
 
-    /**
-     * Show the form for editing the specified user.
-     */
     public function edit(User $user)
     {
         return view('admin.users.edit', compact('user'));
     }
 
-    /**
-     * Update the specified user in storage.
-     */
     public function update(Request $request, User $user)
     {
         $request->validate([
@@ -83,40 +69,44 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email,' . $user->id,
             'title' => 'nullable|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+            'role'  => 'required|in:' . User::ROLE_ADMIN . ',' . User::ROLE_DESIGNER,
         ]);
-    
+
+        $role = $request->role;
+
         $data = [
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'is_admin' => $request->has('is_admin'),
-            'title'    => $request->title,
+            'name'  => $request->name,
+            'email' => $request->email,
+            'title' => $request->title,
+            'role'  => $role,
+            // برضه نحافظ على is_admin
+            'is_admin' => $role === User::ROLE_ADMIN,
         ];
-    
-        // Only update password if provided
+
         if ($request->filled('password')) {
             $request->validate([
                 'password' => 'min:6|confirmed',
             ]);
             $data['password'] = Hash::make($request->password);
         }
-    
-        // Process image upload if provided
+
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('users', 'public');
             $data['image'] = $imagePath;
         }
-    
+
         $user->update($data);
-    
+
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+
     public function destroy(User $user)
     {
         $user->delete();
-        return redirect()->route('users.index')->with('success', 'User deleted successfully.');
+
+        return redirect()
+            ->route('users.index')
+            ->with('success', 'User deleted successfully.');
     }
 }

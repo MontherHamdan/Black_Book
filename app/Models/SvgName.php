@@ -5,12 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class BookDecoration extends Model
+class SvgName extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'image',
         'name',
+        'normalized_name',
+        'svg_code',
     ];
+
+    
 }

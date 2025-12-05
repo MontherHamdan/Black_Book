@@ -1,32 +1,50 @@
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("🔵 dashboard_scripts loaded");
+
         // Register the ChartDataLabels plugin
         Chart.register(ChartDataLabels);
 
         const orderStatusCanvas = document.getElementById('orderStatusChart');
         if (orderStatusCanvas) {
             const orderStatuses = @json($orderStatuses);
-            const labels = Object.keys(orderStatuses);
+
+            // 1) نخزن المفاتيح الأصلية (الإنجليزي)
+            const statusKeys = Object.keys(orderStatuses); // مثال: ['Pending', 'Completed', ...]
+
+            // 2) القيم كما هي
             const dataValues = Object.values(orderStatuses);
-            // Updated colors in RGBA format with 80% opacity
-            const statusColorMap = {
-                "Pending": "rgba(255, 193, 7, 0.8)", 
-                "preparing": "rgba(111, 66, 193, 0.8)",
-                "Out for Delivery": "rgba(232, 62, 140, 0.8)", 
-                "Completed": "rgba(40, 167, 69, 0.8)",
-                "Received": "rgba(23, 162, 184, 0.8)", 
-                "Canceled": "rgba(220, 53, 69, 0.8)"
+
+            // 3) خريطة الأسماء بالعربي
+            const statusLabelMap = {
+                "Pending": "تم التصميم",
+                "Completed": "تم الاعتماد",
+                "preparing": "قيد التجهيز",
+                "Received": "تم التسليم",
+                "Out for Delivery": "مرتجع",
+                "Canceled": "رفض الاستلام",
+                "error": "خطأ"
             };
 
-            // Define a separate hover color map with full opacity (or any effect you prefer)
-            const statusHoverColorMap = {
-                "Pending": "rgba(255, 193, 7, 1)", 
-                "preparing": "rgba(111, 66, 193, 1)",
-                "Out for Delivery": "rgba(232, 62, 140, 1)", 
-                "Completed": "rgba(40, 167, 69, 1)",
-                "Received": "rgba(23, 162, 184, 1)", 
-                "Canceled": "rgba(220, 53, 69, 1)"
+            // 4) اللابلز المستخدمة في التشارت (عربي)
+            const labels = statusKeys.map(function(key) {
+                return statusLabelMap[key] || key;
+            });
+
+            // 5) خريطة الألوان (نفس ألوان الحالات)
+            const statusColorMap = {
+                "Pending": "#ffc107", // تم التصميم
+                "Completed": "#0dcaf0", // تم الاعتماد
+                "preparing": "#6f42c1", // قيد التجهيز
+                "Received": "#198754", // تم التسليم
+                "Out for Delivery": "#fd7e14", // مرتجع
+                "Canceled": "#800000", // رفض الاستلام
+                "error": "#dc3545" // خطأ
             };
+
+            // 6) ألوان الهفر (ممكن نخليها نفس اللون)
+            const statusHoverColorMap = statusColorMap;
+
 
             new Chart(orderStatusCanvas.getContext('2d'), {
                 type: 'doughnut',
@@ -34,13 +52,20 @@
                     labels: labels,
                     datasets: [{
                         data: dataValues,
-                        backgroundColor: labels.map(l => statusColorMap[l] || "rgba(153,153,153,0.8)"),
+                        // نستخدم statusKeys عشان الألوان تعتمد على المفتاح الإنجليزي
+                        backgroundColor: statusKeys.map(function(key) {
+                            return statusColorMap[key] || "rgba(153,153,153,0.8)";
+                        }),
                         borderWidth: 0,
-                        // Use the new hover mapping for a different hover color effect
-                        hoverBackgroundColor: labels.map(l => statusHoverColorMap[l] || "rgba(153,153,153,1)"),
-                        hoverBorderColor: labels.map(l => statusHoverColorMap[l] || "rgba(153,153,153,1)"),
+                        hoverBackgroundColor: statusKeys.map(function(key) {
+                            return statusHoverColorMap[key] || "rgba(153,153,153,1)";
+                        }),
+                        hoverBorderColor: statusKeys.map(function(key) {
+                            return statusHoverColorMap[key] || "rgba(153,153,153,1)";
+                        }),
                         hoverBorderWidth: 0
                     }]
+
                 },
                 options: {
                     responsive: true,
@@ -51,7 +76,9 @@
                             labels: {
                                 usePointStyle: true,
                                 padding: 20,
-                                font: { size: 12 }
+                                font: {
+                                    size: 12
+                                }
                             }
                         },
                         tooltip: {
@@ -60,12 +87,17 @@
                                 const dataset = context.tooltip.dataPoints[0].dataset;
                                 return dataset.backgroundColor[index];
                             },
-                            borderColor: '#fff',  // White border color
-                            borderWidth: 1,       // Adjust the width as needed
-                            titleFont: { size: 14, weight: 'bold' },
-                            bodyFont: { size: 12 },
+                            borderColor: '#fff', // White border color
+                            borderWidth: 1, // Adjust the width as needed
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 12
+                            },
                             callbacks: {
-                                label: function (context) {
+                                label: function(context) {
                                     const label = context.label || '';
                                     const value = context.parsed;
                                     const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
@@ -76,7 +108,10 @@
                         },
                         datalabels: {
                             color: '#fff',
-                            font: { weight: 'bold', size: 14 },
+                            font: {
+                                weight: 'bold',
+                                size: 14
+                            },
                             formatter: (value, context) => {
                                 const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
                                 const percentage = total ? ((value / total) * 100).toFixed(1) : 0;
@@ -125,20 +160,40 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                            ticks: { color: '#333', font: { size: 12 } },
-                            grid: { color: 'rgba(0,0,0,0.1)' }
+                            ticks: {
+                                color: '#333',
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
                         },
                         x: {
-                            ticks: { color: '#333', font: { size: 12 } },
-                            grid: { display: false }
+                            ticks: {
+                                color: '#333',
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
                         }
                     },
                     plugins: {
-                        legend: { display: false },
+                        legend: {
+                            display: false
+                        },
                         tooltip: {
                             backgroundColor: 'rgba(0,0,0,0.7)',
-                            titleFont: { weight: 'bold' },
-                            bodyFont: { size: 12 },
+                            titleFont: {
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 12
+                            },
                             padding: 10,
                             cornerRadius: 4,
                             displayColors: false
@@ -147,7 +202,10 @@
                             color: '#fff',
                             anchor: 'end',
                             align: 'top',
-                            font: { weight: 'bold', size: 12 },
+                            font: {
+                                weight: 'bold',
+                                size: 12
+                            },
                             formatter: (value) => value
                         }
                     },
@@ -161,14 +219,14 @@
 
         // --- Top Selling Products Chart (Vertical Bar Chart) ---
         const topSellingCanvas = document.getElementById('topSellingChart');
-        if(topSellingCanvas) {
+        if (topSellingCanvas) {
             new Chart(topSellingCanvas.getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: {!! json_encode($topSellingProducts->pluck('bookType.name_ar')) !!},
+                    labels: {!!json_encode($topSellingProducts -> pluck('bookType.name_ar')) !!},
                     datasets: [{
                         label: 'Orders',
-                        data: {!! json_encode($topSellingProducts->pluck('total_orders')) !!},
+                        data: {!!json_encode($topSellingProducts -> pluck('total_orders')) !!},
                         backgroundColor: 'rgba(75, 192, 192, 0.6)',
                         borderColor: 'rgba(75, 192, 192, 1)',
                         borderWidth: 1,
@@ -181,19 +239,32 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                            ticks: { color: '#333' },
-                            grid: { color: 'rgba(0,0,0,0.1)' }
+                            ticks: {
+                                color: '#333'
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
                         },
                         x: {
-                            ticks: { color: '#333', autoSkip: false },
-                            grid: { display: false }
+                            ticks: {
+                                color: '#333',
+                                autoSkip: false
+                            },
+                            grid: {
+                                display: false
+                            }
                         }
                     },
                     plugins: {
-                        legend: { display: false },
+                        legend: {
+                            display: false
+                        },
                         tooltip: {
                             backgroundColor: 'rgba(0,0,0,0.7)',
-                            titleFont: { weight: 'bold' },
+                            titleFont: {
+                                weight: 'bold'
+                            },
                             callbacks: {
                                 label: function(context) {
                                     return context.dataset.label + ': ' + context.parsed.y;
@@ -204,7 +275,9 @@
                             anchor: 'end',
                             align: 'top',
                             color: '#333',
-                            font: { weight: 'bold' },
+                            font: {
+                                weight: 'bold'
+                            },
                             formatter: (value) => value
                         }
                     },
@@ -218,9 +291,9 @@
 
         // --- Orders by School Chart ---
         const schoolCanvas = document.getElementById('schoolChart');
-        if(schoolCanvas) {
-            const schoolLabels = {!! json_encode($ordersBySchool->pluck('school_name')) !!};
-            const schoolData = {!! json_encode($ordersBySchool->pluck('total_orders')) !!};
+        if (schoolCanvas) {
+            const schoolLabels = {!!json_encode($ordersBySchool -> pluck('school_name')) !!};
+            const schoolData = {!!json_encode($ordersBySchool -> pluck('total_orders')) !!};
 
             new Chart(schoolCanvas.getContext('2d'), {
                 type: 'bar',
@@ -241,19 +314,32 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                            ticks: { color: '#333' },
-                            grid: { color: 'rgba(0,0,0,0.1)' }
+                            ticks: {
+                                color: '#333'
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
                         },
                         x: {
-                            ticks: { color: '#333', autoSkip: false },
-                            grid: { display: false }
+                            ticks: {
+                                color: '#333',
+                                autoSkip: false
+                            },
+                            grid: {
+                                display: false
+                            }
                         }
                     },
                     plugins: {
-                        legend: { display: false },
+                        legend: {
+                            display: false
+                        },
                         tooltip: {
                             backgroundColor: 'rgba(0,0,0,0.7)',
-                            titleFont: { weight: 'bold' },
+                            titleFont: {
+                                weight: 'bold'
+                            },
                             callbacks: {
                                 label: function(context) {
                                     return context.dataset.label + ': ' + context.parsed.y;
@@ -264,7 +350,9 @@
                             anchor: 'end',
                             align: 'top',
                             color: '#333',
-                            font: { weight: 'bold' },
+                            font: {
+                                weight: 'bold'
+                            },
                             formatter: (value) => value
                         }
                     },
@@ -277,4 +365,3 @@
         }
     });
 </script>
-

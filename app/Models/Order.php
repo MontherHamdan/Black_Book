@@ -58,6 +58,13 @@ class Order extends Model
         'designer_id',
         'designer_done',
         'designer_done_at',
+
+        'university_id',
+        'university_major_id',
+        'diploma_id',
+        'diploma_major_id',
+
+        'custom_design_image_id'
     ];
 
     protected $casts = [
@@ -173,5 +180,10 @@ class Order extends Model
     public function internalImage()
     {
         return $this->belongsTo(UserImage::class, 'internal_image_id');
+    }
+
+    public function customDesignImage()
+    {
+        return $this->belongsTo(\App\Models\UserImage::class, 'custom_design_image_id');
     }
 }

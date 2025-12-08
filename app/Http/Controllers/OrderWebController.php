@@ -34,11 +34,9 @@ class OrderWebController extends Controller
             'bookDecoration',
             'frontImage',
             'additionalImage',
-            'additionalImages.userImage',
             'transparentPrinting',
             'svg',
             'notes.user',
-            'internalImage',
         ])->findOrFail($id);
 
         $decorations = BookDecoration::orderBy('id')

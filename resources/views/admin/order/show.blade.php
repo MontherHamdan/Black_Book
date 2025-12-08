@@ -249,28 +249,64 @@
                     $giftTitle = $order->gift_title;
                     @endphp
 
+                    @php
+                    $internalImages = $order->additionalImagesFromIds();
+                    @endphp
 
-                    {{-- 🔸 الصور الداخلية (عمودي مثل تجليد الدفتر) --}}
-                    {{-- 🔸 الصورة الداخلية (صورة واحدة) --}}
                     <div class="mb-4 text-center">
-                        <strong class="d-block mb-2">الصورة الداخلية</strong>
+                        <strong class="d-block mb-2">
+                            الصور الداخلية
+                            @if($internalImages->count())
+                            (عدد: {{ $internalImages->count() }})
+                            @endif
+                        </strong>
 
-                        @if ($internalImage && $internalImage->image_path)
-                        @php
-                        $path = $internalImage->image_path;
-                        $src = \Illuminate\Support\Str::startsWith($path, ['http://', 'https://'])
-                        ? $path
-                        : asset('storage/user_images/' . $path);
-                        @endphp
+                        @if ($internalImages->count() > 0)
+                        <div id="internalImagesCarousel" class="carousel slide mb-3" data-bs-ride="false">
+                            <div class="carousel-inner text-center">
+                                @foreach ($internalImages as $index => $img)
+                                @php
+                                $path = $img->image_path;
 
-                        <img src="{{ $src }}"
-                            class="d-block mx-auto img-fluid img-thumbnail"
-                            style="max-width: 260px;"
-                            alt="الصورة الداخلية">
+                                if (\Illuminate\Support\Str::startsWith($path, ['http://', 'https://'])) {
+                                $src = $path;
+                                } elseif (\Illuminate\Support\Str::startsWith($path, ['user_images/'])) {
+                                $src = asset('storage/' . ltrim($path, '/'));
+                                } else {
+                                $src = asset('storage/user_images/' . ltrim($path, '/'));
+                                }
+                                @endphp
+
+                                <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
+                                    <img src="{{ $src }}"
+                                        class="d-block mx-auto img-fluid img-thumbnail"
+                                        style="max-width: 260px;"
+                                        alt="الصورة الداخلية {{ $index + 1 }}">
+                                </div>
+                                @endforeach
+                            </div>
+
+                            <button class="carousel-control-prev custom-carousel-control"
+                                type="button"
+                                data-bs-target="#internalImagesCarousel"
+                                data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon"></span>
+                                <span class="visually-hidden">السابق</span>
+                            </button>
+
+                            <button class="carousel-control-next custom-carousel-control"
+                                type="button"
+                                data-bs-target="#internalImagesCarousel"
+                                data-bs-slide="next">
+                                <span class="carousel-control-next-icon"></span>
+                                <span class="visually-hidden">التالي</span>
+                            </button>
+                        </div>
                         @else
-                        <p class="text-muted">لا توجد صورة داخلية.</p>
+                        <p class="text-muted">لا توجد صور داخلية.</p>
                         @endif
                     </div>
+
 
 
                     {{-- 🔸 الطباعة الشفافة (نفس شكل الزخرفة في تجليد الدفتر) --}}
@@ -827,8 +863,7 @@
                     ? $backImages->first()->image_path
                     : null;
 
-                    // الصور الإضافية النهائية (من order_additional_images)
-                    $additionalImages = $order->additionalImages ?? collect();
+                   
 
                     // 🔧 دالة صغيرة لتجهيز الـ URL الصحيح لأي صورة
                     $resolveImageUrl = function ($path) {
@@ -1225,210 +1260,7 @@
 
         </div>
 
-        <!-- Full-width: Images Section -->
-        <!-- <div class="col-12">
-            <div class="card shadow-sm mb-4" style="direction: rtl; text-align: right;">
-                <div class="card-header d-flex align-items-center">
-                    الصور
-                </div>
-
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>الصورة الأمامية:</strong></p>
-                            @if ($order->frontImage)
-                            <div class="d-flex align-items-center">
-                                <img src="{{ $order->frontImage->image_path }}"
-                                    class="img-fluid img-thumbnail mb-2"
-                                    alt="الصورة الأمامية">
-                                <a href="{{ $order->frontImage->image_path }}"
-                                    class="btn btn-secondary btn-sm me-3"
-                                    download>
-                                    <i class="fas fa-download me-1"></i> تنزيل
-                                </a>
-                            </div>
-                            @else
-                            <p>لا توجد صورة متوفرة</p>
-                            @endif
-                        </div>
-
-                        <div class="col-md-6">
-                            <p><strong>الصور الإضافية:</strong></p>
-
-                            @if ($order->additionalImages && $order->additionalImages->isNotEmpty())
-                            {{-- سلايدر Bootstrap للصور الإضافية --}}
-                            <div id="additionalImagesCarousel" class="carousel slide mb-3" data-bs-ride="false">
-                                <div class="carousel-inner text-center">
-                                    @foreach ($order->additionalImages as $index => $img)
-                                    @if ($img->userImage && $img->userImage->image_path)
-                                    @php
-                                    $path = $img->userImage->image_path;
-
-                                    if (\Illuminate\Support\Str::startsWith($path, ['http://', 'https://'])) {
-                                    $src = $path;
-                                    } else {
-                                    $src = asset('storage/user_images/' . $path);
-                                    }
-                                    @endphp
-
-                                    <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
-                                        <img src="{{ $src }}"
-                                            class="d-block mx-auto img-fluid img-thumbnail mb-2"
-                                            alt="الصورة الإضافية">
-                                    </div>
-                                    @endif
-                                    @endforeach
-                                </div>
-
-                                {{-- أسهم التنقّل --}}
-                                <button class="carousel-control-prev custom-carousel-control"
-                                    type="button"
-                                    data-bs-target="#additionalImagesCarousel"
-                                    data-bs-slide="prev">
-                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">السابق</span>
-                                </button>
-
-                                <button class="carousel-control-next custom-carousel-control"
-                                    type="button"
-                                    data-bs-target="#additionalImagesCarousel"
-                                    data-bs-slide="next">
-                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">التالي</span>
-                                </button>
-                            </div>
-
-                            {{-- الأزرار --}}
-                            <div class="d-flex gap-2">
-                                {{-- تنزيل الصورة الحالية فقط --}}
-                                <button type="button"
-                                    id="downloadCurrentAdditional"
-                                    class="btn btn-secondary btn-sm">
-                                    <i class="fas fa-download me-1"></i> تنزيل الصورة
-                                </button>
-
-                                {{-- تنزيل جميع الصور --}}
-                                <a href="{{ route('orders.additionalImages.download', $order->id) }}"
-                                    class="btn btn-success btn-sm">
-                                    <i class="fas fa-download me-1"></i> تنزيل جميع الصور
-                                </a>
-                            </div>
-
-                            @elseif ($order->additionalImage)
-                            {{-- دعم النسخة القديمة لصورة إضافية واحدة --}}
-                            <div class="d-flex align-items-center">
-                                <img src="{{ $order->additionalImage->image_path }}"
-                                    class="img-fluid img-thumbnail mb-2"
-                                    alt="الصورة الإضافية">
-                                <a href="{{ $order->additionalImage->image_path }}"
-                                    class="btn btn-secondary btn-sm me-3"
-                                    download>
-                                    <i class="fas fa-download me-1"></i> تنزيل
-                                </a>
-                            </div>
-
-                            @else
-                            <p>لا توجد صور متوفرة</p>
-                            @endif
-                        </div>
-
-                        <div class="col-md-6">
-                            <p><strong>زخرفة الكتاب:</strong></p>
-
-                            @if ($order->bookDecoration)
-                            <p class="mb-2">
-                                <strong>اسم الزخرفة:</strong> {{ $order->bookDecoration->name ?? '—' }}
-                            </p>
-
-                            <div class="d-flex align-items-center">
-                                <img src="{{ $order->bookDecoration->image }}"
-                                    class="img-fluid img-thumbnail mb-2"
-                                    alt="زخرفة الكتاب">
-
-                                <a href="{{ $order->bookDecoration->image }}"
-                                    class="btn btn-secondary btn-sm me-3"
-                                    download>
-                                    <i class="fas fa-download me-1"></i> تنزيل
-                                </a>
-                            </div>
-                            @else
-                            <p>لا توجد صورة متوفرة</p>
-                            @endif
-                        </div>
-
-                        <div class="col-md-6">
-                            <p><strong>الطباعة الشفافة:</strong></p>
-                            @if ($order->transparentPrinting)
-                            <div class="d-flex align-items-center">
-                                <img src="{{ $order->transparentPrinting->image_path }}"
-                                    class="img-fluid img-thumbnail mb-2"
-                                    alt="الطباعة الشفافة">
-                                <a href="{{ $order->transparentPrinting->image_path }}"
-                                    class="btn btn-secondary btn-sm me-3"
-                                    download>
-                                    <i class="fas fa-download me-1"></i> تنزيل
-                                </a>
-                            </div>
-                            @else
-                            <p>لا توجد صورة متوفرة</p>
-                            @endif
-                        </div>
-                    </div>
-
-                    <div class="row mb-2 mt-3">
-                        <p><strong>ملف SVG:</strong></p>
-                        <div class="d-flex align-items-center svg-preview-container">
-                            <div class="img-fluids img-thumbnail svg-preview mb-2" style="width: 80%; height: auto;">
-                                {!! $order->svg->svg_code !!}
-                            </div>
-                            <button class="btn btn-primary btn-sm me-3 copy-svg-button">
-                                <i class="fas fa-copy me-1"></i> نسخ
-                            </button>
-                        </div>
-                    </div>
-
-                    <p><strong>الصور الخلفية:</strong></p>
-                    @if ($order->backImages()->isNotEmpty())
-                    <div id="backImagesCarousel" class="carousel slide" data-bs-ride="carousel">
-                        <div class="carousel-inner text-center">
-                            @foreach ($order->backImages() as $index => $backImage)
-                            <div class="carousel-item {{ $index == 0 ? 'active' : '' }}">
-                                <img src="{{ $backImage->image_path }}"
-                                    class="d-block mx-auto img-fluid rounded shadow"
-                                    alt="الصورة الخلفية">
-                            </div>
-                            @endforeach
-                        </div>
-
-                        <button class="carousel-control-prev custom-carousel-control"
-                            type="button"
-                            data-bs-target="#backImagesCarousel"
-                            data-bs-slide="prev">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">السابق</span>
-                        </button>
-
-                        <button class="carousel-control-next custom-carousel-control"
-                            type="button"
-                            data-bs-target="#backImagesCarousel"
-                            data-bs-slide="next">
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">التالي</span>
-                        </button>
-                    </div>
-
-                    <div class="mt-3 text-center">
-                        <a href="{{ route('orders.backImages.download', $order->id) }}"
-                            class="btn btn-success btn-sm">
-                            <i class="fas fa-download me-1"></i> تنزيل جميع الصور
-                        </a>
-                    </div>
-                    @else
-                    <p>لا توجد صور خلفية متوفرة</p>
-                    @endif
-                </div>
-            </div>
-        </div> -->
+       
     </div>
 </div>
 

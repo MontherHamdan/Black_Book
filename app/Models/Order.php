@@ -177,13 +177,24 @@ class Order extends Model
         return $this->belongsTo(User::class, 'designer_id');
     }
 
-    public function internalImage()
-    {
-        return $this->belongsTo(UserImage::class, 'internal_image_id');
-    }
-
+  
     public function customDesignImage()
     {
         return $this->belongsTo(\App\Models\UserImage::class, 'custom_design_image_id');
+    }
+
+    public function additionalImagesFromIds()
+    {
+        $ids = $this->additional_image_id;
+
+        if (is_string($ids)) {
+            $ids = json_decode($ids, true);
+        }
+
+        if (!is_array($ids) || empty($ids)) {
+            return collect();
+        }
+
+        return UserImage::whereIn('id', $ids)->get();
     }
 }

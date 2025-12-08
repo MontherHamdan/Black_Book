@@ -106,10 +106,10 @@ class Order extends Model
         return $this->belongsTo(UserImage::class, 'front_image_id');
     }
 
-    public function additionalImage()
-    {
-        return $this->belongsTo(UserImage::class, 'additional_image_id');
-    }
+    // public function additionalImage()
+    // {
+    //     return $this->belongsTo(UserImage::class, 'additional_image_id');
+    // }
 
     public function transparentPrinting()
     {

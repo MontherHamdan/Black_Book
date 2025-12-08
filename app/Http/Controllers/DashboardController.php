@@ -65,10 +65,19 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        // Group by school_name
+        // ✅ Orders by School (جامعة / دبلوم) بدل school_name
         $ordersBySchool = (clone $ordersQuery)
-            ->select('school_name', DB::raw('count(*) as total_orders'))
-            ->groupBy('school_name')
+            ->leftJoin('universities', 'orders.university_id', '=', 'universities.id')
+            ->leftJoin('diplomas', 'orders.diploma_id', '=', 'diplomas.id')
+            ->selectRaw("
+                CASE 
+                    WHEN orders.user_type = 'university' THEN universities.name
+                    WHEN orders.user_type = 'diploma'    THEN diplomas.name
+                    ELSE 'غير محدد'
+                END AS school_label,
+                COUNT(*) AS total_orders
+            ")
+            ->groupBy('school_label')
             ->orderByDesc('total_orders')
             ->get();
 

@@ -166,9 +166,9 @@
                     {{-- 2. صورة التصميم من علاقة bookDesign --}}
                     <p><strong>صورة المنتج:</strong></p>
                     <div class="d-flex justify-content-start">
-                        @if ($order->bookDesign && $order->bookDesign->image)
+                        @if ($order->bookType && $order->bookType->image)
                         <img class="img-fluid img-thumbnail"
-                            src="{{ $order->bookDesign->image }}"
+                            src="{{ $order->bookType->image }}"
                             alt="صورة التصميم"
                             style="max-width: 260px; height: auto;">
                         @else
@@ -657,22 +657,25 @@
                     @endphp
 
                     <div class="row">
-                        {{-- 🎨 صورة التصميم (المختارة) --}}
+                        {{-- 🎨 صورة التصميم (المختارة من book_design) --}}
                         <div class="col-md-6 mb-3">
                             <p><strong>صورة التصميم (المختارة):</strong></p>
 
-                            @if ($designImagePath)
+                            @if ($order->bookDesign && $order->bookDesign->image)
                             <div class="d-flex flex-column align-items-center">
-                                <img src="{{ $designImagePath }}"
+                                <img src="{{ $order->bookDesign->image }}"
                                     class="img-fluid img-thumbnail mb-2"
                                     style="max-width: 260px;"
                                     alt="صورة التصميم المختارة">
 
-                                <!-- <a href="{{ $designImagePath }}"
-                                    class="btn btn-secondary btn-sm"
-                                    download>
-                                    <i class="fas fa-download me-1"></i> تنزيل صورة التصميم
-                                </a> -->
+                                {{-- لو بدك زر تحميل --}}
+                                <!--
+                <a href="{{ $order->bookDesign->image }}"
+                   class="btn btn-secondary btn-sm"
+                   download>
+                   <i class="fas fa-download me-1"></i> تنزيل صورة التصميم
+                </a>
+                -->
                             </div>
                             @else
                             <p class="text-muted mb-0">لا يوجد تصميم محدّد لهذا الطلب.</p>
@@ -811,13 +814,12 @@
                 </div>
 
                 <div class="card-body">
-
                     @php
-                    // الصورة الأمامية (front_image_id → user_images)
+                    // صورة أمامية (front_image_id → user_images)
                     $frontImagePath = $order->frontImage->image_path ?? null;
 
-                    // تصميم آخر = صورة محمّلة من اليوزر (additional_image_id → user_images)
-                    $anotherDesignPath = $order->additionalImage->image_path ?? null;
+                    // تصميم آخر (custom_design_image_id → user_images)
+                    $anotherDesignPath = $order->customDesignImage->image_path ?? null;
 
                     // أول صورة من الخلف (back_image_ids → user_images)
                     $backImages = $order->backImages();
@@ -827,83 +829,69 @@
 
                     // الصور الإضافية النهائية (من order_additional_images)
                     $additionalImages = $order->additionalImages ?? collect();
+
+                    // 🔧 دالة صغيرة لتجهيز الـ URL الصحيح لأي صورة
+                    $resolveImageUrl = function ($path) {
+                    if (!$path) {
+                    return null;
+                    }
+
+                    // لو رابط خارجي كامل
+                    if (\Illuminate\Support\Str::startsWith($path, ['http://', 'https://'])) {
+                    return $path;
+                    }
+
+                    // لو مخزّن على شكل user_images/xxx.png
+                    if (\Illuminate\Support\Str::startsWith($path, ['user_images/'])) {
+                    return asset('storage/' . ltrim($path, '/'));
+                    }
+
+                    // لو مخزّن على شكل /storage/user_images/xxx.png
+                    if (\Illuminate\Support\Str::startsWith($path, ['/storage/'])) {
+                    return asset(ltrim($path, '/'));
+                    }
+
+                    // لو اسم ملف فقط: xxx.png
+                    return asset('storage/user_images/' . ltrim($path, '/'));
+                    };
+
+                    // نحضّر الـ URLs الجاهزة
+                    $frontSrc = $resolveImageUrl($frontImagePath);
+                    $anotherSrc = $resolveImageUrl($anotherDesignPath);
                     @endphp
 
-                    {{-- 4) الصور الإضافية --}}
+
+
+                    {{-- 4) تصميم آخر من custom_design_image_id --}}
+
                     <div class="mb-4 text-center">
                         <strong class="d-block mb-2">تصميم آخر</strong>
 
-                        @if ($additionalImages->count() > 0)
-                        <div id="finalAdditionalImagesCarousel" class="carousel slide mb-3" data-bs-ride="false">
-                            <div class="carousel-inner text-center">
-                                @foreach ($additionalImages as $index => $img)
-                                @if ($img->userImage && $img->userImage->image_path)
-                                @php
-                                $path = $img->userImage->image_path;
-                                $src = \Illuminate\Support\Str::startsWith($path, ['http://', 'https://'])
-                                ? $path
-                                : asset('storage/user_images/' . $path);
-                                @endphp
-
-                                <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
-                                    <img src="{{ $src }}"
-                                        class="d-block mx-auto img-fluid img-thumbnail"
-                                        style="max-width: 260px;"
-                                        alt="الصورة الإضافية">
-                                </div>
-                                @endif
-                                @endforeach
-                            </div>
-
-                            <button class="carousel-control-prev custom-carousel-control"
-                                type="button"
-                                data-bs-target="#finalAdditionalImagesCarousel"
-                                data-bs-slide="prev">
-                                <span class="carousel-control-prev-icon"></span>
-                                <span class="visually-hidden">السابق</span>
-                            </button>
-
-                            <button class="carousel-control-next custom-carousel-control"
-                                type="button"
-                                data-bs-target="#finalAdditionalImagesCarousel"
-                                data-bs-slide="next">
-                                <span class="carousel-control-next-icon"></span>
-                                <span class="visually-hidden">التالي</span>
-                            </button>
-                        </div>
-
-                        {{-- الأزرار: تنزيل الصورة الحالية + تنزيل جميع الصور الإضافية --}}
-                        <div class="d-flex justify-content-center gap-2">
-                            {{-- تنزيل الصورة الحالية فقط --}}
-                            <button type="button"
-                                id="downloadCurrentFinalAdditionalImage"
-                                class="btn btn-secondary btn-sm">
-                                <i class="fas fa-download me-1"></i> تنزيل الصورة الحالية
-                            </button>
-
-                            {{-- تنزيل جميع الصور الإضافية --}}
-                            <a href="{{ route('orders.additionalImages.download', $order->id) }}"
-                                class="btn btn-success btn-sm">
-                                <i class="fas fa-download me-1"></i> تنزيل جميع الصور الإضافية
-                            </a>
-                        </div>
+                        @if ($anotherSrc)
+                        <img src="{{ $anotherSrc }}"
+                            class="d-block mx-auto img-fluid img-thumbnail mb-2"
+                            style="max-width: 260px;"
+                            alt="تصميم آخر">
                         @else
-                        <p class="text-muted">لا توجد صور إضافية.</p>
+                        <p class="text-muted">لا يوجد تصميم آخر.</p>
                         @endif
                     </div>
+
+
+
 
                     {{-- 1) الصورة الأمامية --}}
                     <div class="mb-4 text-center">
                         <strong class="d-block mb-2">الصورة الأمامية</strong>
 
-                        @if ($frontImagePath)
-                        <img src="{{ $frontImagePath }}"
+                        @if ($frontSrc)
+                        <img src="{{ $frontSrc }}"
                             class="img-fluid img-thumbnail mb-2"
                             style="max-width: 260px;"
                             alt="الصورة الأمامية">
 
                         <div>
-                            <a href="{{ $frontImagePath }}"
+                            <a href="{{ $frontSrc }}"
                                 class="btn btn-secondary btn-sm"
                                 download>
                                 <i class="fas fa-download me-1"></i> تنزيل الصورة الأمامية
@@ -912,6 +900,7 @@
                         @else
                         <p class="text-muted">لا توجد صورة أمامية.</p>
                         @endif
+
                     </div>
 
 
@@ -928,19 +917,23 @@
                         @if ($backImages->isNotEmpty())
                         <div id="finalBackImagesCarousel" class="carousel slide mb-3" data-bs-ride="false">
                             <div class="carousel-inner text-center">
+
                                 @foreach ($backImages as $index => $backImage)
                                 @php
-                                // نفس منطق التخزين تبعك:
-                                $backSrc = $backImage->image_path;
+                                // نستخدم نفس الفنكشن resolveImageUrl
+                                $backSrc = $resolveImageUrl($backImage->image_path ?? null);
                                 @endphp
 
+                                @if ($backSrc)
                                 <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
                                     <img src="{{ $backSrc }}"
                                         class="d-block mx-auto img-fluid img-thumbnail mb-2"
                                         style="max-width: 260px;"
                                         alt="الصورة الخلفية {{ $index + 1 }}">
                                 </div>
+                                @endif
                                 @endforeach
+
                             </div>
 
                             {{-- الأسهم --}}
@@ -980,6 +973,7 @@
                         <p class="text-muted">لا توجد صور خلفية لهذا الطلب.</p>
                         @endif
                     </div>
+
 
 
 
@@ -1439,246 +1433,6 @@
 </div>
 
 {{-- Scripts --}}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const copyButtons = document.querySelectorAll('.copy-svg-button');
-        const nameSvgButtons = document.querySelectorAll('.copy-name-svg-btn');
 
-        // Create a reusable toast notification container
-        let toastContainer = document.getElementById('toast-container');
-        if (!toastContainer) {
-            toastContainer = document.createElement('div');
-            toastContainer.id = 'toast-container';
-            toastContainer.style.position = 'fixed';
-            toastContainer.style.bottom = '20px';
-            toastContainer.style.right = '20px';
-            toastContainer.style.zIndex = '9999';
-            document.body.appendChild(toastContainer);
-        }
-
-        // زر النسخ الخاص بقسم "ملف SVG" (الموجود في أسفل الصفحة)
-        copyButtons.forEach(function(button) {
-            button.addEventListener('click', function() {
-                const svgPreviewDiv = document.querySelector('.svg-preview');
-                if (!svgPreviewDiv) return;
-
-                const svgCode = svgPreviewDiv.innerHTML.trim();
-
-                navigator.clipboard.writeText(svgCode)
-                    .then(function() {
-                        showToast('تم نسخ SVG الخاص بالطلب إلى الحافظة ✅', 'success');
-                    })
-                    .catch(function(err) {
-                        console.error('Failed to copy SVG code: ', err);
-                        showToast('فشل نسخ كود SVG. جرّب متصفح آخر.', 'error');
-                    });
-            });
-        });
-
-        // زر النسخ الخاص بالاسم (عربي) → ينسخ من مكتبة svg_names
-        nameSvgButtons.forEach(function(button) {
-            button.addEventListener('click', function() {
-                const svgCode = button.getAttribute('data-svg');
-                if (!svgCode) {
-                    showToast('لا يوجد SVG مربوط بهذا الاسم حالياً.', 'error');
-                    return;
-                }
-
-                navigator.clipboard.writeText(svgCode)
-                    .then(function() {
-                        showToast('تم نسخ SVG المرتبط بالاسم إلى الحافظة ✅', 'success');
-                    })
-                    .catch(function(err) {
-                        console.error('Failed to copy name SVG code: ', err);
-                        showToast('فشل نسخ كود SVG للاسم. جرّب متصفح آخر.', 'error');
-                    });
-            });
-        });
-
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.textContent = message;
-            toast.style.padding = '10px 20px';
-            toast.style.marginTop = '10px';
-            toast.style.borderRadius = '5px';
-            toast.style.color = '#fff';
-            toast.style.fontSize = '14px';
-            toast.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
-            toast.style.opacity = '0';
-            toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-
-            if (type === 'success') {
-                toast.style.backgroundColor = '#28a745';
-            } else if (type === 'error') {
-                toast.style.backgroundColor = '#dc3545';
-            }
-
-            toastContainer.appendChild(toast);
-
-            setTimeout(function() {
-                toast.style.opacity = '1';
-                toast.style.transform = 'translateY(-10px)';
-            }, 100);
-
-            setTimeout(function() {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateY(0)';
-                setTimeout(function() {
-                    toast.remove();
-                }, 300);
-            }, 3000);
-        }
-        // ✅ تغيير حالة الطلب من صفحة show
-        const statusLinks = document.querySelectorAll('.change-status-item');
-        const csrfToken = '{{ csrf_token() }}';
-
-        statusLinks.forEach(function(link) {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-
-                const orderId = this.getAttribute('data-order-id');
-                const newStatus = this.getAttribute('data-new-status');
-
-
-                fetch('{{ route('orders.updateStatus')}}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': csrfToken,
-                                'Accept': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                id: orderId,
-                                status: newStatus
-                            }),
-                        })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // أسهل شيء: نعمل Refresh للصفحة عشان كل شيء يتحدّث
-                            location.reload();
-                        } else {
-                            showToast(data.message || 'فشل تحديث الحالة.', 'error');
-                        }
-                    })
-                    .catch(() => {
-                        showToast('حدث خطأ أثناء تحديث الحالة.', 'error');
-                    });
-            });
-        });
-
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.textContent = message;
-            toast.style.padding = '10px 20px';
-            toast.style.marginTop = '10px';
-            toast.style.borderRadius = '5px';
-            toast.style.color = '#fff';
-            toast.style.fontSize = '14px';
-            toast.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
-            toast.style.opacity = '0';
-            toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-
-            if (type === 'success') {
-                toast.style.backgroundColor = '#28a745';
-            } else if (type === 'error') {
-                toast.style.backgroundColor = '#dc3545';
-            }
-
-            toastContainer.appendChild(toast);
-
-            setTimeout(function() {
-                toast.style.opacity = '1';
-                toast.style.transform = 'translateY(-10px)';
-            }, 100);
-
-            setTimeout(function() {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateY(0)';
-                setTimeout(function() {
-                    toast.remove();
-                }, 300);
-            }, 3000);
-        }
-    });
-</script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const carouselElem = document.getElementById('additionalImagesCarousel');
-        const downloadBtn = document.getElementById('downloadCurrentAdditional');
-
-        if (!carouselElem || !downloadBtn) return;
-
-        function getActiveImageSrc() {
-            const activeItem = carouselElem.querySelector('.carousel-item.active img');
-            return activeItem ? activeItem.getAttribute('src') : null;
-        }
-
-        downloadBtn.addEventListener('click', function() {
-            const src = getActiveImageSrc();
-            if (!src) return;
-
-            const link = document.createElement('a');
-            link.href = src;
-            link.download = '';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
-    });
-</script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.copy-gift-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                navigator.clipboard.writeText(this.dataset.text)
-                    .then(() => alert('تم نسخ العبارة بنجاح!'))
-                    .catch(() => alert('حدث خطأ أثناء النسخ.'));
-            });
-        });
-    });
-</script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-
-        function attachSingleImageDownloader(carouselId, buttonId) {
-            const carouselElem = document.getElementById(carouselId);
-            const downloadBtn = document.getElementById(buttonId);
-
-            if (!carouselElem || !downloadBtn) return;
-
-            function getActiveImageSrc() {
-                const activeItem = carouselElem.querySelector('.carousel-item.active img');
-                return activeItem ? activeItem.getAttribute('src') : null;
-            }
-
-            downloadBtn.addEventListener('click', function() {
-                const src = getActiveImageSrc();
-                if (!src) return;
-
-                const link = document.createElement('a');
-                link.href = src;
-
-                // اختياري: اسم الملف من آخر جزء في الـ URL
-                const parts = src.split('/');
-                link.download = parts[parts.length - 1] || 'image.jpg';
-
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            });
-        }
-
-        // ✅ ربط الكاروسلات الجديدة
-        attachSingleImageDownloader('finalBackImagesCarousel', 'downloadCurrentFinalBackImage');
-        attachSingleImageDownloader('finalAdditionalImagesCarousel', 'downloadCurrentFinalAdditionalImage');
-
-        // لو لسا عندك الكاروسيل القديم additionalImagesCarousel وتحب تستخدم نفس الفنكشن:
-        // attachSingleImageDownloader('additionalImagesCarousel', 'downloadCurrentAdditional');
-    });
-</script>
-
+<script src="{{ asset('js/order-show.js') }}"></script>
 @endsection

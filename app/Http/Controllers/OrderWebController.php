@@ -33,7 +33,6 @@ class OrderWebController extends Controller
             'bookDesign',
             'bookDecoration',
             'frontImage',
-            'additionalImage',
             'transparentPrinting',
             'svg',
             'notes.user',
@@ -70,7 +69,6 @@ class OrderWebController extends Controller
             'bookType',
             'bookDesign',
             'frontImage',
-            'additionalImage',
             'transparentPrinting',
             'designer',
         ]);
@@ -127,14 +125,29 @@ class OrderWebController extends Controller
             ->paginate($perPage, ['*'], 'page', $page);
 
         $formattedOrders = $orders->getCollection()->map(function ($order) use ($duplicatePhones) {
-            $createdAt = Carbon::parse($order->created_at)->timezone('Asia/Amman');
+            $createdAt = null;
+
+            try {
+                if ($order->created_at) {
+                    // لو أصلاً كائن Carbon
+                    if ($order->created_at instanceof \Carbon\Carbon) {
+                        $createdAt = $order->created_at->timezone('Asia/Amman');
+                    } else {
+                        // لو سترنج من الداتا بيس
+                        $createdAt = \Carbon\Carbon::parse($order->created_at)->timezone('Asia/Amman');
+                    }
+                }
+            } catch (\Throwable $e) {
+                // لو التاريخ خربان، نخليه null وما نكسر الريسبونس
+                $createdAt = null;
+            }
 
             return [
                 'id'                 => $order->id,
                 'data'               => $createdAt->format('d-m-Y, h:i A'),
                 'status_created_diff' => $createdAt->diffForHumans(),
                 'username'           => $order->username_ar . ' / ' . $order->username_en,
-                'order'              => $order->bookType->name_ar ?? '',
+                'order'              => $order->bookType?->name_ar ?? '',
                 'governorate'        => $order->governorate,
                 'address'            => $order->address,
                 'school_name'        => $order->school_name,
@@ -397,27 +410,41 @@ class OrderWebController extends Controller
 
     public function downloadAllAdditionalImages($orderId)
     {
-        $order = Order::with('additionalImages.userImage')->findOrFail($orderId);
-        $images = $order->additionalImages;
+        // نجيب الطلب
+        $order = Order::findOrFail($orderId);
+
+        // نجيب الصور الإضافية من الـ JSON الموجود في additional_image_id
+        $images = $order->additionalImagesFromIds(); // Collection من UserImage
 
         if ($images->isEmpty()) {
-            return back()->with('error', 'No additional images available');
+            return back()->with('error', 'لا توجد صور إضافية لهذا الطلب.');
         }
 
         $zip         = new \ZipArchive();
         $zipFileName = 'additional_images_' . $orderId . '.zip';
         $zipFilePath = storage_path('app/public/' . $zipFileName);
 
+        // نتأكد من وجود فولدر storage/app/public
+        $zipDir = dirname($zipFilePath);
+        if (!is_dir($zipDir)) {
+            mkdir($zipDir, 0755, true);
+        }
+
+        // لو في ملف قديم بنفس الاسم نحذفه
+        if (file_exists($zipFilePath)) {
+            @unlink($zipFilePath);
+        }
+
         if ($zip->open($zipFilePath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
 
             foreach ($images as $img) {
-                if (!$img->userImage || !$img->userImage->image_path) {
+                if (!$img->image_path) {
                     continue;
                 }
 
-                $path = $img->userImage->image_path;
+                $path = $img->image_path;
 
-                // لو الصورة URL خارجي
+                // 🔹 لو الصورة URL خارجي
                 if (Str::startsWith($path, ['http://', 'https://'])) {
                     try {
                         $contents = @file_get_contents($path);
@@ -427,15 +454,29 @@ class OrderWebController extends Controller
 
                         $fileName = basename(parse_url($path, PHP_URL_PATH)) ?: ('image_' . $img->id . '.jpg');
                         $tempPath = storage_path('app/tmp_' . $fileName);
+
+                        // نخزنها مؤقتًا
                         file_put_contents($tempPath, $contents);
 
+                        // نضيفها للـ ZIP
                         $zip->addFile($tempPath, $fileName);
                     } catch (\Throwable $e) {
                         continue;
                     }
-                } else {
-                    // صورة مرفوعة ومحفوظة في storage/user_images
-                    $localPath = storage_path('app/public/user_images/' . $path);
+                }
+                // 🔹 صورة مرفوعة ومحفوظة في storage/user_images
+                else {
+                    // نفس المنطق اللي مستخدمه في backImages
+                    if (Str::startsWith($path, ['/storage/'])) {
+                        $relative  = ltrim(str_replace('/storage/', '', $path), '/');
+                        $localPath = storage_path('app/public/' . $relative);
+                    } elseif (Str::startsWith($path, ['user_images/'])) {
+                        $localPath = storage_path('app/public/' . ltrim($path, '/'));
+                    } else {
+                        // اعتبره اسم ملف عادي داخل user_images
+                        $localPath = storage_path('app/public/user_images/' . ltrim($path, '/'));
+                    }
+
                     if (file_exists($localPath)) {
                         $zip->addFile($localPath, basename($localPath));
                     }
@@ -449,6 +490,7 @@ class OrderWebController extends Controller
 
         return back()->with('error', 'Failed to create ZIP file.');
     }
+
 
     public function updateDesigner(Request $request)
     {

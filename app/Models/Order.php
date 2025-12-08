@@ -26,7 +26,6 @@ class Order extends Model
         'book_type_id',
         'book_design_id',
         'front_image_id',
-        'internal_image_id ',
         'book_decorations_id',
         'back_image_ids',
         'user_type',
@@ -40,8 +39,7 @@ class Order extends Model
         'user_phone_number',
         'is_sponge',
         'pages_number',
-        // 'book_accessory',
-        'additional_image_id',
+        'additional_image_id',           
         'transparent_printing_id',
         'delivery_number_one',
         'delivery_number_two',
@@ -64,16 +62,17 @@ class Order extends Model
         'diploma_id',
         'diploma_major_id',
 
-        'custom_design_image_id'
+        'custom_design_image_id',
     ];
 
     protected $casts = [
-        'back_image_ids'          => 'array', // Handle JSON arrays as PHP arrays
-        'transparent_printing_ids' => 'array',
-        'designer_done'    => 'boolean',
-        'designer_done_at' => 'datetime',
-        'is_with_additives' => 'boolean',
-        'gift_type' => 'string',
+        'back_image_ids'           => 'array',   
+        'additional_image_id'      => 'array',    
+        'transparent_printing_ids' => 'array',   
+        'designer_done'            => 'boolean',
+        'designer_done_at'         => 'datetime',
+        'is_with_additives'        => 'boolean',
+        'gift_type'                => 'string',
     ];
 
     /*
@@ -107,10 +106,10 @@ class Order extends Model
         return $this->belongsTo(UserImage::class, 'front_image_id');
     }
 
-    public function additionalImage()
-    {
-        return $this->belongsTo(UserImage::class, 'additional_image_id');
-    }
+    // public function additionalImage()
+    // {
+    //     return $this->belongsTo(UserImage::class, 'additional_image_id');
+    // }
 
     public function transparentPrinting()
     {
@@ -122,10 +121,12 @@ class Order extends Model
         return $this->belongsTo(Svg::class, 'svg_id');
     }
 
+    
     public function backImages()
     {
         $backImageIds = $this->back_image_ids;
 
+        // لو كانت مخزّنة كنص JSON
         if (is_string($backImageIds)) {
             $backImageIds = json_decode($backImageIds, true);
         }
@@ -137,58 +138,34 @@ class Order extends Model
         return UserImage::whereIn('id', $backImageIds)->get();
     }
 
-
-    public function handleBackImages()
-    {
-        // Assuming 'UserImage' is the related model and 'back_image_ids' stores the image IDs
-        return $this->hasMany(UserImage::class, 'id', 'back_image_ids');
-    }
-
-    public function additionalImages()
-    {
-        return $this->hasMany(OrderAdditionalImage::class, 'order_id');
-    }
-
-    /**
-     * Get the transparent printing images.
-     *
-     * @return array
-     */
-    public function getTransparentPrintingIdsAttribute($value)
-    {
-        // If using the old field structure and it's not null
-        if (!$value && !is_null($this->transparent_printing_id)) {
-            return [$this->transparent_printing_id];
-        }
-
-        return json_decode($value, true) ?? [];
-    }
-
+  
     public function notes()
     {
         return $this->hasMany(Note::class);
     }
 
-    /**
-     * المصمم المعيّن على الطلب
-     */
+   
     public function designer()
     {
         return $this->belongsTo(User::class, 'designer_id');
     }
 
-  
+    
     public function customDesignImage()
     {
-        return $this->belongsTo(\App\Models\UserImage::class, 'custom_design_image_id');
+        return $this->belongsTo(UserImage::class, 'custom_design_image_id');
     }
 
+   
     public function additionalImagesFromIds()
     {
         $ids = $this->additional_image_id;
 
         if (is_string($ids)) {
-            $ids = json_decode($ids, true);
+            $decoded = json_decode($ids, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $ids = $decoded;
+            }
         }
 
         if (!is_array($ids) || empty($ids)) {
@@ -196,5 +173,15 @@ class Order extends Model
         }
 
         return UserImage::whereIn('id', $ids)->get();
+    }
+
+    
+    public function getTransparentPrintingIdsAttribute($value)
+    {
+        if (!$value && !is_null($this->transparent_printing_id)) {
+            return [$this->transparent_printing_id];
+        }
+
+        return json_decode($value, true) ?? [];
     }
 }

@@ -12,9 +12,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->dropForeign('orders_additional_image_id_foreign');
-        });
+        try {
+            DB::statement('ALTER TABLE `orders` DROP FOREIGN KEY `orders_additional_image_id_foreign`');
+        } catch (\Throwable $e) {
+        }
+
+        try {
+            DB::statement('ALTER TABLE `orders` DROP INDEX `orders_additional_image_id_foreign`');
+        } catch (\Throwable $e) {
+        }
 
         Schema::table('orders', function (Blueprint $table) {
             $table->longText('additional_image_id')->nullable()->change();

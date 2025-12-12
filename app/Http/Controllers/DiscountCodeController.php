@@ -9,7 +9,7 @@ class DiscountCodeController extends Controller
 {
     public function index()
     {
-        $discountCodes = DiscountCode::paginate(10); // Paginate for better display
+        $discountCodes = DiscountCode::orderByDesc('id')->get();
         return view('admin.discount-codes.index', compact('discountCodes'));
     }
 

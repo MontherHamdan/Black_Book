@@ -27,6 +27,17 @@ jQuery(document).ready(function () {
     if ($('#dataTable3').length) {
         $('#dataTable3').DataTable();
     }
+    if ($('#responsive-datatable').length) {
+        $('#responsive-datatable').DataTable({
+            pageLength: 10,     // عدد العناصر بالصفحة
+            lengthChange: true, // Show entries
+            searching: true,    // Search
+            ordering: true,     // Sorting
+            info: true,         // Showing x to y
+            responsive: true,
+        });
+    }
+
 
 });
 /*======== End Doucument Ready Function =========*/

@@ -32,9 +32,12 @@
                                 {{ $decoration->name ?? '—' }}
                             </td>
                             <td class="text-center">
-                                <img class="img-fluid img-thumbnail rounded-circle" src="{{ $decoration->image }}"
-                                    alt="Decoration" width="70" height="70">
+                                <img
+                                    src="{{ $decoration->image }}"
+                                    alt="Decoration"
+                                    class="decoration-image">
                             </td>
+
                             <td class="text-center">
                                 <!-- Actions Dropdown -->
                                 <div class="dropdown">

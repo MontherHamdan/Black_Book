@@ -49,8 +49,7 @@ class DiscountCodeController extends Controller
         $discount = DiscountCode::create([
             'discount_code' => $discountCode,
             'discount_value' => $discountValues[$validated['group']],
-            'discount_type' => 'byJd',
-
+            'discount_type' => 'ByJd',
         ]);
     
         return response()->json([

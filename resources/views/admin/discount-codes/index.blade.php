@@ -15,7 +15,10 @@
             <!-- Table Section -->
             <div class="card-body">
                 <!-- DataTable -->
-                <table id="responsive-datatable" class="table table-striped table-bordered dt-responsive ">
+                <table id="responsive-datatable" class="table table-striped table-bordered">
+
+
+
                     <thead>
                         <tr>
                             <th class="text-center">ID</th>
@@ -79,6 +82,8 @@
                         @endforelse
                     </tbody>
                 </table>
+           
+
             </div>
         </div>
     </div>

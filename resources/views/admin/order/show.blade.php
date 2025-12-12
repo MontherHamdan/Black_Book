@@ -405,12 +405,12 @@
                                 alt="الطباعة الشفافة">
 
                             <div class="download-buttons-wrapper">
-                                <button type="button"
+                                <!-- <button type="button"
                                     class="btn-download btn-download-all"
                                     id="downloadAllTransparentImages">
                                     <i class="fas fa-cloud-download-alt"></i>
                                     تحميل جميع الصور
-                                </button>
+                                </button> -->
 
                                 <button type="button"
                                     class="btn-download btn-download-current"
@@ -440,12 +440,12 @@
                                 alt="صورة الزخرفة">
 
                             <div class="download-buttons-wrapper">
-                                <button type="button"
+                                <!-- <button type="button"
                                     class="btn-download btn-download-all"
                                     id="downloadAllDecorationImages">
                                     <i class="fas fa-cloud-download-alt"></i>
                                     تحميل جميع الصور
-                                </button>
+                                </button> -->
 
                                 <button type="button"
                                     class="btn-download btn-download-current"
@@ -1122,12 +1122,12 @@
                             alt="الصورة الأمامية">
 
                         <div class="download-buttons-wrapper">
-                            <button type="button"
+                            <!-- <button type="button"
                                 class="btn-download btn-download-all"
                                 id="downloadAllFrontImages">
                                 <i class="fas fa-cloud-download-alt"></i>
                                 تحميل جميع الصور
-                            </button>
+                            </button> -->
 
                             <button type="button"
                                 class="btn-download btn-download-current"

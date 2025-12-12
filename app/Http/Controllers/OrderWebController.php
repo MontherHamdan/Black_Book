@@ -14,6 +14,10 @@ use Maatwebsite\Excel\Excel as ExcelFormat;
 use Illuminate\Support\Str;
 use App\Models\User;
 use App\Models\UserImage;
+use Illuminate\Support\Facades\Log;
+use App\Support\ArabicNameNormalizer;
+use App\Models\SvgName;
+
 class OrderWebController extends Controller
 {
     public function index()
@@ -27,6 +31,9 @@ class OrderWebController extends Controller
 
     public function show($id)
     {
+        /** @var \App\Models\User $authUser */
+        $authUser = auth()->user();
+
         $order = Order::with([
             'discountCode',
             'bookType',
@@ -36,14 +43,267 @@ class OrderWebController extends Controller
             'transparentPrinting',
             'svg',
             'notes.user',
+            'designer',
+            'university',
+            'universityMajor',
+            'diploma',
+            'diplomaMajor',
         ])->findOrFail($id);
 
         $decorations = BookDecoration::orderBy('id')
             ->get(['id', 'name', 'image']);
 
-        return view('admin.order.show', compact('order', 'decorations'));
+        $designers = User::where('role', User::ROLE_DESIGNER)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        // نحمل المصمم لو مش محمل
+        $order->loadMissing('designer');
+
+        // 🔹 فلاغات عامة عن المستخدم
+        $isAdmin    = $authUser->isAdmin();
+        $isDesigner = $authUser->isDesigner();
+
+        $designerIsAssigned      = ! is_null($order->designer_id);
+        $designerIsCurrentUser   = $designerIsAssigned && (int) $order->designer_id === (int) $authUser->id;
+        $customDesignImages = $order->customDesignImagesFromIds();
+        $customDesignImages = $customDesignImages->map(function ($img) {
+            $img->resolved_url = $this->resolveImageUrl($img->image_path ?? null);
+            return $img;
+        });
+
+        // =========================
+        // 🔹 1) SVG الخاص بالاسم العربي
+        // =========================
+        $svgCodeForName = $this->resolveNameSvg($order->username_ar ?? null);
+
+        // =========================
+        // 🔹 2) إعداد Config الحالات
+        // =========================
+        $statusConfig = $this->statusConfig();
+
+        // الهيدر
+        $currentStatusHeader = $statusConfig[$order->status] ?? [
+            'class' => 'status-unknown',
+            'label' => $order->status,
+        ];
+
+        $canChangeStatusHeader = $isAdmin
+            || ($order->designer && $order->designer->id === $authUser->id);
+
+        $canChangeDesignerHeader =
+            $isAdmin ||
+            (
+                $isDesigner
+                && (
+                    ! $order->designer_id || (int) $order->designer_id === (int) $authUser->id
+                )
+            );
+
+        $designerNameHeader = $order->designer->name ?? 'غير معيّن';
+
+        if ($order->discountCode && $order->discountCode->code_name) {
+            $groupNameHeader = $order->discountCode->code_name;
+        } elseif ($order->discountCode) {
+            $groupNameHeader = $order->discountCode->discount_code;
+        } else {
+            $groupNameHeader = null;
+        }
+
+        $graduateNameHeader = $order->username_ar ?? 'غير متوفر';
+
+        // =========================
+        // 🔹 3) تبويب "معلومات الخريج"
+        // =========================
+
+        $currentStatus = $statusConfig[$order->status] ?? [
+            'class' => 'status-unknown',
+            'label' => $order->status,
+        ];
+
+        $canChangeStatus = $canChangeStatusHeader;
+
+        $designerName    = $order->designer->name ?? 'غير معيّن';
+        $designerInitial = $designerName ? mb_substr($designerName, 0, 1, 'UTF-8') : null;
+
+        // صورة التصميم المختار + العنوان
+        [$designImagePath, $designTitle] = $this->resolveDesignImage($order);
+
+        // معلومات الـ SVG لعبارة الدفتر
+        $hasSvg   = (bool) ($order->svg && $order->svg->svg_code);
+        $svgTitle = $order->svg->title ?? null;
+
+        $canEditDesignFollowup = $isAdmin || $isDesigner;
+        $designFollowupText    = $order->design_followup_note;
+
+        // صور الخريج (تصميم آخر + أمامية + خلفيات)
+        $frontSrc   = $this->resolveImageUrl(optional($order->frontImage)->image_path);
+        $anotherSrc = $customDesignImages->first()->resolved_url ?? null;
+
+
+        $backImages = $order->back_images ?? collect();
+        $backImages = $backImages->map(function ($img) {
+            $img->resolved_url = $this->resolveImageUrl($img->image_path ?? null);
+            return $img;
+        });
+
+        // =========================
+        // 🔹 4) تبويب "الدفتر من الداخل"
+        // =========================
+
+        $internalImages = $order->additionalImagesFromIds();
+        $internalImagesCount = $internalImages ? $internalImages->count() : 0;
+
+        $internalImages = $internalImages->map(function ($img) {
+            $img->resolved_url = $this->resolveImageUrl($img->image_path ?? null);
+            return $img;
+        });
+
+        $transparentImage = $this->resolveImageUrl(
+            optional($order->transparentPrinting)->image_path
+        );
+
+        // للزخرفة نستخدم نفس التخزين كما هو (لو عندك pattern معيّن للـ path ممكن تستخدم resolveImageUrl هنا أيضًا)
+        $decorationImage = $order->bookDecoration->image ?? null;
+
+        $giftTitleInternal = $order->gift_title;
+        $giftTypeInternal  = $order->gift_type ?? 'default';
+
+        // =========================
+        // 🔹 5) تبويب "تجليد الدفتر"
+        // =========================
+
+        $canEditBinding = $isAdmin || $isDesigner;
+        $canAddNote     = $canEditBinding;
+
+        $bindingInternalImages      = $internalImages;
+        $internalImagesCountBinding = $internalImagesCount;
+
+        $pagesCount          = $order->pages_number ?? 0;
+        $giftTitleBinding    = $order->gift_title;
+        $giftTypeBinding     = $order->gift_type ?? 'default';
+        $transparentImagePath = $transparentImage;
+
+        $bindingFollowupText = $order->binding_followup_note;
+
+        // =========================
+        // 🔹 6) تبويب "معلومات التوصيل"
+        // =========================
+
+        $canEditDeliveryFollowup = $isAdmin || $isDesigner;
+        $deliveryFollowupText    = $order->delivery_followup_note;
+
+        // نص الإهداء الموحّد
+        $defaultGiftText = config('app.default_gift_text', 'نص الإهداء الموحّد يوضع هنا...');
+
+        // =========================
+        // 🔹 7) تمرير كل شيء للـ View
+        // =========================
+
+        return view('admin.order.show', [
+            'order'                     => $order,
+            'decorations'               => $decorations,
+            'designers'                 => $designers,
+
+            'isAdmin'                   => $isAdmin,
+            'isDesigner'                => $isDesigner,
+            'designerIsAssigned'        => $designerIsAssigned,
+            'designerIsCurrentUser'     => $designerIsCurrentUser,
+
+            // SVG للاسم
+            'svgCodeForName'            => $svgCodeForName,
+
+            // Config الحالات
+            'statusConfigHeader'        => $statusConfig,
+            'statusConfig'              => $statusConfig,
+            'currentStatusHeader'       => $currentStatusHeader,
+            'canChangeStatusHeader'     => $canChangeStatusHeader,
+            'canChangeDesignerHeader'   => $canChangeDesignerHeader,
+            'designerNameHeader'        => $designerNameHeader,
+            'groupNameHeader'           => $groupNameHeader,
+            'graduateNameHeader'        => $graduateNameHeader,
+
+            // تبويب "معلومات الخريج"
+            'currentStatus'             => $currentStatus,
+            'canChangeStatus'           => $canChangeStatus,
+            'designerName'              => $designerName,
+            'designerInitial'           => $designerInitial,
+            'designImagePath'           => $designImagePath,
+            'designTitle'               => $designTitle,
+            'hasSvg'                    => $hasSvg,
+            'svgTitle'                  => $svgTitle,
+            'canEditDesignFollowup'     => $canEditDesignFollowup,
+            'designFollowupText'        => $designFollowupText,
+            'frontSrc'                  => $frontSrc,
+            'anotherSrc'                => $anotherSrc,
+            'backImages'                => $backImages,
+
+            // تبويب "الدفتر من الداخل"
+            'internalImages'            => $internalImages,
+            'internalImagesCount'       => $internalImagesCount,
+            'transparentImage'          => $transparentImage,
+            'decorationImage'           => $decorationImage,
+            'giftTitleInternal'         => $giftTitleInternal,
+            'giftTypeInternal'          => $giftTypeInternal,
+
+            // تبويب "تجليد الدفتر"
+            'bindingInternalImages'     => $bindingInternalImages,
+            'internalImagesCountBinding' => $internalImagesCountBinding,
+            'pagesCount'                => $pagesCount,
+            'giftTitleBinding'          => $giftTitleBinding,
+            'giftTypeBinding'           => $giftTypeBinding,
+            'transparentImagePath'      => $transparentImagePath,
+            'canEditBinding'            => $canEditBinding,
+            'canAddNote'                => $canAddNote,
+            'bindingFollowupText'       => $bindingFollowupText,
+
+            // تبويب "معلومات التوصيل"
+            'canEditDeliveryFollowup'   => $canEditDeliveryFollowup,
+            'deliveryFollowupText'      => $deliveryFollowupText,
+
+            // نص الإهداء الموحّد
+            'defaultGiftText'           => $defaultGiftText,
+            'customDesignImages' => $customDesignImages,
+
+        ]);
     }
 
+    /**
+     * إعداد كونفيغ حالات الطلب (class + label) للاستخدام في جميع التبويبات.
+     */
+    private function statusConfig(): array
+    {
+        return [
+            'Pending' => [
+                'class' => 'status-pending',
+                'label' => 'تم التصميم',
+            ],
+            'Completed' => [
+                'class' => 'status-completed',
+                'label' => 'تم الاعتماد',
+            ],
+            'preparing' => [
+                'class' => 'status-preparing',
+                'label' => 'قيد التجهيز',
+            ],
+            'Received' => [
+                'class' => 'status-received',
+                'label' => 'تم التسليم',
+            ],
+            'Out for Delivery' => [
+                'class' => 'status-out-for-delivery',
+                'label' => 'مرتجع',
+            ],
+            'Canceled' => [
+                'class' => 'status-canceled',
+                'label' => 'رفض الإستلام',
+            ],
+            'error' => [
+                'class' => 'status-error',
+                'label' => 'خطأ',
+            ],
+        ];
+    }
 
 
     /**
@@ -52,11 +312,29 @@ class OrderWebController extends Controller
     public function fetchOrders(Request $request)
     {
         $perPage = $request->input('length', 10);
-        $page    = ($request->input('start', 0) / $perPage) + 1;
+        $page    = ($request->input('start', 0) / max($perPage, 1)) + 1;
 
         $columnIndex   = $request->input('order.0.column');
-        $columnName    = $request->input('columns')[$columnIndex]['data'] ?? 'id';
+        $columnDataKey = $request->input('columns')[$columnIndex]['data'] ?? 'id';
         $sortDirection = $request->input('order.0.dir') ?? 'desc';
+
+        $columnMap = [
+            'id'          => 'id',
+            'data'        => 'created_at',
+            'status'      => 'status',
+            'designer'    => 'designer_id',
+            'username'    => 'username_ar',
+            'order'       => 'book_type_id',
+            'governorate' => 'governorate',
+            'address'     => 'address',
+            'school_name' => 'university_id',           
+            'phone'       => 'user_phone_number',
+            'phone2'      => 'delivery_number_two',
+            'price'       => 'final_price_with_discount',
+            'actions'     => 'id',                    
+        ];
+
+        $sortColumn = $columnMap[$columnDataKey] ?? 'id';
 
         $searchValue     = $request->input('search.value');
         $statusFilter    = $request->input('status');
@@ -83,8 +361,7 @@ class OrderWebController extends Controller
                     ->orWhere('user_phone_number', 'like', "%{$searchValue}%")
                     ->orWhere('delivery_number_two', 'like', "%{$searchValue}%")
                     ->orWhere('status', 'like', "%{$searchValue}%")
-                    ->orWhere('final_price_with_discount', 'like', "%{$searchValue}%")
-                    ->orWhere('school_name', 'like', "%{$searchValue}%");
+                    ->orWhere('final_price_with_discount', 'like', "%{$searchValue}%");
             });
         }
 
@@ -93,13 +370,14 @@ class OrderWebController extends Controller
             $query->where('status', $statusFilter);
         }
 
-        // ✅ فلتر الإضافات (Notes)
+        // 🟡 فلتر الإضافات
         if ($additivesFilter === 'with_additives') {
-            // الطلبات اللي عليها Notes
-            $query->whereHas('notes');
+            $query->where('is_with_additives', true);
         } elseif ($additivesFilter === 'with_out_additives') {
-            // الطلبات اللي ما عليها Notes
-            $query->whereDoesntHave('notes');
+            $query->where(function ($q) {
+                $q->where('is_with_additives', false)
+                    ->orWhereNull('is_with_additives');
+            });
         }
 
         // 📅 فلاتر التاريخ
@@ -119,51 +397,59 @@ class OrderWebController extends Controller
             ->pluck('user_phone_number')
             ->toArray();
 
-        // ترتيب + Pagination
+        // ⬇ ترتيب + Pagination
         $orders = $query
-            ->orderBy($columnName, $sortDirection)
+            ->orderBy($sortColumn, $sortDirection)
             ->paginate($perPage, ['*'], 'page', $page);
 
         $formattedOrders = $orders->getCollection()->map(function ($order) use ($duplicatePhones) {
-            $createdAt = null;
-
+            // ⏱️ معالجة التاريخ بأمان
             try {
-                if ($order->created_at) {
-                    // لو أصلاً كائن Carbon
-                    if ($order->created_at instanceof \Carbon\Carbon) {
-                        $createdAt = $order->created_at->timezone('Asia/Amman');
-                    } else {
-                        // لو سترنج من الداتا بيس
-                        $createdAt = \Carbon\Carbon::parse($order->created_at)->timezone('Asia/Amman');
-                    }
-                }
+                $createdAt = $order->created_at
+                    ? ($order->created_at instanceof \Carbon\Carbon
+                        ? $order->created_at->timezone('Asia/Amman')
+                        : \Carbon\Carbon::parse($order->created_at)->timezone('Asia/Amman'))
+                    : null;
             } catch (\Throwable $e) {
-                // لو التاريخ خربان، نخليه null وما نكسر الريسبونس
                 $createdAt = null;
             }
 
+            $createdAtFormatted = $createdAt
+                ? $createdAt->format('d-m-Y, h:i A')
+                : '';
+
+            $statusDiff = $createdAt
+                ? $createdAt->diffForHumans()
+                : '';
+
             return [
-                'id'                 => $order->id,
-                'data'               => $createdAt->format('d-m-Y, h:i A'),
-                'status_created_diff' => $createdAt->diffForHumans(),
-                'username'           => $order->username_ar . ' / ' . $order->username_en,
-                'order'              => $order->bookType?->name_ar ?? '',
-                'governorate'        => $order->governorate,
-                'address'            => $order->address,
-                'school_name'        => $order->school_name,
-                'phone'              => $order->user_phone_number,
-                'phone2'             => $order->delivery_number_two,
-                'status'             => $order->status,
-                'price'              => $order->final_price_with_discount,
-                'has_notes'          => Note::where('order_id', $order->id)->exists(),
-                'is_duplicate_phone' => in_array($order->user_phone_number, $duplicatePhones),
+                'id'                  => $order->id,
+                'data'                => $createdAtFormatted,
+                'status_created_diff' => $statusDiff,
+
+                'username'            => $order->username_ar . ' / ' . $order->username_en,
+                'order'               => $order->bookType?->name_ar ?? '',
+                'governorate'         => $order->governorate,
+                'address'             => $order->address,
+
+                // ✅ عشان DataTables ما يشتكي: نرجع school_name حتى لو فاضي مؤقتًا
+                'school_name'         => '',
+
+                'phone'               => $order->user_phone_number,
+                'phone2'              => $order->delivery_number_two,
+                'status'              => $order->status,
+                'price'               => $order->final_price_with_discount,
+
+                'has_notes'           => Note::where('order_id', $order->id)->exists(),
+                'is_duplicate_phone'  => in_array($order->user_phone_number, $duplicatePhones),
+                'is_with_additives'   => (bool) $order->is_with_additives,
 
                 'designer' => $order->designer ? [
                     'id'   => $order->designer->id,
                     'name' => $order->designer->name,
                 ] : null,
 
-                'actions'            => view('admin.order.partials.actions', compact('order'))->render(),
+                'actions'             => view('admin.order.partials.actions', compact('order'))->render(),
             ];
         });
 
@@ -174,6 +460,7 @@ class OrderWebController extends Controller
             'data'            => $formattedOrders,
         ]);
     }
+
 
 
     public function updateStatus(Request $request)
@@ -187,9 +474,8 @@ class OrderWebController extends Controller
         $user  = $request->user();
         $order = Order::findOrFail($request->id);
 
-        // 🛡️ التحقق من الصلاحيات
+        // 🛡️ التحقق من الصلاحيات (نفس منطقك القديم)
         if (! $user->isAdmin()) {
-            // لو مش أدمن لازم يكون مصمم + هو نفسه المعيَّن على الطلب
             if (! $user->isDesigner() || $order->designer_id !== $user->id) {
                 return response()->json([
                     'success' => false,
@@ -211,11 +497,10 @@ class OrderWebController extends Controller
         // تحديث حالة الطلب
         $order->status = $newStatus;
 
-        // أول مرة يدخل الطلب في حالة من الحالات المنجَزة للمصمم
         if (
             in_array($newStatus, $designerDoneStatuses, true) &&
-            ! $order->designer_done &&               // ما كان محسوب منجَز قبل
-            ! is_null($order->designer_id)           // الطلب فعليًا مع مصمم
+            ! $order->designer_done &&
+            ! is_null($order->designer_id)
         ) {
             $order->designer_done    = true;
             $order->designer_done_at = now();
@@ -223,8 +508,51 @@ class OrderWebController extends Controller
 
         $order->save();
 
-        return response()->json(['success' => true]);
+        // 👇 نفس config الموجود في الـ Blade عشان نرجع label + class جاهزين للـ JS
+        $statusConfig = [
+            'Pending' => [
+                'class' => 'bg-warning text-dark',
+                'label' => 'تم التصميم',
+            ],
+            'Completed' => [
+                'class' => 'bg-info text-dark',
+                'label' => 'تم الاعتماد',
+            ],
+            'preparing' => [
+                'class' => 'bg-purple',
+                'label' => 'قيد التجهيز',
+            ],
+            'Received' => [
+                'class' => 'bg-success text-white',
+                'label' => 'تم التسليم',
+            ],
+            'Out for Delivery' => [
+                'class' => 'bg-orange',
+                'label' => 'مرتجع',
+            ],
+            'Canceled' => [
+                'class' => 'bg-maroon',
+                'label' => 'رفض الإستلام',
+            ],
+            'error' => [
+                'class' => 'bg-danger text-white',
+                'label' => 'خطأ',
+            ],
+        ];
+
+        $cfg = $statusConfig[$order->status] ?? [
+            'class' => 'bg-secondary',
+            'label' => $order->status,
+        ];
+
+        return response()->json([
+            'success' => true,
+            'status'  => $order->status,
+            'label'   => $cfg['label'],
+            'class'   => $cfg['class'],
+        ]);
     }
+
 
 
 
@@ -285,55 +613,60 @@ class OrderWebController extends Controller
         ]);
     }
 
-    // تحميل كل الصور الخلفية لطلب معين
+
+
     public function downloadAllBackImages($orderId)
     {
         $order = Order::findOrFail($orderId);
-        $backImages = $order->backImages(); // Collection راجعة من الميثود في الموديل
+
+        // 🟢 1) نجيب الصور من الـ Accessor (getBackImagesAttribute)
+        $backImages = $order->back_images; // Collection من UserImage
 
         if ($backImages->isEmpty()) {
             return back()->with('error', 'لا توجد صور خلفية متاحة لهذا الطلب.');
         }
 
+        // 🟢 2) تحضير مسار ملف الـ ZIP داخل storage/app
         $zipFileName = 'back_images_' . $orderId . '.zip';
-        $zipFilePath = storage_path('app/public/' . $zipFileName);
+        $zipFilePath = storage_path('app/' . $zipFileName);
 
-        // تأكد إن فولدر storage/app/public موجود
         $zipDir = dirname($zipFilePath);
         if (!is_dir($zipDir)) {
             mkdir($zipDir, 0755, true);
         }
 
-        // لو في ملف قديم بنفس الاسم، احذفه
         if (file_exists($zipFilePath)) {
             @unlink($zipFilePath);
         }
 
         $zip = new \ZipArchive();
 
-        if ($zip->open($zipFilePath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
-            return back()->with('error', 'فشل إنشاء ملف ZIP.');
+        $openResult = $zip->open($zipFilePath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+        if ($openResult !== true) {
+            Log::error('Zip open failed', [
+                'result' => $openResult,
+                'path'   => $zipFilePath,
+            ]);
+
+            return back()->with('error', 'فشل إنشاء ملف ZIP (ZipArchive open).');
         }
 
         $tempFiles = [];
 
         foreach ($backImages as $img) {
-
             $path = $img->image_path;
 
-            // 1) لو الصورة URL كامل
-            if (\Illuminate\Support\Str::startsWith($path, ['http://', 'https://'])) {
+            // 🔹 1) لو الصورة URL كامل
+            if (Str::startsWith($path, ['http://', 'https://'])) {
 
                 $imageContent = @file_get_contents($path);
-
                 if ($imageContent === false) {
-                    // ما قدر يقرأ الصورة من URL → تجاهلها
+                    Log::warning('Failed to read image from URL', ['url' => $path]);
                     continue;
                 }
 
                 $fileName = basename(parse_url($path, PHP_URL_PATH)) ?: ('image_' . $img->id . '.jpg');
 
-                // نخزنها مؤقتًا في storage/app/tmp/
                 $tmpDir = storage_path('app/tmp');
                 if (!is_dir($tmpDir)) {
                     mkdir($tmpDir, 0755, true);
@@ -343,42 +676,54 @@ class OrderWebController extends Controller
 
                 file_put_contents($tempPath, $imageContent);
 
-                // نضيفها للـ ZIP بجوا الاسم البسيط
                 $zip->addFile($tempPath, $fileName);
-
-                // نجهزها عشان نحذفها بعد ما نخلص تجهيز الـ ZIP
                 $tempFiles[] = $tempPath;
             }
-            // 2) لو مخزّنة كمسار محلي داخل storage/app/public
+
+            // 🔹 2) لو مسار محلي
             else {
 
-                // لو جاي على شكل /storage/user_images/xxx.jpg
-                if (\Illuminate\Support\Str::startsWith($path, ['/storage/'])) {
+                $originalPath = $path;
+
+                if (Str::startsWith($path, ['/storage/'])) {
                     $relative = ltrim(str_replace('/storage/', '', $path), '/');
                     $localPath = storage_path('app/public/' . $relative);
-                }
-                // لو جاي user_images/xxx.jpg
-                else {
+                } else {
+                    // فقط اسم ملف → نضيف له user_images/
+                    if (!Str::contains($path, '/')) {
+                        $path = 'user_images/' . ltrim($path, '/');
+                    }
+
                     $localPath = storage_path('app/public/' . ltrim($path, '/'));
                 }
 
-                if (file_exists($localPath)) {
-                    $zip->addFile($localPath, basename($localPath));
+                if (!file_exists($localPath)) {
+                    Log::warning('Local image not found for ZIP', [
+                        'db_path'    => $originalPath,
+                        'final_path' => $path,
+                        'local_path' => $localPath,
+                    ]);
+                    continue;
                 }
+
+                $zip->addFile($localPath, basename($localPath));
             }
         }
 
-        $zip->close();
+        $closeResult = $zip->close();
 
-        // نحذف كل الملفات المؤقتة اللي نزلناها من الـ URLs
-        foreach ($tempFiles as $tmp) {
-            @unlink($tmp);
+        if ($closeResult === false) {
+            Log::error('Zip close failed', ['path' => $zipFilePath]);
+            return back()->with('error', 'فشل إغلاق ملف ZIP.');
         }
 
-        // نرسل ملف الـ ZIP للمستخدم، و Laravel يحذف الـ ZIP بعد الإرسال
+        if (!file_exists($zipFilePath)) {
+            Log::error('ZIP file not found after close()', ['path' => $zipFilePath]);
+            return back()->with('error', 'لم يتم إنشاء ملف ZIP بنجاح.');
+        }
+
         return response()->download($zipFilePath)->deleteFileAfterSend(true);
     }
-
 
 
 
@@ -546,6 +891,13 @@ class OrderWebController extends Controller
 
         // 🛡️ فقط أدمن أو ديزاينر
         if (! $user->isAdmin() && ! $user->isDesigner()) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'غير مصرح لك بتعديل تجليد الدفتر.',
+                ], 403);
+            }
+
             abort(403, 'غير مصرح لك بتعديل تجليد الدفتر.');
         }
 
@@ -564,16 +916,8 @@ class OrderWebController extends Controller
             'binding_followup_note'      => ['nullable', 'string', 'max:5000'],
         ]);
 
-        // 🔘 مع إضافات
-        $order->is_with_additives = $request->boolean('is_with_additives');
-
-      
-
         // 🧽 إسفنج
         $order->is_sponge = $request->boolean('is_sponge');
-
-        // 📝 العبارة على الدفتر
-        $order->gift_title = $request->input('gift_title');
 
         // 📝 تعديل نص الزخرفة (تعديل الـ BookDecoration نفسه)
         if ($request->filled('book_decoration_name') && $order->bookDecoration) {
@@ -614,21 +958,50 @@ class OrderWebController extends Controller
 
             $order->transparent_printing_id = $userImage->id;
         }
+
+        // 📝 ملاحظات المتابعة على التجليد
         $order->binding_followup_note = $request->input('binding_followup_note');
         $order->save();
 
+        // ⚡ لو الطلب جاينا بـ AJAX → نرجّع JSON ونترك الصفحة زي ما هي
+        if ($request->ajax() || $request->wantsJson()) {
+
+            $html = '';
+            if ($order->binding_followup_note) {
+                // نرجع الـ HTML الجاهز عشان نحطه جوه البوكس
+                $html = nl2br(e($order->binding_followup_note));
+            } else {
+                $html = '<span class="text-muted">لا توجد ملاحظات حتى الآن.</span>';
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حفظ ملاحظات التجليد بنجاح.',
+                'html'    => $html,
+            ]);
+        }
+
+        // 🚶‍♂️ طلب عادي (لو فتحتيه من مكان ثاني مثلاً)
         return redirect()
             ->route('orders.show', $order->id)
             ->with('success', 'تم تحديث تجليد الدفتر بنجاح.');
     }
+
 
     public function updateDeliveryFollowup(Request $request, $id)
     {
         /** @var \App\Models\User $user */
         $user = $request->user();
 
-        // 🛡️ نفس منطق الصلاحيات: بس أدمن أو ديزاينر
+        // 🛡️ فقط أدمن أو ديزاينر
         if (! $user->isAdmin() && ! $user->isDesigner()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'غير مصرح لك بتعديل ملاحظات التوصيل.',
+                ], 403);
+            }
+
             abort(403, 'غير مصرح لك بتعديل ملاحظات التوصيل.');
         }
 
@@ -640,8 +1013,23 @@ class OrderWebController extends Controller
         $order->delivery_followup_note = $request->input('delivery_followup_note');
         $order->save();
 
+        // 👇 لو الطلب من AJAX (fetch) نرجع JSON
+        if ($request->expectsJson()) {
+            $html = $order->delivery_followup_note
+                ? nl2br(e($order->delivery_followup_note))
+                : '<span class="text-muted">لا توجد ملاحظات حتى الآن.</span>';
+
+            return response()->json([
+                'success' => true,
+                'html'    => $html,
+                'message' => 'تم حفظ ملاحظات المتابعة على التوصيل بنجاح.',
+            ]);
+        }
+
+        // 👈 لو فورم عادي (بدون AJAX) نرجع back زي ما هو
         return back()->with('success', 'تم حفظ ملاحظات المتابعة على التوصيل بنجاح.');
     }
+
 
     public function updateDesignFollowup(Request $request, Order $order)
     {
@@ -650,6 +1038,13 @@ class OrderWebController extends Controller
 
         // 🛡️ فقط أدمن أو ديزاينر
         if (! $user->isAdmin() && ! $user->isDesigner()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'غير مصرح لك بتعديل ملاحظات المتابعة على التصميم.',
+                ], 403);
+            }
+
             abort(403, 'غير مصرح لك بتعديل ملاحظات المتابعة على التصميم.');
         }
 
@@ -658,19 +1053,103 @@ class OrderWebController extends Controller
             'design_followup_note' => ['nullable', 'string', 'max:5000'],
         ]);
 
-        $text = trim($data['design_followup_note'] ?? '');
+        $order->design_followup_note = $data['design_followup_note'] ?? null;
+        $order->save();
 
-        // لو الفورم فاضي → اعتبرها بدون تغيير
-        if ($text === '') {
-            return back()->with('success', 'تم حفظ ملاحظات المتابعة (لم يتم إضافة ملاحظة جديدة).');
+        if ($request->expectsJson()) {
+            $html = $order->design_followup_note
+                ? nl2br(e($order->design_followup_note))
+                : '<span class="text-muted">لا توجد ملاحظات متابعة حتى الآن.</span>';
+
+            return response()->json([
+                'success' => true,
+                'html'    => $html,
+                'message' => 'تم حفظ ملاحظات المتابعة على التصميم بنجاح.',
+            ]);
         }
 
-        // ✅ إنشاء نوت جديدة في جدول notes مربوطة بالطلب
-        $note = $order->notes()->create([
-            'content' => $text,
-            'user_id' => $user->id,
-        ]);
-
         return back()->with('success', 'تم حفظ ملاحظات المتابعة على التصميم بنجاح.');
+    }
+
+    /**
+     * تحويل مسار الصورة إلى URL جاهز للعرض في الـ Blade.
+     */
+    private function resolveImageUrl(?string $path): ?string
+    {
+        if (!$path) {
+            return null;
+        }
+
+        if (Str::startsWith($path, ['http://', 'https://'])) {
+            return $path;
+        }
+
+        if (Str::startsWith($path, ['user_images/'])) {
+            return asset('storage/' . ltrim($path, '/'));
+        }
+
+        if (Str::startsWith($path, ['/storage/'])) {
+            return asset(ltrim($path, '/'));
+        }
+
+        // افتراضياً نخزنه في storage/user_images
+        return asset('storage/user_images/' . ltrim($path, '/'));
+    }
+
+    /**
+     * جلب كود الـ SVG الخاص بالاسم العربي (أول اسم) إن وجد.
+     */
+    private function resolveNameSvg(?string $usernameAr): ?string
+    {
+        if (!$usernameAr) {
+            return null;
+        }
+
+        $firstArabicName = ArabicNameNormalizer::firstArabicName($usernameAr);
+        if (!$firstArabicName) {
+            return null;
+        }
+
+        $normalized = ArabicNameNormalizer::normalize($firstArabicName);
+
+        /** @var \App\Models\SvgName|null $svgNameRow */
+        $svgNameRow = SvgName::where('normalized_name', $normalized)->first();
+
+        if ($svgNameRow && !empty($svgNameRow->svg_code)) {
+            return $svgNameRow->svg_code;
+        }
+
+        return null;
+    }
+
+    /**
+     * تجهيز صورة التصميم المختار (bookDesign) + العنوان المناسب.
+     *
+     * @return array{0: string|null, 1: string|null} [imageUrl, title]
+     */
+    private function resolveDesignImage(Order $order): array
+    {
+        $designImagePath = null;
+        $designTitle     = null;
+
+        if ($order->bookDesign) {
+            $designTitle = $order->bookDesign->title
+                ?? $order->bookDesign->name_ar
+                ?? $order->bookDesign->name
+                ?? null;
+
+            if ($order->bookDesign->image) {
+                $path = $order->bookDesign->image;
+
+                if (Str::startsWith($path, ['http://', 'https://'])) {
+                    $designImagePath = $path;
+                } else {
+                    // حسب شغلك القديم كنت تستخدم asset مباشرة
+                    $designImagePath = asset($path);
+                }
+            }
+        }
+
+        return [$designImagePath, $designTitle];
     }
 }

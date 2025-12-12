@@ -27,13 +27,17 @@
         box-shadow: inset 3px 0 0 #dc3545;
     }
 
+    .order-with-additives {
+        background-color: #fff3cd !important;
+        box-shadow: inset 3px 0 0 #ffc107;
+    }
+
     .status-badge-big {
         font-size: 0.8rem;
         padding: 0.35rem 0.9rem;
         border-radius: 999px;
         font-weight: 600;
         letter-spacing: 1px;
-        /* يعطي إحساس خــطــأ */
     }
 
     .status-duration {
@@ -43,6 +47,7 @@
         margin-top: 4px;
     }
 </style>
+
 
 <div class="row">
     <div class="col-12">
@@ -174,8 +179,8 @@
 
         // مصفوفة المصممين + صلاحيات المستخدم الحالي
         const DESIGNERS = @json($designers);
-        const IS_ADMIN = @json(auth()->user()->isAdmin());
-        const CURRENT_USER_ID = @json(auth()->id());
+        const IS_ADMIN = @json(auth() -> user() -> isAdmin());
+        const CURRENT_USER_ID = @json(auth() -> id());
 
         function loadNotes(orderId) {
             $('#notesList').html('<li class="list-group-item text-muted">Loading...</li>');
@@ -222,15 +227,22 @@
                 [0, 'desc']
             ],
             ajax: {
-                url: '{{ route('orders.fetch')}}',
+                url: '{{ route('orders.fetch') }}',
                 data: function(d) {
                     d.status = $('#statusFilter').val();
                     d.additives = $('#additivesFilter').val();
                     d.date_from = $('#dateFrom').val();
                     d.date_to = $('#dateTo').val();
                 },
-                error: function() {
-                    alert('An error occurred while fetching data. Please contact IT support.');
+                error: function(xhr) {
+                    console.error('DataTables AJAX error:', xhr);
+                    console.error('Response text:', xhr.responseText);
+
+                    alert(
+                        'حدث خطأ في جلب البيانات من السيرفر.\n' +
+                        'الكود: ' + xhr.status + '\n' +
+                        'افتحي Console / Network عشان تشوفي التفاصيل.'
+                    );
                 }
             },
             lengthMenu: [10, 25, 50, 100],
@@ -479,16 +491,17 @@
                 search: "Search Orders:"
             },
             rowCallback: function(row, data) {
-                $(row).removeClass('order-has-notes order-duplicate-phone');
-
-                if (data.has_notes) {
-                    $(row).addClass('order-has-notes');
-                }
+                $(row).removeClass('order-has-notes order-duplicate-phone order-with-additives');
 
                 if (data.is_duplicate_phone) {
                     $(row).addClass('order-duplicate-phone');
                 }
+
+                if (data.is_with_additives) {
+                    $(row).addClass('order-with-additives');
+                }
             },
+
             initComplete: function() {
                 const statusDropdown = $(`
                     <select id="statusFilter" class="form-select" style="width: 230px;height:34px; margin-left: 15px;">

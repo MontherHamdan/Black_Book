@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\UserImage;
 
 class Order extends Model
 {
@@ -39,7 +40,7 @@ class Order extends Model
         'user_phone_number',
         'is_sponge',
         'pages_number',
-        'additional_image_id',           
+        'additional_image_id',
         'transparent_printing_id',
         'delivery_number_one',
         'delivery_number_two',
@@ -66,13 +67,14 @@ class Order extends Model
     ];
 
     protected $casts = [
-        'back_image_ids'           => 'array',   
-        'additional_image_id'      => 'array',    
-        'transparent_printing_ids' => 'array',   
+        'back_image_ids'           => 'array',
+        'additional_image_id'      => 'array',
+        'transparent_printing_ids' => 'array',
         'designer_done'            => 'boolean',
         'designer_done_at'         => 'datetime',
         'is_with_additives'        => 'boolean',
         'gift_type'                => 'string',
+        'custom_design_image_id' => 'array'
     ];
 
     /*
@@ -80,6 +82,12 @@ class Order extends Model
     | Relations
     |--------------------------------------------------------------------------
     */
+    protected static function booted()
+    {
+        static::saving(function (Order $order) {
+            $order->recalculateAdditivesFlag();
+        });
+    }
 
     public function discountCode()
     {
@@ -121,12 +129,12 @@ class Order extends Model
         return $this->belongsTo(Svg::class, 'svg_id');
     }
 
-    
-    public function backImages()
+
+    public function getBackImagesAttribute()
     {
         $backImageIds = $this->back_image_ids;
 
-        // لو كانت مخزّنة كنص JSON
+        // لو كانت مخزنة كنص JSON
         if (is_string($backImageIds)) {
             $backImageIds = json_decode($backImageIds, true);
         }
@@ -138,25 +146,25 @@ class Order extends Model
         return UserImage::whereIn('id', $backImageIds)->get();
     }
 
-  
+
     public function notes()
     {
         return $this->hasMany(Note::class);
     }
 
-   
+
     public function designer()
     {
         return $this->belongsTo(User::class, 'designer_id');
     }
 
-    
-    public function customDesignImage()
-    {
-        return $this->belongsTo(UserImage::class, 'custom_design_image_id');
-    }
 
-   
+    // public function customDesignImage()
+    // {
+    //     return $this->belongsTo(UserImage::class, 'custom_design_image_id');
+    // }
+
+
     public function additionalImagesFromIds()
     {
         $ids = $this->additional_image_id;
@@ -175,7 +183,7 @@ class Order extends Model
         return UserImage::whereIn('id', $ids)->get();
     }
 
-    
+
     public function getTransparentPrintingIdsAttribute($value)
     {
         if (!$value && !is_null($this->transparent_printing_id)) {
@@ -183,5 +191,109 @@ class Order extends Model
         }
 
         return json_decode($value, true) ?? [];
+    }
+
+
+
+    public function calculateIsWithAdditives(): bool
+    {
+        $hasSponge = (bool) $this->is_sponge;
+
+        $back = $this->back_image_ids;
+        if (is_string($back)) {
+            $decoded = json_decode($back, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $back = $decoded;
+            }
+        }
+        $hasBackImgs = is_array($back) && !empty($back);
+
+        $additional = $this->additional_image_id;
+        if (is_string($additional)) {
+            $decoded = json_decode($additional, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $additional = $decoded;
+            }
+        }
+        $hasAdditionalImages = is_array($additional) && !empty($additional);
+
+        $hasTransparent = ! is_null($this->transparent_printing_id);
+
+        return $hasSponge || $hasBackImgs || $hasAdditionalImages || $hasTransparent;
+    }
+
+
+    public function recalculateAdditivesFlag(): void
+    {
+        $this->is_with_additives = $this->calculateIsWithAdditives();
+    }
+    public function university()
+    {
+        return $this->belongsTo(University::class, 'university_id');
+    }
+
+    public function universityMajor()
+    {
+        return $this->belongsTo(Major::class, 'university_major_id');
+    }
+
+    public function diploma()
+    {
+        return $this->belongsTo(Diploma::class, 'diploma_id');
+    }
+
+    public function diplomaMajor()
+    {
+        return $this->belongsTo(DiplomaMajor::class, 'diploma_major_id');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Accessors للعرض في الـ Blade: school_name / major_name
+    |--------------------------------------------------------------------------
+    */
+
+    public function getSchoolNameAttribute()
+    {
+        if ($this->user_type === 'university') {
+            return $this->university->name ?? null;
+        }
+
+        if ($this->user_type === 'diploma') {
+            return $this->diploma->name ?? null;
+        }
+
+        return null;
+    }
+
+    public function getMajorNameAttribute()
+    {
+        if ($this->user_type === 'university') {
+            return $this->universityMajor->name ?? null;
+        }
+
+        if ($this->user_type === 'diploma') {
+            return $this->diplomaMajor->name ?? null;
+        }
+
+        return null;
+    }
+
+    public function customDesignImagesFromIds()
+    {
+        $ids = $this->custom_design_image_id;  
+
+        if (is_string($ids)) {
+            $decoded = json_decode($ids, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $ids = $decoded;
+            }
+        }
+
+        if (!is_array($ids) || empty($ids)) {
+            return collect();
+        }
+
+        return UserImage::whereIn('id', $ids)->get();
     }
 }

@@ -76,8 +76,10 @@
                             labels: {
                                 usePointStyle: true,
                                 padding: 20,
+                                color: '#000',
                                 font: {
-                                    size: 12
+                                    size: 14,
+                                    weight: 'bold'
                                 }
                             }
                         },
@@ -223,7 +225,7 @@
             new Chart(topSellingCanvas.getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: {!!json_encode($topSellingProducts -> pluck('bookType.name_ar'))!!},
+                    labels: {!!json_encode($topSellingProducts -> pluck('bookType.name_ar')) !!},
                     datasets: [{
                         label: 'Orders',
                         data: {!!json_encode($topSellingProducts -> pluck('total_orders')) !!},
@@ -292,8 +294,8 @@
         // --- Orders by School Chart ---
         const schoolCanvas = document.getElementById('schoolChart');
         if (schoolCanvas) {
-            const schoolLabels = {!!json_encode($ordersBySchool -> pluck('school_label'))!!};
-            const schoolData = {!!json_encode($ordersBySchool -> pluck('total_orders'))!!};
+            const schoolLabels = {!!json_encode($ordersBySchool -> pluck('school_label')) !!};
+            const schoolData = {!!json_encode($ordersBySchool -> pluck('total_orders')) !!};
 
             new Chart(schoolCanvas.getContext('2d'), {
                 type: 'bar',

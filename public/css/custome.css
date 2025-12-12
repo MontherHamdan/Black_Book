@@ -10,3 +10,1155 @@
   border: 1px solid rgba(170, 170, 170, 0.3);
   /* Increased border thickness */
 }
+
+ :root {
+  --order-primary: #4f46e5;
+  /* Indigo */
+  --order-primary-soft: #eef2ff;
+  --order-primary-soft-2: #f5f3ff;
+  --order-accent: #ec4899;
+  /* Pink */
+  --order-border-soft: #e5e7eb;
+  --order-text-main: #0f172a;
+  --order-text-muted: #6b7280;
+  --order-bg: #f3f4f6;
+  --order-card-bg: #ffffff;
+}
+
+body {
+  background: var(--order-bg);
+}
+
+.order-show-page {
+  max-width: 1200px;
+  margin: 24px auto 40px;
+  padding-bottom: 24px;
+}
+
+.order-page-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--order-text-main);
+  letter-spacing: 0.03em;
+}
+
+.order-page-subtitle {
+  font-size: 0.95rem;
+  color: var(--order-text-muted);
+}
+
+.order-page-header {
+  background: linear-gradient(135deg, #ffffff, #f9fafb);
+  border-radius: 20px;
+  padding: 18px 20px;
+  margin-bottom: 18px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.order-page-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+
+.order-page-header-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 42px !important;
+  margin-top: 10px;
+}
+
+
+/* الكرت الأساسي (رقم الطلب، المجموعة، المصمم، الخريج، إلخ) */
+.order-header-chip {
+  flex: 1 1 0;
+  min-width: 220px;
+  max-width: 260px;
+  padding: 10px 14px;
+  border-radius: 18px;
+  background: radial-gradient(circle at top left, #eef2ff, #f9fafb);
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+
+.order-page-header-chip-muted {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  color: #374151;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.order-header-main,
+.order-status-main,
+.order-status-control {
+  position: relative;
+  z-index: 1;
+}
+
+.order-header-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.order-header-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(79, 70, 229, 0.08);
+  color: #4f46e5;
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.25);
+  font-size: 0.9rem;
+}
+
+.order-header-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.order-header-label,
+.order-status-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.order-header-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* 🟦 حالة التصميم تستعمل نفس الكرت مع تعديل بسيط */
+.order-header-chip-status {
+  background: radial-gradient(circle at top left, #eef2ff, #f5f3ff);
+  border-color: rgba(129, 140, 248, 0.7);
+}
+
+/* بنخلي تصميم حالة الطلب كما هو لكن مرتبط بالهيدر الجديد */
+.order-status-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.order-status-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(79, 70, 229, 0.08);
+  color: #4f46e5;
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+  font-size: 0.9rem;
+}
+
+.order-status-text-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* الشارة (كبسولة حالة الطلب) عندك جاهزة باسم .badge-status و .order-status-pill */
+
+/* دروب داون حالة الطلب */
+.order-status-control {
+  margin-right: 8px;
+}
+
+.order-status-select {
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  background: rgba(15, 23, 42, 0.02);
+  padding: 4px 12px 4px 26px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #111827;
+  outline: none;
+  appearance: none;
+  min-width: 150px;
+  direction: rtl;
+  cursor: pointer;
+}
+
+.order-status-control {
+  position: relative;
+}
+
+.order-status-control::after {
+  content: "\f078";
+  /* fa-chevron-down */
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.65rem;
+  color: #6b7280;
+  pointer-events: none;
+}
+
+.order-status-select:hover {
+  border-color: rgba(79, 70, 229, 0.8);
+  box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.25);
+  background: rgba(79, 70, 229, 0.03);
+}
+
+.order-status-select:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.4);
+}
+
+/* 📱 موبايل: يخلوهم ينزلوا تحت بعض لو العرض ضيّق */
+@media (max-width: 768px) {
+  .order-page-header-meta {
+    flex-direction: column;
+  }
+}
+
+.order-header-chip::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(236, 72, 153, 0.12), transparent 60%);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.order-header-chip-muted {
+  background: radial-gradient(circle at top left, #f9fafb, #e5e7eb);
+  border-color: rgba(156, 163, 175, 0.7);
+}
+
+/* Tabs - app style */
+.order-tabs {
+  margin-top: 10px;
+}
+
+.order-tabs .nav-tabs {
+  border-bottom: none;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.order-tabs .nav-link {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--order-text-muted);
+  background: transparent;
+  transition: all 0.18s ease;
+}
+
+.order-tabs .nav-link:hover {
+  background: #e5e7eb;
+  color: var(--order-text-main);
+}
+
+.order-tabs .nav-link.active {
+  background: var(--order-primary);
+  color: #ffffff !important;
+  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+}
+
+/* Shared card styling */
+.order-card {
+  border-radius: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+  background: var(--order-card-bg);
+  overflow: hidden;
+}
+
+.order-card .card-header {
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  background: linear-gradient(135deg, var(--order-primary-soft-2), #ffffff);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.order-card-header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  color: var(--order-text-main);
+  font-size: 0.95rem;
+}
+
+.order-card-header-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--order-primary-soft);
+  color: var(--order-primary);
+  font-size: 0.9rem;
+}
+
+.order-card .card-body {
+  padding: 16px 20px 18px;
+  color: var(--order-text-main);
+  font-size: 0.95rem;
+}
+
+/* Typography & colors */
+.order-show-page p,
+.order-show-page span,
+.order-show-page label,
+.order-show-page strong,
+.order-show-page div,
+.order-show-page textarea {
+  color: var(--order-text-main);
+  font-size: 0.95rem;
+}
+
+.order-show-page .text-muted {
+  color: var(--order-text-muted) !important;
+}
+
+.order-show-page h1,
+.order-show-page h2,
+.order-show-page h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--order-text-main);
+}
+
+.info-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.info-row strong {
+  min-width: 120px;
+}
+
+/* Badges */
+.badge {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.bg-purple {
+  background-color: #6f42c1 !important;
+  color: #fff !important;
+}
+
+.bg-maroon {
+  background-color: #800000 !important;
+  color: #fff !important;
+}
+
+.bg-orange {
+  background-color: #fd7e14 !important;
+  color: #fff !important;
+}
+
+/* Images & carousels */
+.img-fluid.img-thumbnail {
+  max-width: 250px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 16px;
+  border: 1px solid var(--order-border-soft);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+#backImagesCarousel img,
+#internalImagesCarousel img,
+#finalBackImagesCarousel img {
+  max-width: 500px;
+  height: 350px;
+  object-fit: contain;
+}
+
+.custom-carousel-control {
+  width: 5%;
+}
+
+.custom-carousel-control .carousel-control-prev-icon,
+.custom-carousel-control .carousel-control-next-icon {
+  background-color: var(--order-primary);
+  border-radius: 50%;
+}
+
+/* SVG preview container */
+.svg-preview-container {
+  border: 1px solid var(--order-border-soft);
+  padding: 10px;
+  border-radius: 14px;
+  background: #f9fafb;
+}
+
+/* Binding card text always clear */
+.binding-card .card-body strong,
+.binding-card .card-body span,
+.binding-card .card-body label,
+.binding-card .card-body p,
+.binding-card .card-body div,
+.binding-card .card-body textarea {
+  color: var(--order-text-main) !important;
+}
+
+.binding-card textarea::placeholder {
+  color: var(--order-text-muted);
+  opacity: 0.8;
+}
+
+.binding-card .form-check-label {
+  opacity: 1 !important;
+}
+
+/* Notes & textareas */
+.note-box,
+.note-box-light {
+  border-radius: 14px;
+  padding: 10px 12px;
+  min-height: 70px;
+}
+
+.note-box {
+  border: 1px solid var(--order-border-soft);
+  background: #f9fafb;
+}
+
+.note-box-light {
+  border: 1px dashed var(--order-border-soft);
+  background: #f9fafb;
+}
+
+textarea.form-control {
+  border-radius: 12px;
+  border-color: var(--order-border-soft);
+  font-size: 0.9rem;
+}
+
+textarea.form-control:focus {
+  border-color: var(--order-primary);
+  box-shadow: 0 0 0 1px var(--order-primary-soft);
+}
+
+.section-label {
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.section-separator {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #e5e7eb, transparent);
+  margin: 12px 0;
+}
+
+/* Auto direction helpers */
+.auto-dir {
+  unicode-bidi: plaintext;
+  text-align: start;
+  direction: auto;
+}
+
+.auto-dir:has([lang="ar"]),
+.auto-dir[lang="ar"] {
+  text-align: right;
+}
+
+.auto-dir:has([lang="en"]),
+.auto-dir[lang="en"] {
+  text-align: left;
+}
+
+.order-tabs .nav-link {
+  font-weight: bold;
+}
+
+.order-show-page i,
+.order-show-page .fas,
+.order-show-page .far,
+.order-show-page .fab,
+.order-show-page .fa {
+  color: inherit;
+}
+
+@media (max-width: 768px) {
+  .order-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ✅ سطر معلومات الخريج (اسم المجموعة / حالة التصميم / المصمم) */
+.graduate-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.graduate-meta-item {
+  flex: 1 1 220px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: #f9fafb;
+  border: 1px solid var(--order-border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.graduate-meta-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--order-text-muted);
+}
+
+.graduate-meta-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--order-text-main);
+}
+
+/* أيقونة صغيرة على اليسار */
+.graduate-meta-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--order-primary-soft);
+  color: var(--order-primary);
+  font-size: 0.9rem;
+}
+
+/* 🎯 شكل حالة التصميم: كبسولة هادئة + نقطة لون صغيرة */
+.badge-status {
+  background: #f9fafb;
+  color: var(--order-text-main);
+  border-radius: 999px;
+  border: 1px solid var(--order-border-soft);
+  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+}
+
+.badge-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background-color: currentColor;
+  opacity: 0.7;
+}
+
+/* 🧑‍🎨 أفاتار بسيط للمصمم */
+.designer-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--order-primary-soft);
+  color: var(--order-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+/* 🎨 ألوان حسب حالة الطلب داخل الكبسولة الجديدة */
+
+.badge-status.status-pending {
+  color: #92400e;
+  background: #fffbeb;
+  border-color: #fef3c7;
+}
+
+.badge-status.status-completed {
+  color: #0f766e;
+  background: #ecfeff;
+  border-color: #67e8f9;
+}
+
+.badge-status.status-preparing {
+  color: #6d28d9;
+  background: #f5f3ff;
+  border-color: #c4b5fd;
+}
+
+.badge-status.status-received {
+  color: #166534;
+  background: #dcfce7;
+  border-color: #86efac;
+}
+
+.badge-status.status-out-for-delivery {
+  color: #722F37;
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+
+.badge-status.status-canceled {
+  color: #7f1d1d;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.badge-status.status-error {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.badge-status.status-unknown {
+  color: #4b5563;
+  background: #f9fafb;
+  border-color: #e5e7eb;
+}
+
+/* 🔴 تلوين حالة ملاحظات المتابعة عند وجود نوت */
+.design-followup-status-has-note {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+/* 🎨 حاوية حالة التصميم في الهيدر */
+.order-status-chip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: radial-gradient(circle at top left, #eef2ff, #f9fafb);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(129, 140, 248, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+/* لمعة خفيفة خلفية */
+.order-status-chip::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(236, 72, 153, 0.12), transparent 55%);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+/* عشان المحتوى ما يتأثر بالـ ::before */
+.order-status-main,
+.order-status-control {
+  position: relative;
+  z-index: 1;
+}
+
+.order-status-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.order-status-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(79, 70, 229, 0.08);
+  color: #4f46e5;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35);
+}
+
+.order-status-icon i {
+  font-size: 0.9rem;
+}
+
+.order-status-text-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.order-status-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+/* الشارة نفسها (pill) */
+.order-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  padding: 4px 10px;
+  border: 1px solid transparent;
+  font-size: 0.8rem;
+  font-weight: 600;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.16);
+}
+
+.badge-status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background-color: currentColor;
+  opacity: 0.9;
+}
+
+/* 🔽 دروب داون مودرن */
+.order-status-control {
+  margin-right: auto;
+}
+
+.order-status-select {
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  background: rgba(15, 23, 42, 0.02);
+  padding: 4px 12px 4px 28px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #111827;
+  outline: none;
+  appearance: none;
+  position: relative;
+  cursor: pointer;
+  min-width: 155px;
+  direction: rtl;
+}
+
+/* سهم بسيط للدروب داون */
+.order-status-control {
+  position: relative;
+}
+
+.order-status-control::after {
+  content: "\f078";
+  /* fa-chevron-down */
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.65rem;
+  color: #6b7280;
+  pointer-events: none;
+}
+
+.order-status-select:hover {
+  border-color: rgba(79, 70, 229, 0.8);
+  box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.25);
+  background: rgba(79, 70, 229, 0.03);
+}
+
+.order-status-select:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.4);
+}
+
+/* 📱 موبايل */
+@media (max-width: 768px) {
+  .order-status-chip {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .order-status-control {
+    width: 100%;
+  }
+
+  .order-status-select {
+    width: 100%;
+  }
+}
+
+/* 🎯 ألوان الحالات (مودرن + نفس المعنى المتفق عليه) */
+
+/* Pending → تم التصميم (ذهبي/برتقالي هادي) */
+.badge-status.status-pending {
+  color: #92400e;
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border-color: #facc15;
+}
+
+/* Completed → تم الاعتماد (تركواز/أخضر أزرق) */
+.badge-status.status-completed {
+  color: #0f766e;
+  background: linear-gradient(135deg, #ecfeff, #a5f3fc);
+  border-color: #22d3ee;
+}
+
+/* preparing → قيد التجهيز (بنفسجي) */
+.badge-status.status-preparing {
+  color: #6d28d9;
+  background: linear-gradient(135deg, #f5f3ff, #ddd6fe);
+  border-color: #a855f7;
+}
+
+/* Received → تم التسليم (أخضر) */
+.badge-status.status-received {
+  color: #166534;
+  background: linear-gradient(135deg, #dcfce7, #86efac);
+  border-color: #22c55e;
+}
+
+/* Out for Delivery → مرتجع (برتقالي محمّر) */
+.badge-status.status-out-for-delivery {
+  color: #722F37;
+  background: linear-gradient(135deg, #fff7ed, #fed7aa);
+  border-color: #fb923c;
+}
+
+/* Canceled → رفض الاستلام (عنابي) */
+.badge-status.status-canceled {
+  color: #7f1d1d;
+  background: linear-gradient(135deg, #da7070, #fecaca);
+  border-color: #f97373;
+}
+
+/* error → خطأ (أحمر واضح) */
+.badge-status.status-error {
+  color: #b91c1c;
+  background: linear-gradient(135deg, #fef2f2, #fecaca);
+  border-color: #ef4444;
+}
+
+/* default / unknown */
+.badge-status.status-unknown {
+  color: #4b5563;
+  background: linear-gradient(135deg, #f9fafb, #e5e7eb);
+  border-color: #9ca3af;
+}
+
+/* === تعديل كروت الهيدر حتى تناسب حجم المحتوى === */
+
+/* نخلي الهيدر سطر واحد على الديسكتوب */
+.order-page-header-meta {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: nowrap;
+  /* كلهم نفس السطر */
+  align-items: stretch;
+}
+
+/* الكرت العادي + كرت حالة التصميم: عرض على قد المحتوى */
+.order-header-chip,
+.order-status-chip {
+  flex: 0 0 auto;
+
+  /* بدون حد أدنى كبير */
+  max-width: none;
+  /* ما نقيّدها بـ 260px */
+  padding: 10px 18px;
+}
+
+/* قيمة النص ما تطوّل الكرت زيادة */
+.order-header-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  max-width: 140px;
+  /* يكفي لرقم الطلب / اسم قصير */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* لو الاسم طويل ينتهي بـ ... */
+}
+
+/* موبايل: نرجع نسمح لها تلف تحت بعض */
+@media (max-width: 992px) {
+  .order-page-header-meta {
+    flex-wrap: wrap;
+  }
+
+  .order-header-chip,
+  .order-status-chip {
+    max-width: 100%;
+  }
+}
+
+/* ✅ عشان الفليكس يسمح للعناصر إنها تتصغّر وما تطلع برا الكرت */
+.order-header-chip-status .order-status-main {
+  min-width: 0;
+}
+
+/* 🎯 كرت المصمم بالتحديد */
+.order-header-chip-status .js-designer-pill {
+  max-width: 230px;
+  /* عدّلها حسب ما يعجبك */
+  overflow: hidden;
+}
+
+/* ✂️ تقصير اسم المصمم الطويل مع ... في النهاية */
+.order-header-chip-status .js-designer-name {
+  display: inline-block;
+  max-width: 180px;
+  /* جرب 160–200 حسب المساحة */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 🎯 كروت حالة التصميم + المصمم: عنوان فوق وداخلها صف واحد */
+.order-header-chip--2lines {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding: 10px 14px;
+}
+
+/* صف العنوان (النص + الأيقونة) */
+.order-chip-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: 4px;
+}
+
+.order-chip-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* الأيقونة الصغيرة على اليمين */
+.order-chip-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(79, 70, 229, 0.06);
+  color: #4f46e5;
+  font-size: 0.85rem;
+}
+
+/* صف الكنترول (select + الكبسولة) */
+.order-chip-body-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* نخلي الـ select ياخد المساحة، والكبسولة حجمها على قد نصها */
+.order-chip-body-row .order-status-select {
+  flex: 1 1 auto;
+}
+
+.order-chip-body-row .order-status-pill {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* نتأكد إن المارجن القديم ما يخبّص المحاذاة */
+.order-header-chip--2lines .order-status-control {
+  margin-right: 0;
+  /* كان عندك auto */
+}
+
+/* في الموبايل يخلوهم تحت بعض بشكل لطيف */
+@media (max-width: 768px) {
+  .order-chip-body-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .order-chip-body-row .order-status-select {
+    width: 100%;
+  }
+
+  .order-chip-body-row .order-status-pill {
+    align-self: flex-start;
+  }
+}
+
+/* 🎯 أزرار التحميل (مودرن) */
+.download-buttons-wrapper {
+  display: inline-flex;
+  gap: 8px;
+  margin-top: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-download {
+  border-radius: 999px;
+  border: none;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+  letter-spacing: 0.02em;
+}
+
+.btn-download i {
+  font-size: 0.85rem;
+}
+
+/* زر تحميل جميع الصور */
+.btn-download-all {
+  background: linear-gradient(135deg, #4f46e5, #818cf8);
+  color: #ffffff;
+}
+
+/* زر تحميل الصورة الحالية */
+.btn-download-current {
+  background: #f3f4ff;
+  color: #111827;
+  border: 1px solid rgba(129, 140, 248, 0.6);
+}
+
+.btn-download:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.18);
+}
+
+.btn-download:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 12px rgba(15, 23, 42, 0.16);
+}
+
+/* 🔹 بلوك عام لكل أقسام الصور في "الدفتر من الداخل" */
+.image-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* ⬅️ توسيط أفقي */
+  text-align: center;
+  /* للنص فوق وتحت الصورة */
+}
+
+/* 🔹 الكاروسيل نفسه يكون عرضه مقبول وفي النص */
+#internalImagesCarousel {
+  max-width: 320px;
+  width: 100%;
+  margin: 0 auto 1rem;
+  /* ⬅️ يخليه بالنص */
+}
+
+/* 🔹 كل الصور في هذه التبويبة بنفس الأسلوب */
+.image-block img.img-thumbnail {
+  display: block;
+  margin: 0 auto 12px;
+  /* ⬅️ تأكيد التوسيط + مسافة تحت الصورة */
+}
+
+/* 🔹 أزرار التحميل تحت الصورة بشكل مودرن ومسنتر */
+.download-buttons-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  /* ⬅️ الأزرار في النص */
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* شكل عصري للأزرار */
+.btn-download {
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  background: #f9fafb;
+  color: #111827;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.18s ease;
+}
+
+.btn-download i {
+  font-size: 0.85rem;
+}
+
+/* لون مختلف لكل نوع زر لو حاب */
+.btn-download-all {
+  background: linear-gradient(135deg, #eef2ff, #e0f2fe);
+}
+
+.btn-download-current {
+  background: linear-gradient(135deg, #fef9c3, #fee2e2);
+}
+
+/* هوفر خفيف */
+.btn-download:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
+}
+
+.design-image-wrapper {
+  width: 50%;
+  margin: 0 auto;
+  /* ⬅️ توسيط أفقي */
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  /* ⬅️ لتوسيط المحتوى */
+  justify-content: center;
+  /* ⬅️ توسيط أفقي للصورة */
+  align-items: center;
+  /* ⬅️ توسيط عمودي (احترافي) */
+  background: #f3f4f6;
+}
+
+.design-image-full {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  /* لا قص */
+}

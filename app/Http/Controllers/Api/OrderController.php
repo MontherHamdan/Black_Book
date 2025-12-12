@@ -25,11 +25,10 @@ class OrderController extends Controller
             'discount_code_id'   => 'nullable|exists:discount_codes,id',
             'book_type_id'       => 'required|exists:book_types,id',
 
-            // تصميم جاهز من book_designs
             'book_design_id'        => 'nullable|exists:book_designs,id',
+            'custom_design_image_id'   => 'nullable|array',
+            'custom_design_image_id.*' => 'exists:user_images,id',
 
-            // تصميم مرفوع من user_images (تحميل تصميم آخر)
-            'custom_design_image_id' => 'nullable|exists:user_images,id',
 
             'front_image_id'      => 'nullable|exists:user_images,id',
             'book_decorations_id' => 'nullable|exists:book_decorations,id',
@@ -65,7 +64,6 @@ class OrderController extends Controller
 
             'gift_type'        => 'required|in:default,custom,none',
             'gift_title'       => 'nullable|string|required_if:gift_type,custom',
-            'is_with_additives' => 'nullable|boolean',
 
             'university_id'       => 'required_if:user_type,university|prohibited_if:user_type,diploma|exists:universities,id',
             'university_major_id' => 'required_if:user_type,university|prohibited_if:user_type,diploma|exists:majors,id',
@@ -75,31 +73,23 @@ class OrderController extends Controller
         ]);
 
         $validator->after(function ($validator) use ($request) {
-            // 1) منطق اختيار التصميم: يا جاهز يا مرفوع، مش الاثنين
-            $bookDesignId        = $request->input('book_design_id');
-            $customDesignImageId = $request->input('custom_design_image_id');
+            $bookDesignId = $request->input('book_design_id');
 
-            // الاثنين فاضيين
-            if (empty($bookDesignId) && empty($customDesignImageId)) {
+            $customDesignImageIds = $request->input('custom_design_image_id', []);
+
+            if (is_null($customDesignImageIds)) {
+                $customDesignImageIds = [];
+            }
+
+            if (empty($bookDesignId) && empty($customDesignImageIds)) {
                 $validator->errors()->add(
                     'book_design_id',
-                    'يجب اختيار تصميم من التصاميم الجاهزة أو تحميل تصميم آخر.'
+                    'You must choose a design from the ready-made designs or upload another design.'
                 );
             }
 
-            // الاثنين موجودين معًا
-            if (!empty($bookDesignId) && !empty($customDesignImageId)) {
-                $validator->errors()->add(
-                    'book_design_id',
-                    'You cannot select a ready-made design and upload another design at the same time. Choose only one of the two options.'
-                );
-                $validator->errors()->add(
-                    'custom_design_image_id',
-                   'You cannot select a ready-made design and upload another design at the same time. Choose only one of the two options.'
-                );
-            }
+            
 
-            // 2) منطق university / diploma + majors
             $userType = $request->input('user_type');
 
             if ($userType === 'university') {
@@ -112,7 +102,7 @@ class OrderController extends Controller
                         ->where('university_id', $universityId)
                         ->exists();
 
-                    if (! $exists) {
+                    if (!$exists) {
                         $validator->errors()->add(
                             'university_major_id',
                             'The specialisation is not specific to a particular university.'
@@ -131,7 +121,7 @@ class OrderController extends Controller
                         ->where('diploma_id', $diplomaId)
                         ->exists();
 
-                    if (! $exists) {
+                    if (!$exists) {
                         $validator->errors()->add(
                             'diploma_major_id',
                             'The specialisation does not follow the specific diploma programme.'
@@ -146,31 +136,43 @@ class OrderController extends Controller
         }
 
         $data = $validator->validated();
-        if (!array_key_exists('book_design_id', $data)) {
-            $data['book_design_id'] = null;
-        }
+
+        // 🔹 book_design_id ممكن تكون null
+        $data['book_design_id'] = $data['book_design_id'] ?? null;
+        $data['custom_design_image_id'] = $data['custom_design_image_id'] ?? [];
+
+        // 🔹 لو الإهداء مش custom نخليه null
         if ($data['gift_type'] !== 'custom') {
             $data['gift_title'] = null;
         }
 
-        // default متوافق مع الداتا الحالية
+        // 🔹 حالة افتراضية
         $data['status'] = $data['status'] ?? 'Pending';
 
-        $data['back_image_ids']           = json_encode($data['back_image_ids'] ?? []);
-        $data['transparent_printing_ids'] = json_encode($data['transparent_printing_ids'] ?? []);
+        // 🔹 back_image_ids نخليها array (Laravel يتكفّل بـ JSON)
+        $data['back_image_ids'] = $data['back_image_ids'] ?? [];
 
-        unset($data['additional_images'], $data['additional_image_id']);
+        // 🔹 additional_images → نخزنها في additional_image_id (array cast)
+        $data['additional_image_id'] = $data['additional_images'] ?? [];
 
+        // 🔹 transparent_printing_ids → نخزن أول واحد في transparent_printing_id
+        $transparentIds = $data['transparent_printing_ids'] ?? [];
+        $data['transparent_printing_id'] = !empty($transparentIds) ? $transparentIds[0] : null;
+
+        // 🔹 حساب is_with_additives (إسفنج أو صور إضافية أو طباعة شفافة)
+        $hasAdditionalImages = !empty($data['additional_image_id']);
+        $hasSponge           = !empty($data['is_sponge']);
+        $hasTransparent      = !empty($data['transparent_printing_id']);
+
+        $data['is_with_additives'] = ($hasAdditionalImages || $hasSponge || $hasTransparent);
+
+        // نحذف الحقول المساعدة اللي مش موجودة في جدول orders
+        unset($data['additional_images'], $data['transparent_printing_ids']);
+
+        // 🧾 إنشاء الطلب
         $order = Order::create($data);
 
-        if ($request->filled('additional_images')) {
-            foreach ($request->additional_images as $imageId) {
-                $order->additionalImages()->create([
-                    'image' => $imageId,
-                ]);
-            }
-        }
-
+        // 🔤 حفظ الإسم في جدول svg_names (نفس منطقك الحالي)
         $firstArabicName = ArabicNameNormalizer::firstArabicName($order->username_ar ?? '');
 
         if (!empty($firstArabicName)) {
@@ -187,7 +189,7 @@ class OrderController extends Controller
 
         return response()->json([
             'message' => 'Order created successfully.',
-            'order'   => $order->load('additionalImages'),
+            'order'   => $order->fresh(),  
         ], 201);
     }
 }

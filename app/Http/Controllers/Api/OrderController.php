@@ -89,20 +89,19 @@ class OrderController extends Controller
         ]);
 
         $validator->after(function ($validator) use ($request) {
-            // 1) منطق اختيار التصميم: يا جاهز يا مرفوع، مش الاثنين
             $bookDesignId = $request->input('book_design_id');
 
             $customDesignImageIds = $request->input('custom_design_image_id', []);
             if (is_null($customDesignImageIds)) $customDesignImageIds = [];
 
+            // المرفوض الوحيد
             if (empty($bookDesignId) && empty($customDesignImageIds)) {
-                $validator->errors()->add(
-                    'book_design_id',
-                    'You must choose a design from the ready-made designs or upload another design.'
-                );
+                $msg = 'You must choose a ready-made design (book_design_id) or upload custom design images (custom_design_image_id). Both cannot be empty.';
+                $validator->errors()->add('book_design_id', $msg);
+                $validator->errors()->add('custom_design_image_id', $msg);
             }
 
-         
+
 
 
             // 2) منطق university / diploma + majors
@@ -155,6 +154,7 @@ class OrderController extends Controller
 
         $data['book_design_id'] = $data['book_design_id'] ?? null;
         $data['custom_design_image_id'] = $data['custom_design_image_id'] ?? [];
+
 
         if (!array_key_exists('book_design_id', $data)) {
             $data['book_design_id'] = null;

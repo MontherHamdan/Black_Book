@@ -5,13 +5,22 @@ namespace App\Http\Controllers\Api;
 use App\Models\Order;
 use App\Models\SvgName;
 use App\Support\ArabicNameNormalizer;
+use App\Services\OrderPricingService;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
+    protected $pricingService;
+
+    public function __construct(OrderPricingService $pricingService)
+    {
+        $this->pricingService = $pricingService;
+    }
+
     /**
      * Store a newly created order in storage.
      *
@@ -57,8 +66,11 @@ class OrderController extends Controller
             'delivery_number_two' => 'nullable|string|max:20',
             'governorate'         => 'required|string',
             'address'             => 'required|string',
-            'final_price'         => 'required|numeric|min:0',
-            'final_price_with_discount' => 'required|numeric|min:0',
+            
+            // Prices are now optional - server will calculate them
+            // If provided, they will be validated against server calculations
+            'final_price'         => 'nullable|numeric|min:0',
+            'final_price_with_discount' => 'nullable|numeric|min:0',
 
             'status' => 'nullable|in:preparing,shipping,completed,canceled,Pending,Received,Out for Delivery,error',
 
@@ -149,6 +161,52 @@ class OrderController extends Controller
         // 🔹 حالة افتراضية
         $data['status'] = $data['status'] ?? 'Pending';
 
+        // ========================================
+        // SERVER-SIDE PRICE CALCULATION & VALIDATION
+        // ========================================
+        
+        // Store frontend prices if provided (for validation)
+        $frontendBasePrice = $data['final_price'] ?? null;
+        $frontendDiscountedPrice = $data['final_price_with_discount'] ?? null;
+
+        // Calculate prices on server side
+        $calculatedPrices = $this->pricingService->calculateOrderPrices($data);
+        
+        // If frontend provided prices, validate them
+        if ($frontendBasePrice !== null || $frontendDiscountedPrice !== null) {
+            $validation = $this->pricingService->validateFrontendPrices(
+                $data,
+                $frontendBasePrice,
+                $frontendDiscountedPrice
+            );
+            
+            if (!$validation['is_valid']) {
+                // Log the price manipulation attempt
+                Log::warning('Price manipulation attempt detected', [
+                    'request_data' => $request->except(['front_image_id', 'back_image_ids', 'additional_images', 'transparent_printing_ids']),
+                    'frontend_prices' => [
+                        'base_price' => $frontendBasePrice,
+                        'discounted_price' => $frontendDiscountedPrice,
+                    ],
+                    'calculated_prices' => $validation['calculated_prices'],
+                    'errors' => $validation['errors'],
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ]);
+                
+                return response()->json([
+                    'errors' => [
+                        'final_price' => ['Price validation failed. The prices provided do not match our calculations.'],
+                    ],
+                    'message' => 'Price validation failed. Please refresh and try again.',
+                ], 422);
+            }
+        }
+        
+        // ALWAYS use server-calculated prices (ignore frontend values)
+        $data['final_price'] = $calculatedPrices['base_price'];
+        $data['final_price_with_discount'] = $calculatedPrices['price_with_discount'];
+
         // 🔹 back_image_ids نخليها array (Laravel يتكفّل بـ JSON)
         $data['back_image_ids'] = $data['back_image_ids'] ?? [];
 
@@ -189,7 +247,7 @@ class OrderController extends Controller
 
         return response()->json([
             'message' => 'Order created successfully.',
-            'order'   => $order->fresh(),  
+            'order'   => $order->load('additionalImages'),
         ], 201);
     }
 }

@@ -59,6 +59,7 @@ class OrderController extends Controller
             'is_sponge'    => 'required|boolean',
             'pages_number' => 'required|integer',
 
+            
             'additional_images'   => 'nullable|array',
             'additional_images.*' => 'exists:user_images,id',
 

@@ -740,10 +740,13 @@
             const count = checkedBoxes.length;
             $('#selectedCount').text(count);
             
+            const $btn = $('#bulkDeleteBtn');
             if (count > 0) {
-                $('#bulkDeleteBtn').prop('disabled', false).show();
+                // Reset button HTML to original state (remove any loader)
+                $btn.html('<i class="fas fa-trash me-1"></i> حذف المحدد (<span id="selectedCount">' + count + '</span>)');
+                $btn.prop('disabled', false).show();
             } else {
-                $('#bulkDeleteBtn').prop('disabled', true).hide();
+                $btn.prop('disabled', true).hide();
             }
         }
 
@@ -797,11 +800,18 @@
                         // Uncheck all and reload table
                         $('#selectAllOrders').prop('checked', false);
                         $('.order-checkbox').prop('checked', false);
+                        // Reset button state before updating (this will hide it since count is 0)
                         updateBulkDeleteButton();
                         table.ajax.reload(null, false);
                     } else {
                         alert(response.message || 'حدث خطأ أثناء حذف الطلبات.');
-                        $btn.prop('disabled', false).html('<i class="fas fa-trash me-1"></i> حذف المحدد (<span id="selectedCount">' + orderIds.length + '</span>)');
+                        // Reset button to original state on error
+                        const remainingCount = $('.order-checkbox:checked').length;
+                        if (remainingCount > 0) {
+                            $btn.prop('disabled', false).html('<i class="fas fa-trash me-1"></i> حذف المحدد (<span id="selectedCount">' + remainingCount + '</span>)');
+                        } else {
+                            updateBulkDeleteButton();
+                        }
                     }
                 },
                 error: function(xhr) {
@@ -810,7 +820,13 @@
                         message = xhr.responseJSON.message;
                     }
                     alert(message);
-                    $btn.prop('disabled', false).html('<i class="fas fa-trash me-1"></i> حذف المحدد (<span id="selectedCount">' + orderIds.length + '</span>)');
+                    // Reset button to original state on error
+                    const remainingCount = $('.order-checkbox:checked').length;
+                    if (remainingCount > 0) {
+                        $btn.prop('disabled', false).html('<i class="fas fa-trash me-1"></i> حذف المحدد (<span id="selectedCount">' + remainingCount + '</span>)');
+                    } else {
+                        updateBulkDeleteButton();
+                    }
                 }
             });
         });

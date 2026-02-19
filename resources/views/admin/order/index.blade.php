@@ -56,6 +56,11 @@
                 <h1 class="mb-0 text-primary">الطلبات</h1>
 
                 <div class="d-flex gap-2">
+                    @if(auth()->user()->isAdmin())
+                        <button id="bulkDeleteBtn" class="btn btn-danger btn-sm" disabled style="display: none;">
+                            <i class="fas fa-trash me-1"></i> حذف المحدد (<span id="selectedCount">0</span>)
+                        </button>
+                    @endif
                     <button id="openAdvancedSearch" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#advancedSearchModal">
                         <i class="fas fa-search me-1"></i> بحث متقدم
                     </button>
@@ -71,6 +76,11 @@
                     <table id="orders-table" class="table table-hover table-striped ">
                         <thead>
                             <tr>
+                                @if(auth()->user()->isAdmin())
+                                    <th width="50">
+                                        <input type="checkbox" id="selectAllOrders" title="تحديد الكل">
+                                    </th>
+                                @endif
                                 <th>رقم الطلب</th>
                                 <th>التاريخ</th>
                                 <th>الحالة</th>
@@ -247,7 +257,20 @@
             },
             lengthMenu: [10, 25, 50, 100],
             pageLength: 10,
-            columns: [{
+            columns: [
+                @if(auth()->user()->isAdmin())
+                {
+                    data: null,
+                    name: 'checkbox',
+                    orderable: false,
+                    searchable: false,
+                    width: '50px',
+                    render: function(data, type, row) {
+                        return `<input type="checkbox" class="order-checkbox" value="${row.id}" data-order-id="${row.id}">`;
+                    }
+                },
+                @endif
+                {
                     data: 'id',
                     name: 'id',
                     render: function(data, type, row) {
@@ -710,6 +733,148 @@
             $('#dateTo').val('');
             table.ajax.reload();
         });
+
+        @if(auth()->user()->isAdmin())
+        // ============================================
+        // Bulk Delete Functionality (Admin Only)
+        // ============================================
+
+        // Update selected count and toggle bulk delete button
+        function updateBulkDeleteButton() {
+            const checkedBoxes = $('.order-checkbox:checked');
+            const count = checkedBoxes.length;
+            $('#selectedCount').text(count);
+            
+            const $btn = $('#bulkDeleteBtn');
+            if (count > 0) {
+                // Reset button HTML to original state (remove any loader)
+                $btn.html('<i class="fas fa-trash me-1"></i> حذف المحدد (<span id="selectedCount">' + count + '</span>)');
+                $btn.prop('disabled', false).show();
+            } else {
+                $btn.prop('disabled', true).hide();
+            }
+        }
+
+        // Select/Deselect all orders
+        $('#selectAllOrders').on('change', function() {
+            const isChecked = $(this).prop('checked');
+            $('.order-checkbox').prop('checked', isChecked);
+            updateBulkDeleteButton();
+        });
+
+        // Handle individual checkbox changes
+        $(document).on('change', '.order-checkbox', function() {
+            updateBulkDeleteButton();
+            
+            // Update "select all" checkbox state
+            const totalCheckboxes = $('.order-checkbox').length;
+            const checkedCheckboxes = $('.order-checkbox:checked').length;
+            $('#selectAllOrders').prop('checked', totalCheckboxes === checkedCheckboxes);
+        });
+
+        // Bulk delete handler
+        $('#bulkDeleteBtn').on('click', function() {
+            const checkedBoxes = $('.order-checkbox:checked');
+            const orderIds = checkedBoxes.map(function() {
+                return $(this).val();
+            }).get();
+
+            if (orderIds.length === 0) {
+                alert('لم يتم تحديد أي طلبات للحذف.');
+                return;
+            }
+
+            if (!confirm(`هل أنت متأكد من حذف ${orderIds.length} طلب؟\n\nهذا الإجراء لا يمكن التراجع عنه!`)) {
+                return;
+            }
+
+            // Disable button during deletion
+            const $btn = $(this);
+            $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> جاري الحذف...');
+
+            $.ajax({
+                url: '{{ route('orders.bulkDelete') }}',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    order_ids: orderIds
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.message);
+                        // Uncheck all and reload table
+                        $('#selectAllOrders').prop('checked', false);
+                        $('.order-checkbox').prop('checked', false);
+                        // Reset button state before updating (this will hide it since count is 0)
+                        updateBulkDeleteButton();
+                        table.ajax.reload(null, false);
+                    } else {
+                        alert(response.message || 'حدث خطأ أثناء حذف الطلبات.');
+                        // Reset button to original state on error
+                        const remainingCount = $('.order-checkbox:checked').length;
+                        if (remainingCount > 0) {
+                            $btn.prop('disabled', false).html('<i class="fas fa-trash me-1"></i> حذف المحدد (<span id="selectedCount">' + remainingCount + '</span>)');
+                        } else {
+                            updateBulkDeleteButton();
+                        }
+                    }
+                },
+                error: function(xhr) {
+                    let message = 'حدث خطأ أثناء حذف الطلبات.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    }
+                    alert(message);
+                    // Reset button to original state on error
+                    const remainingCount = $('.order-checkbox:checked').length;
+                    if (remainingCount > 0) {
+                        $btn.prop('disabled', false).html('<i class="fas fa-trash me-1"></i> حذف المحدد (<span id="selectedCount">' + remainingCount + '</span>)');
+                    } else {
+                        updateBulkDeleteButton();
+                    }
+                }
+            });
+        });
+
+        // Handle single order delete (existing functionality)
+        $(document).on('click', '.delete-order', function(e) {
+            e.preventDefault();
+            const orderId = $(this).data('id');
+
+            if (!confirm('هل أنت متأكد من حذف هذا الطلب؟\n\nهذا الإجراء لا يمكن التراجع عنه!')) {
+                return;
+            }
+
+            $.ajax({
+                url: '/orders/' + orderId,
+                method: 'DELETE',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.message);
+                        table.ajax.reload(null, false);
+                    } else {
+                        alert(response.message || 'فشل حذف الطلب.');
+                    }
+                },
+                error: function(xhr) {
+                    let message = 'حدث خطأ أثناء حذف الطلب.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    }
+                    alert(message);
+                }
+            });
+        });
+
+        // Update bulk delete button on table draw (when data reloads)
+        table.on('draw', function() {
+            updateBulkDeleteButton();
+            $('#selectAllOrders').prop('checked', false);
+        });
+        @endif
     });
 </script>
 

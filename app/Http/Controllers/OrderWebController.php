@@ -563,15 +563,235 @@ class OrderWebController extends Controller
 
 
 
+    /**
+     * Delete a single order and all related data.
+     * Only admins can delete orders.
+     */
     public function destroy($id)
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        // 🛡️ Only admins can delete orders
+        if (!$user->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'غير مصرح لك بحذف الطلبات.',
+            ], 403);
+        }
+
         $order = Order::findOrFail($id);
-        $order->delete();
+        $this->deleteOrderAndRelatedData($order);
 
         return response()->json([
             'success' => true,
-            'message' => 'Order deleted successfully!',
+            'message' => 'تم حذف الطلب بنجاح!',
         ]);
+    }
+
+    /**
+     * Bulk delete multiple orders.
+     * Only admins can perform bulk delete.
+     */
+    public function bulkDelete(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        // 🛡️ Only admins can bulk delete
+        if (!$user->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'غير مصرح لك بحذف الطلبات.',
+            ], 403);
+        }
+
+        $request->validate([
+            'order_ids' => 'required|array',
+            'order_ids.*' => 'required|exists:orders,id',
+        ]);
+
+        $orderIds = $request->input('order_ids', []);
+        $orders = Order::whereIn('id', $orderIds)->get();
+
+        $deletedCount = 0;
+        $errors = [];
+
+        foreach ($orders as $order) {
+            try {
+                $this->deleteOrderAndRelatedData($order);
+                $deletedCount++;
+            } catch (\Exception $e) {
+                $errors[] = "فشل حذف الطلب #{$order->id}: " . $e->getMessage();
+                Log::error('Bulk delete order failed', [
+                    'order_id' => $order->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "تم حذف {$deletedCount} طلب بنجاح.",
+            'deleted_count' => $deletedCount,
+            'errors' => $errors,
+        ]);
+    }
+
+    /**
+     * Comprehensive method to delete an order and all its related data:
+     * - Notes (cascade delete via foreign key)
+     * - UserImage records (front, transparent, internal, back, additional, custom)
+     * - Physical image files from storage
+     * - The order itself (soft delete)
+     */
+    private function deleteOrderAndRelatedData(Order $order): void
+    {
+        // 📸 Collect all UserImage IDs that need to be checked/deleted
+        $imageIdsToCheck = [];
+
+        // Front image
+        if ($order->front_image_id) {
+            $imageIdsToCheck[] = $order->front_image_id;
+        }
+
+        // Transparent printing image
+        if ($order->transparent_printing_id) {
+            $imageIdsToCheck[] = $order->transparent_printing_id;
+        }
+
+        // Internal image
+        if ($order->internal_image_id) {
+            $imageIdsToCheck[] = $order->internal_image_id;
+        }
+
+        // Back images (from JSON array)
+        $backImageIds = $order->back_image_ids;
+        if (is_string($backImageIds)) {
+            $backImageIds = json_decode($backImageIds, true);
+        }
+        if (is_array($backImageIds) && !empty($backImageIds)) {
+            $imageIdsToCheck = array_merge($imageIdsToCheck, $backImageIds);
+        }
+
+        // Additional images (from JSON array)
+        $additionalImageIds = $order->additional_image_id;
+        if (is_string($additionalImageIds)) {
+            $additionalImageIds = json_decode($additionalImageIds, true);
+        }
+        if (is_array($additionalImageIds) && !empty($additionalImageIds)) {
+            $imageIdsToCheck = array_merge($imageIdsToCheck, $additionalImageIds);
+        }
+
+        // Custom design images (from JSON array)
+        $customDesignImageIds = $order->custom_design_image_id;
+        if (is_string($customDesignImageIds)) {
+            $customDesignImageIds = json_decode($customDesignImageIds, true);
+        }
+        if (is_array($customDesignImageIds) && !empty($customDesignImageIds)) {
+            $imageIdsToCheck = array_merge($imageIdsToCheck, $customDesignImageIds);
+        }
+
+        // Remove duplicates
+        $imageIdsToCheck = array_unique(array_filter($imageIdsToCheck));
+
+        // 🗑️ Delete physical image files and UserImage records
+        if (!empty($imageIdsToCheck)) {
+            $userImages = UserImage::whereIn('id', $imageIdsToCheck)->get();
+
+            foreach ($userImages as $userImage) {
+                $this->deleteUserImageFile($userImage);
+            }
+
+            // Check if these images are used by other orders before deleting
+            // We only delete UserImage records if they're not used elsewhere
+            foreach ($imageIdsToCheck as $imageId) {
+                // Get all other orders and check if they use this image
+                $otherOrders = Order::where('id', '!=', $order->id)->get();
+                $isUsedElsewhere = false;
+
+                foreach ($otherOrders as $otherOrder) {
+                    // Check direct foreign key columns
+                    if ($otherOrder->front_image_id == $imageId ||
+                        $otherOrder->transparent_printing_id == $imageId ||
+                        $otherOrder->internal_image_id == $imageId) {
+                        $isUsedElsewhere = true;
+                        break;
+                    }
+
+                    // Check JSON array columns
+                    $backIds = is_string($otherOrder->back_image_ids) 
+                        ? json_decode($otherOrder->back_image_ids, true) 
+                        : $otherOrder->back_image_ids;
+                    if (is_array($backIds) && in_array($imageId, $backIds)) {
+                        $isUsedElsewhere = true;
+                        break;
+                    }
+
+                    $additionalIds = is_string($otherOrder->additional_image_id) 
+                        ? json_decode($otherOrder->additional_image_id, true) 
+                        : $otherOrder->additional_image_id;
+                    if (is_array($additionalIds) && in_array($imageId, $additionalIds)) {
+                        $isUsedElsewhere = true;
+                        break;
+                    }
+
+                    $customIds = is_string($otherOrder->custom_design_image_id) 
+                        ? json_decode($otherOrder->custom_design_image_id, true) 
+                        : $otherOrder->custom_design_image_id;
+                    if (is_array($customIds) && in_array($imageId, $customIds)) {
+                        $isUsedElsewhere = true;
+                        break;
+                    }
+                }
+
+                if (!$isUsedElsewhere) {
+                    UserImage::where('id', $imageId)->delete();
+                }
+            }
+        }
+
+        // 📝 Notes will be automatically deleted via foreign key cascade
+        // But we can explicitly delete them for clarity
+        $order->notes()->delete();
+
+        // 🗑️ Soft delete the order
+        $order->delete();
+    }
+
+    /**
+     * Delete physical image file from storage.
+     */
+    private function deleteUserImageFile(UserImage $userImage): void
+    {
+        if (!$userImage->image_path) {
+            return;
+        }
+
+        $path = $userImage->image_path;
+
+        // Skip external URLs
+        if (Str::startsWith($path, ['http://', 'https://'])) {
+            return;
+        }
+
+        // Handle different path formats
+        $filePath = null;
+
+        if (Str::startsWith($path, ['/storage/'])) {
+            $relative = ltrim(str_replace('/storage/', '', $path), '/');
+            $filePath = storage_path('app/public/' . $relative);
+        } elseif (Str::startsWith($path, ['user_images/'])) {
+            $filePath = storage_path('app/public/' . ltrim($path, '/'));
+        } else {
+            // Assume it's just a filename in user_images directory
+            $filePath = storage_path('app/public/user_images/' . ltrim($path, '/'));
+        }
+
+        // Delete the file if it exists
+        if ($filePath && file_exists($filePath)) {
+            @unlink($filePath);
+        }
     }
 
     public function addNote(Request $request)

@@ -273,7 +273,15 @@ class OrderWebController extends Controller
      */
     private function statusConfig(): array
     {
-        return [
+       return [
+            'new_order' => [
+                'class' => 'status-new-order bg-primary text-white p-1 rounded',
+                'label' => 'طلب جديد',
+            ],
+            'needs_modification' => [
+                'class' => 'status-needs-modification bg-danger text-white p-1 rounded',
+                'label' => 'يوجد تعديل',
+            ],
             'Pending' => [
                 'class' => 'status-pending',
                 'label' => 'تم التصميم',
@@ -298,13 +306,8 @@ class OrderWebController extends Controller
                 'class' => 'status-canceled',
                 'label' => 'رفض الإستلام',
             ],
-            'error' => [
-                'class' => 'status-error',
-                'label' => 'خطأ',
-            ],
         ];
     }
-
 
     /**
      * Fetch orders for DataTable (server-side).
@@ -467,7 +470,7 @@ class OrderWebController extends Controller
     {
         $request->validate([
             'id'     => 'required|exists:orders,id',
-            'status' => 'required|in:Pending,preparing,Completed,Out for Delivery,Received,Canceled,error',
+'status' => 'required|in:new_order,needs_modification,Pending,preparing,Completed,Out for Delivery,Received,Canceled',
         ]);
 
         /** @var \App\Models\User $user */
@@ -509,7 +512,15 @@ class OrderWebController extends Controller
         $order->save();
 
         // 👇 نفس config الموجود في الـ Blade عشان نرجع label + class جاهزين للـ JS
-        $statusConfig = [
+      $statusConfig = [
+            'new_order' => [
+                'class' => 'bg-primary text-white',
+                'label' => 'طلب جديد',
+            ],
+            'needs_modification' => [
+                'class' => 'bg-danger text-white',
+                'label' => 'يوجد تعديل',
+            ],
             'Pending' => [
                 'class' => 'bg-warning text-dark',
                 'label' => 'تم التصميم',
@@ -533,10 +544,6 @@ class OrderWebController extends Controller
             'Canceled' => [
                 'class' => 'bg-maroon',
                 'label' => 'رفض الإستلام',
-            ],
-            'error' => [
-                'class' => 'bg-danger text-white',
-                'label' => 'خطأ',
             ],
         ];
 

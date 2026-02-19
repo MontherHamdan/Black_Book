@@ -17,13 +17,14 @@
 
             // 3) خريطة الأسماء بالعربي
             const statusLabelMap = {
+                "new_order": "طلب جديد",
+                "needs_modification": "يوجد تعديل",
                 "Pending": "تم التصميم",
                 "Completed": "تم الاعتماد",
                 "preparing": "قيد التجهيز",
                 "Received": "تم التسليم",
                 "Out for Delivery": "مرتجع",
-                "Canceled": "رفض الاستلام",
-                "error": "خطأ"
+                "Canceled": "رفض الاستلام"
             };
 
             // 4) اللابلز المستخدمة في التشارت (عربي)
@@ -33,13 +34,14 @@
 
             // 5) خريطة الألوان (نفس ألوان الحالات)
             const statusColorMap = {
-                "Pending": "#ffc107", // تم التصميم
-                "Completed": "#0dcaf0", // تم الاعتماد
-                "preparing": "#6f42c1", // قيد التجهيز
-                "Received": "#198754", // تم التسليم
-                "Out for Delivery": "#fd7e14", // مرتجع
-                "Canceled": "#800000", // رفض الاستلام
-                "error": "#dc3545" // خطأ
+         "new_order": "#0d6efd",           // أزرق (Primary)
+                "needs_modification": "#dc3545",  // أحمر (Danger)
+                "Pending": "#ffc107",             // أصفر (Warning)
+                "Completed": "#0dcaf0",           // سماوي (Info)
+                "preparing": "#6f42c1",           // بنفسجي (Purple)
+                "Received": "#198754",            // أخضر (Success)
+                "Out for Delivery": "#fd7e14",    // برتقالي (Orange)
+                "Canceled": "#800000"
             };
 
             // 6) ألوان الهفر (ممكن نخليها نفس اللون)

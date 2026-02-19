@@ -18,17 +18,10 @@ use App\Http\Controllers\Api\DiscountCodeController;
 use App\Http\Controllers\Api\BookDecorationController;
 use App\Http\Controllers\Api\BookDesginCategoryController;
 use App\Http\Controllers\Api\BookDesginSubCategoryController;
-
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
+use App\Http\Controllers\Api\VideoController;
+use App\Http\Controllers\Api\SpecializedDepartmentController;
+use App\Http\Controllers\Api\PlanController;
+/* |-------------------------------------------------------------------------- | API Routes |-------------------------------------------------------------------------- | | Here is where you can register API routes for your application. These | routes are loaded by the RouteServiceProvider and all of them will | be assigned to the "api" middleware group. Make something great! | */
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -40,7 +33,7 @@ Route::prefix('v1')->group(function () {
 
     // *******************book_design **********************************
     Route::resource('/book_design', BookDesignController::class)->only(['index', 'store']);
-    Route::get('/book_design/all', [BookDesignController::class, 'all'])->name('book_design.all');
+    Route::get('/book_design/all', [BookDesignController::class , 'all'])->name('book_design.all');
 
     // *******************book_design_categoriese **********************************
     Route::resource('/book_design_categories', BookDesginCategoryController::class);
@@ -62,14 +55,14 @@ Route::prefix('v1')->group(function () {
     Route::resource('/book_decorations', BookDecorationController::class)->only(['index']);
 
     // *******************governorates and addresses **********************************
-    Route::get('/governorates', [GovernorateController::class, 'index']);
-    Route::get('/governorates/{id}/addresses', [AddressController::class, 'getAddressesByGovernorate']);
+    Route::get('/governorates', [GovernorateController::class , 'index']);
+    Route::get('/governorates/{id}/addresses', [AddressController::class , 'getAddressesByGovernorate']);
 
     // ******************* Discount Codes **********************************
-    Route::resource('/discount_codes', DiscountCodeController::class)->only(['index','store']);
+    Route::resource('/discount_codes', DiscountCodeController::class)->only(['index', 'store']);
 
     // *******************User Upload Image ******************************************
-    Route::post('/user_upload_image', [UserImageController::class, 'store']);
+    Route::post('/user_upload_image', [UserImageController::class , 'store']);
 
     // create orders
     Route::resource('orders', OrderController::class)->only(['store']);
@@ -79,9 +72,18 @@ Route::prefix('v1')->group(function () {
 
     // Diploma Majors Routes
     Route::get('diplomas/{diploma_id}/majors',
-        [DiplomaMajorController::class, 'index']
+    [DiplomaMajorController::class , 'index']
     );
 
     Route::resource('orders', OrderController::class)->only(['store']);
 
+    // Videos 
+    Route::apiResource('videos', VideoController::class);
+    Route::post('videos/{video}/update', [VideoController::class , 'update']);
+
+    // Specialized Departments
+    Route::apiResource('specialized-departments', SpecializedDepartmentController::class);
+
+    // Plans
+    Route::apiResource('plans', PlanController::class);
 });

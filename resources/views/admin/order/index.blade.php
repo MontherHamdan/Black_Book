@@ -267,49 +267,54 @@
                     orderable: false,
                     render: function(data, type, row) {
 
-                        const statusConfig = {
-                            Pending: {
-                                class: 'bg-warning text-dark',
-                                label: 'تم التصميم'
-                            },
-                            Completed: {
-                                class: 'bg-info text-dark',
-                                label: 'تم الاعتماد'
-                            },
-                            preparing: {
-                                class: 'bg-purple',
-                                label: 'قيد التجهيز'
-                            },
-                            Received: {
-                                class: 'bg-success text-white',
-                                label: 'تم التسليم'
-                            },
-                            'Out for Delivery': {
-                                class: 'bg-orange',
-                                label: 'مرتجع'
-                            },
-                            Canceled: {
-                                class: 'bg-maroon',
-                                label: 'رفض الإستلام'
-                            },
-                            error: {
-                                class: 'bg-danger text-white',
-                                label: 'خــطــأ' // 👈 عدلنا شكل الكلمة
-                            }
-                        };
+                      const statusConfig = {
+    new_order: {
+        class: 'bg-primary text-white', // لون أزرق للطلب الجديد
+        label: 'طلب جديد'
+    },
+    needs_modification: {
+        class: 'bg-danger text-white', // لون أحمر لوجود تعديل
+        label: 'يوجد تعديل'
+    },
+    Pending: {
+        class: 'bg-warning text-dark',
+        label: 'تم التصميم'
+    },
+    Completed: {
+        class: 'bg-info text-dark',
+        label: 'تم الاعتماد'
+    },
+    preparing: {
+        class: 'bg-purple',
+        label: 'قيد التجهيز'
+    },
+    Received: {
+        class: 'bg-success text-white',
+        label: 'تم التسليم'
+    },
+    'Out for Delivery': {
+        class: 'bg-orange',
+        label: 'مرتجع'
+    },
+    Canceled: {
+        class: 'bg-maroon',
+        label: 'رفض الإستلام'
+    }
+};
 
                         const defaultConfig = statusConfig.error;
                         const currentStatus = statusConfig[data] || defaultConfig;
 
-                        const allStatuses = [
-                            'Pending',
-                            'Completed',
-                            'preparing',
-                            'Received',
-                            'Out for Delivery',
-                            'Canceled',
-                            'error'
-                        ];
+                     const allStatuses = [
+    'new_order',
+    'needs_modification',
+    'Pending',
+    'Completed',
+    'preparing',
+    'Received',
+    'Out for Delivery',
+    'Canceled'
+];
 
                         // هل المستخدم يقدر يغير الحالة؟
                         const canChangeStatus =
@@ -503,19 +508,19 @@
             },
 
             initComplete: function() {
-                const statusDropdown = $(`
-                    <select id="statusFilter" class="form-select" style="width: 230px;height:34px; margin-left: 15px;">
-                        <option value="">تصفية حسب الحالة</option>
-                        <option value="Pending">تم التصميم</option>
-                        <option value="Completed">تم الاعتماد</option>
-                        <option value="preparing">قيد التجهيز</option>
-                        <option value="Received">تم التسليم</option>
-                        <option value="Out for Delivery">مرتجع</option>
-                        <option value="Canceled">رفض الإستلام</option>
-                        <option value="error">خطأ</option>
-                    </select>
-                `);
-
+           const statusDropdown = $(`
+    <select id="statusFilter" class="form-select" style="width: 230px;height:34px; margin-left: 15px;">
+        <option value="">تصفية حسب الحالة</option>
+        <option value="new_order">طلب جديد</option>
+        <option value="needs_modification">يوجد تعديل</option>
+        <option value="Pending">تم التصميم</option>
+        <option value="Completed">تم الاعتماد</option>
+        <option value="preparing">قيد التجهيز</option>
+        <option value="Received">تم التسليم</option>
+        <option value="Out for Delivery">مرتجع</option>
+        <option value="Canceled">رفض الإستلام</option>
+    </select>
+`);
                 const additivesDropdown = $(`
                     <select id="additivesFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
                         <option value="">تصفية حسب الإضافات</option>

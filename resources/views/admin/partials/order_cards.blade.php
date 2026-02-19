@@ -1,7 +1,7 @@
 <style>
   .status-card {
-    flex: 0 0 calc(100% / 7 - 10px);
-    /* 7 كروت بالكامل */
+    /* 8 كروت بالكامل */
+    flex: 0 0 calc(100% / 8 - 10px);
     margin-right: 10px;
   }
 
@@ -22,7 +22,22 @@
 
 <div class="d-flex mt-2 flex-wrap">
 
-  {{-- تم التصميم --}}
+  {{-- 1. طلب جديد --}}
+  <div class="status-card">
+    <div class="card card-enhanced">
+      <div class="card-body d-flex align-items-center p-2">
+        <div class="icon-circle bg-primary text-white me-2">
+          <i class="mdi mdi-new-box" style="font-size:18px;"></i>
+        </div>
+        <div>
+          <div class="card-title mb-0">طلب جديد</div>
+          <div class="card-count">{{ $newOrderCount ?? 0 }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{-- 2. تم التصميم --}}
   <div class="status-card">
     <div class="card card-enhanced">
       <div class="card-body d-flex align-items-center p-2">
@@ -31,13 +46,28 @@
         </div>
         <div>
           <div class="card-title mb-0">تم التصميم</div>
-          <div class="card-count">{{ $pendingCount }}</div>
+          <div class="card-count">{{ $pendingCount ?? 0 }}</div>
         </div>
       </div>
     </div>
   </div>
 
-  {{-- تم الاعتماد --}}
+  {{-- 3. يوجد تعديل --}}
+  <div class="status-card">
+    <div class="card card-enhanced">
+      <div class="card-body d-flex align-items-center p-2">
+        <div class="icon-circle bg-danger text-white me-2">
+          <i class="mdi mdi-alert-decagram" style="font-size:18px;"></i>
+        </div>
+        <div>
+          <div class="card-title mb-0">يوجد تعديل</div>
+          <div class="card-count">{{ $needsModificationCount ?? 0 }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{-- 4. تم الاعتماد --}}
   <div class="status-card">
     <div class="card card-enhanced">
       <div class="card-body d-flex align-items-center p-2">
@@ -46,13 +76,13 @@
         </div>
         <div>
           <div class="card-title mb-0">تم الاعتماد</div>
-          <div class="card-count">{{ $completedCount }}</div>
+          <div class="card-count">{{ $completedCount ?? 0 }}</div>
         </div>
       </div>
     </div>
   </div>
 
-  {{-- قيد التجهيز --}}
+  {{-- 5. قيد التجهيز --}}
   <div class="status-card">
     <div class="card card-enhanced">
       <div class="card-body d-flex align-items-center p-2">
@@ -61,13 +91,13 @@
         </div>
         <div>
           <div class="card-title mb-0">قيد التجهيز</div>
-          <div class="card-count">{{ $preparingCount }}</div>
+          <div class="card-count">{{ $preparingCount ?? 0 }}</div>
         </div>
       </div>
     </div>
   </div>
 
-  {{-- تم التسليم --}}
+  {{-- 6. تم التسليم --}}
   <div class="status-card">
     <div class="card card-enhanced">
       <div class="card-body d-flex align-items-center p-2">
@@ -76,13 +106,13 @@
         </div>
         <div>
           <div class="card-title mb-0">تم التسليم</div>
-          <div class="card-count">{{ $receivedCount }}</div>
+          <div class="card-count">{{ $receivedCount ?? 0 }}</div>
         </div>
       </div>
     </div>
   </div>
 
-  {{-- مرتجع --}}
+  {{-- 7. مرتجع --}}
   <div class="status-card">
     <div class="card card-enhanced">
       <div class="card-body d-flex align-items-center p-2">
@@ -91,13 +121,13 @@
         </div>
         <div>
           <div class="card-title mb-0">مرتجع</div>
-          <div class="card-count">{{ $outForDeliveryCount }}</div>
+          <div class="card-count">{{ $outForDeliveryCount ?? 0 }}</div>
         </div>
       </div>
     </div>
   </div>
 
-  {{-- رفض الاستلام --}}
+  {{-- 8. رفض الاستلام --}}
   <div class="status-card">
     <div class="card card-enhanced">
       <div class="card-body d-flex align-items-center p-2">
@@ -106,22 +136,7 @@
         </div>
         <div>
           <div class="card-title mb-0">رفض الاستلام</div>
-          <div class="card-count">{{ $canceledCount }}</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  {{-- خطأ --}}
-  <div class="status-card">
-    <div class="card card-enhanced">
-      <div class="card-body d-flex align-items-center p-2">
-        <div class="icon-circle text-white me-2" style="background-color:#dc3545;">
-          <i class="mdi mdi-alert-circle" style="font-size:18px;"></i>
-        </div>
-        <div>
-          <div class="card-title mb-0">خطأ</div>
-          <div class="card-count">{{ $errorCount }}</div>
+          <div class="card-count">{{ $canceledCount ?? 0 }}</div>
         </div>
       </div>
     </div>

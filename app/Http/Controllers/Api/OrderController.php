@@ -30,62 +30,57 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'user_gender'        => 'required|in:male,female,group',
-            'discount_code_id'   => 'nullable|exists:discount_codes,id',
-            'book_type_id'       => 'required|exists:book_types,id',
+            'user_gender' => 'required|in:male,female,group',
+            'discount_code_id' => 'nullable|exists:discount_codes,id',
+            'book_type_id' => 'required|exists:book_types,id',
 
-            // تصميم جاهز من book_designs
-            'book_design_id'        => 'nullable|exists:book_designs,id',
-
-            // تصميم مرفوع من user_images (تحميل تصميم آخر)
-            'custom_design_image_id'   => 'nullable|array',
+            // تصميم
+            'book_design_id' => 'nullable|exists:book_designs,id',
+            'custom_design_image_id' => 'nullable|array',
             'custom_design_image_id.*' => 'exists:user_images,id',
 
-
-            'front_image_id'      => 'nullable|exists:user_images,id',
+            'front_image_id' => 'nullable|exists:user_images,id',
             'book_decorations_id' => 'nullable|exists:book_decorations,id',
 
-            'back_image_ids'   => 'nullable|array',
+            'back_image_ids' => 'nullable|array',
             'back_image_ids.*' => 'exists:user_images,id',
 
-            'user_type'    => 'required|in:university,diploma',
-            'username_ar'  => 'required|string|max:255',
-            'username_en'  => 'required|string|max:255',
+            'user_type' => 'required|in:university,diploma',
+            'username_ar' => 'required|string|max:255',
+            'username_en' => 'required|string|max:255',
 
-            'svg_id'       => 'nullable|exists:svgs,id',
-            'svg_title'    => 'nullable|string|max:255',
-            'note'         => 'nullable|string',
+            'svg_id' => 'nullable|exists:svgs,id',
+            'svg_title' => 'nullable|string|max:255',
+            'note' => 'nullable|string',
             'user_phone_number' => 'required|string|max:20',
-            'is_sponge'    => 'required|boolean',
+            'is_sponge' => 'required|boolean',
             'pages_number' => 'required|integer',
 
-            
-            'additional_images'   => 'nullable|array',
-            'additional_images.*' => 'exists:user_images,id',
+            // 🔥 تصحيح 1: تعديل الاسم ليطابق الداتابيس و Postman
+            'additional_image_id' => 'nullable|array',
+            'additional_image_id.*' => 'exists:user_images,id',
 
-            'transparent_printing_ids'   => 'nullable|array',
-            'transparent_printing_ids.*' => 'exists:user_images,id',
+            // 🔥 تصحيح 2: تعديل الاسم والنوع (مفرد وليس مصفوفة لأنه BigInt)
+            'transparent_printing_id' => 'nullable|exists:user_images,id',
 
             'delivery_number_one' => 'required|string|max:20',
             'delivery_number_two' => 'nullable|string|max:20',
-            'governorate'         => 'required|string',
-            'address'             => 'required|string',
-            
-            // Prices are now optional - server will calculate them
-            // If provided, they will be validated against server calculations
-            'final_price'         => 'nullable|numeric|min:0',
+            'governorate' => 'required|string',
+            'address' => 'required|string',
+
+            'final_price' => 'nullable|numeric|min:0',
             'final_price_with_discount' => 'nullable|numeric|min:0',
 
-            'status' => 'nullable|in:preparing,shipping,completed,canceled,Pending,Received,Out for Delivery,error',
+            'status' => 'nullable|in:new_order,needs_modification,preparing,shipping,completed,canceled,Pending,Received,Out for Delivery',
 
-            'gift_type'        => 'required|in:default,custom,none',
-            'gift_title'       => 'nullable|string|required_if:gift_type,custom',
+            'gift_type' => 'required|in:default,custom,none',
+            'gift_title' => 'nullable|string|required_if:gift_type,custom',
             'is_with_additives' => 'nullable|boolean',
 
-            'university_id'       => 'required_if:user_type,university|prohibited_if:user_type,diploma|exists:universities,id',
+            'university_id' => 'required_if:user_type,university|prohibited_if:user_type,diploma|exists:universities,id',
             'university_major_id' => 'required_if:user_type,university|prohibited_if:user_type,diploma|exists:majors,id',
 
-            'diploma_id'       => 'required_if:user_type,diploma|prohibited_if:user_type,university|exists:diplomas,id',
+            'diploma_id' => 'required_if:user_type,diploma|prohibited_if:user_type,university|exists:diplomas,id',
             'diploma_major_id' => 'required_if:user_type,diploma|prohibited_if:user_type,university|exists:diploma_majors,id',
         ]);
 
@@ -93,7 +88,8 @@ class OrderController extends Controller
             $bookDesignId = $request->input('book_design_id');
 
             $customDesignImageIds = $request->input('custom_design_image_id', []);
-            if (is_null($customDesignImageIds)) $customDesignImageIds = [];
+            if (is_null($customDesignImageIds))
+                $customDesignImageIds = [];
 
             // المرفوض الوحيد
             if (empty($bookDesignId) && empty($customDesignImageIds)) {
@@ -109,7 +105,7 @@ class OrderController extends Controller
             $userType = $request->input('user_type');
 
             if ($userType === 'university') {
-                $universityId      = $request->input('university_id');
+                $universityId = $request->input('university_id');
                 $universityMajorId = $request->input('university_major_id');
 
                 if ($universityId && $universityMajorId) {
@@ -118,7 +114,7 @@ class OrderController extends Controller
                         ->where('university_id', $universityId)
                         ->exists();
 
-                    if (! $exists) {
+                    if (!$exists) {
                         $validator->errors()->add(
                             'university_major_id',
                             'The specialisation is not specific to a particular university.'
@@ -128,7 +124,7 @@ class OrderController extends Controller
             }
 
             if ($userType === 'diploma') {
-                $diplomaId      = $request->input('diploma_id');
+                $diplomaId = $request->input('diploma_id');
                 $diplomaMajorId = $request->input('diploma_major_id');
 
                 if ($diplomaId && $diplomaMajorId) {
@@ -137,7 +133,7 @@ class OrderController extends Controller
                         ->where('diploma_id', $diplomaId)
                         ->exists();
 
-                    if (! $exists) {
+                    if (!$exists) {
                         $validator->errors()->add(
                             'diploma_major_id',
                             'The specialisation does not follow the specific diploma programme.'
@@ -165,19 +161,19 @@ class OrderController extends Controller
         }
 
         // default متوافق مع الداتا الحالية
-        $data['status'] = $data['status'] ?? 'Pending';
+        $data['status'] = $data['status'] ?? Order::STATUS_NEW_ORDER;
 
         // ========================================
         // SERVER-SIDE PRICE CALCULATION & VALIDATION
         // ========================================
-        
+
         // Store frontend prices if provided (for validation)
         $frontendBasePrice = $data['final_price'] ?? null;
         $frontendDiscountedPrice = $data['final_price_with_discount'] ?? null;
 
         // Calculate prices on server side
         $calculatedPrices = $this->pricingService->calculateOrderPrices($data);
-        
+
         // If frontend provided prices, validate them
         if ($frontendBasePrice !== null || $frontendDiscountedPrice !== null) {
             $validation = $this->pricingService->validateFrontendPrices(
@@ -185,7 +181,7 @@ class OrderController extends Controller
                 $frontendBasePrice,
                 $frontendDiscountedPrice
             );
-            
+
             if (!$validation['is_valid']) {
                 // Log the price manipulation attempt
                 Log::warning('Price manipulation attempt detected', [
@@ -199,21 +195,21 @@ class OrderController extends Controller
                     'ip_address' => $request->ip(),
                     'user_agent' => $request->userAgent(),
                 ]);
-                
+
                 return response()->json([
-                    'errors' => [
-                        'final_price' => ['Price validation failed. The prices provided do not match our calculations.'],
-                    ],
                     'message' => 'Price validation failed. Please refresh and try again.',
+                    'errors' => [
+                        'final_price' => ['The calculated price does not match the server configuration.']
+                    ]
                 ], 422);
             }
         }
-        
+
         // ALWAYS use server-calculated prices (ignore frontend values)
         $data['final_price'] = $calculatedPrices['base_price'];
         $data['final_price_with_discount'] = $calculatedPrices['price_with_discount'];
 
-        $data['back_image_ids']           = json_encode($data['back_image_ids'] ?? []);
+        $data['back_image_ids'] = json_encode($data['back_image_ids'] ?? []);
         $data['transparent_printing_ids'] = json_encode($data['transparent_printing_ids'] ?? []);
 
         $data['additional_image_id'] = $data['additional_images'] ?? [];
@@ -222,18 +218,18 @@ class OrderController extends Controller
 
         $order = Order::create($data);
 
-       
+
         $firstArabicName = ArabicNameNormalizer::firstArabicName($order->username_ar ?? '');
 
         if (!empty($firstArabicName)) {
             $normalized = ArabicNameNormalizer::normalize($firstArabicName);
 
             SvgName::firstOrCreate(
-                ['normalized_name' => $normalized],
-                [
-                    'name'   => $firstArabicName,
-                    'svg_id' => null,
-                ]
+            ['normalized_name' => $normalized],
+            [
+                'name' => $firstArabicName,
+                'svg_id' => null,
+            ]
             );
         }
 

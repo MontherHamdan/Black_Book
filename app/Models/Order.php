@@ -14,12 +14,15 @@ class Order extends Model
     protected $table = "orders";
 
     // Status constants
-    public const STATUS_PENDING          = 'Pending';
-    public const STATUS_PREPARING        = 'preparing';
-    public const STATUS_COMPLETED        = 'Completed';
+    public const STATUS_NEW_ORDER = 'new_order'; // طلب جديد
+    public const STATUS_NEEDS_MODIFICATION = 'needs_modification'; // يوجد تعديل
+    public const STATUS_PENDING = 'Pending';
+    public const STATUS_PREPARING = 'preparing';
+    public const STATUS_COMPLETED = 'Completed';
+    public const STATUS_SHIPPING = 'shipping'; // ضفتها لأنها بالكونترولر
     public const STATUS_OUT_FOR_DELIVERY = 'Out for Delivery';
-    public const STATUS_RECEIVED         = 'Received';
-    public const STATUS_CANCELED         = 'Canceled';
+    public const STATUS_RECEIVED = 'Received';
+    public const STATUS_CANCELED = 'Canceled';
 
     protected $fillable = [
         'user_gender',
@@ -67,21 +70,21 @@ class Order extends Model
     ];
 
     protected $casts = [
-        'back_image_ids'           => 'array',
-        'additional_image_id'      => 'array',
+        'back_image_ids' => 'array',
+        'additional_image_id' => 'array',
         'transparent_printing_ids' => 'array',
-        'designer_done'            => 'boolean',
-        'designer_done_at'         => 'datetime',
-        'is_with_additives'        => 'boolean',
-        'gift_type'                => 'string',
+        'designer_done' => 'boolean',
+        'designer_done_at' => 'datetime',
+        'is_with_additives' => 'boolean',
+        'gift_type' => 'string',
         'custom_design_image_id' => 'array'
     ];
 
     /*
-    |--------------------------------------------------------------------------
-    | Relations
-    |--------------------------------------------------------------------------
-    */
+     |--------------------------------------------------------------------------
+     | Relations
+     |--------------------------------------------------------------------------
+     */
     protected static function booted()
     {
         static::saving(function (Order $order) {
@@ -106,12 +109,12 @@ class Order extends Model
 
     public function bookDecoration()
     {
-        return $this->belongsTo(BookDecoration::class, 'book_decorations_id');
+        return $this->belongsTo(BookDecoration::class , 'book_decorations_id');
     }
 
     public function frontImage()
     {
-        return $this->belongsTo(UserImage::class, 'front_image_id');
+        return $this->belongsTo(UserImage::class , 'front_image_id');
     }
 
     // public function additionalImage()
@@ -121,12 +124,12 @@ class Order extends Model
 
     public function transparentPrinting()
     {
-        return $this->belongsTo(UserImage::class, 'transparent_printing_id');
+        return $this->belongsTo(UserImage::class , 'transparent_printing_id');
     }
 
     public function svg()
     {
-        return $this->belongsTo(Svg::class, 'svg_id');
+        return $this->belongsTo(Svg::class , 'svg_id');
     }
 
 
@@ -155,7 +158,7 @@ class Order extends Model
 
     public function designer()
     {
-        return $this->belongsTo(User::class, 'designer_id');
+        return $this->belongsTo(User::class , 'designer_id');
     }
 
 
@@ -197,7 +200,7 @@ class Order extends Model
 
     public function calculateIsWithAdditives(): bool
     {
-        $hasSponge = (bool) $this->is_sponge;
+        $hasSponge = (bool)$this->is_sponge;
 
         $back = $this->back_image_ids;
         if (is_string($back)) {
@@ -217,7 +220,7 @@ class Order extends Model
         }
         $hasAdditionalImages = is_array($additional) && !empty($additional);
 
-        $hasTransparent = ! is_null($this->transparent_printing_id);
+        $hasTransparent = !is_null($this->transparent_printing_id);
 
         return $hasSponge || $hasBackImgs || $hasAdditionalImages || $hasTransparent;
     }
@@ -229,29 +232,29 @@ class Order extends Model
     }
     public function university()
     {
-        return $this->belongsTo(University::class, 'university_id');
+        return $this->belongsTo(University::class , 'university_id');
     }
 
     public function universityMajor()
     {
-        return $this->belongsTo(Major::class, 'university_major_id');
+        return $this->belongsTo(Major::class , 'university_major_id');
     }
 
     public function diploma()
     {
-        return $this->belongsTo(Diploma::class, 'diploma_id');
+        return $this->belongsTo(Diploma::class , 'diploma_id');
     }
 
     public function diplomaMajor()
     {
-        return $this->belongsTo(DiplomaMajor::class, 'diploma_major_id');
+        return $this->belongsTo(DiplomaMajor::class , 'diploma_major_id');
     }
 
     /*
-    |--------------------------------------------------------------------------
-    | Accessors للعرض في الـ Blade: school_name / major_name
-    |--------------------------------------------------------------------------
-    */
+     |--------------------------------------------------------------------------
+     | Accessors للعرض في الـ Blade: school_name / major_name
+     |--------------------------------------------------------------------------
+     */
 
     public function getSchoolNameAttribute()
     {
@@ -281,7 +284,7 @@ class Order extends Model
 
     public function customDesignImagesFromIds()
     {
-        $ids = $this->custom_design_image_id;  
+        $ids = $this->custom_design_image_id;
 
         if (is_string($ids)) {
             $decoded = json_decode($ids, true);

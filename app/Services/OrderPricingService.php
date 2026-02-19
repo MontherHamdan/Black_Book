@@ -8,86 +8,79 @@ use App\Models\DiscountCode;
 class OrderPricingService
 {
     /**
-     * Calculate the final price for an order without discount.
+     * Calculate the final price based on Client Rules.
      *
      * @param array $orderData
      * @return float
      */
     public function calculateBasePrice(array $orderData): float
     {
-        $price = 0;
+        $price = 0.0;
 
-        // 1. Get the base price from book type
-        if (isset($orderData['book_type_id'])) {
+        // 1. سعر المنتج الأساسي
+        if (!empty($orderData['book_type_id'])) {
             $bookType = BookType::find($orderData['book_type_id']);
             if ($bookType && $bookType->price) {
                 $price += (float) $bookType->price;
             }
         }
 
-        // 2. Add sponge cost
-        if (isset($orderData['is_sponge']) && $orderData['is_sponge']) {
-            $price += config('pricing.sponge_cost', 0);
+        // 2. الزخرفة (2.5 دينار)
+        if (!empty($orderData['book_decorations_id'])) {
+            $price += config('pricing.decoration_cost', 2.5);
         }
 
-        // 3. Calculate page costs (extra pages beyond base)
-        if (isset($orderData['pages_number'])) {
-            $pagesNumber = (int) $orderData['pages_number'];
-            $basePageCount = config('pricing.page_base_count', 50);
-            $costPerExtraPage = config('pricing.cost_per_extra_page', 0.5);
-            
-            if ($pagesNumber > $basePageCount) {
-                $extraPages = $pagesNumber - $basePageCount;
-                $price += $extraPages * $costPerExtraPage;
-            }
+        // 3. الصور الخلفية (1 دينار للصورة)
+        $backCount = $this->countJsonItems($orderData, 'back_image_ids');
+        if ($backCount > 0) {
+            $price += $backCount * config('pricing.back_image_cost_per_image', 1);
         }
 
-        // 4. Add back images cost
-        if (isset($orderData['back_image_ids']) && is_array($orderData['back_image_ids'])) {
-            $backImageCount = count($orderData['back_image_ids']);
-            $price += $backImageCount * config('pricing.back_image_cost_per_image', 0);
+        // 4. الصور الإضافية (1 دينار للصورة)
+        $additionalCount = $this->countJsonItems($orderData, 'additional_image_id');
+        if ($additionalCount > 0) {
+            $price += $additionalCount * config('pricing.additional_image_cost_per_image', 1);
         }
 
-        // 5. Add transparent printing images cost
-        if (isset($orderData['transparent_printing_ids']) && is_array($orderData['transparent_printing_ids'])) {
-            $transparentPrintingCount = count($orderData['transparent_printing_ids']);
-            $price += $transparentPrintingCount * config('pricing.transparent_printing_cost_per_image', 0);
-        }
-
-        // 6. Add additional images cost
-        if (isset($orderData['additional_images']) && is_array($orderData['additional_images'])) {
-            $additionalImageCount = count($orderData['additional_images']);
-            $price += $additionalImageCount * config('pricing.additional_image_cost_per_image', 0);
-        }
-
-        // 7. Add gift cost
-        if (isset($orderData['gift_type'])) {
+        // 5. الإهداء (Custom = 3 دنانير، والباقي مجاني)
+        if (!empty($orderData['gift_type'])) {
             if ($orderData['gift_type'] === 'custom') {
-                $price += config('pricing.gift_custom_cost', 0);
-            } elseif ($orderData['gift_type'] === 'default') {
-                $price += config('pricing.gift_default_cost', 0);
+                $price += config('pricing.gift_custom_cost', 3);
             }
         }
 
-        // 8. Add additives cost
-        if (isset($orderData['is_with_additives']) && $orderData['is_with_additives']) {
-            $price += config('pricing.with_additives_cost', 0);
-        }
-
-        // 9. Add decoration cost
-        if (isset($orderData['book_decorations_id']) && !empty($orderData['book_decorations_id'])) {
-            $price += config('pricing.decoration_cost', 0);
-        }
+        // ملاحظة: تم إزالة كود (الإسفنج، الصفحات، الطباعة الشفافة) لأن تكلفتهم 0 أو ملغاة.
 
         return round($price, 2);
     }
 
     /**
-     * Calculate the final price with discount applied.
-     *
-     * @param float $basePrice
-     * @param int|null $discountCodeId
-     * @return float
+     * Helper to safely count items in a JSON column or Array
+     */
+    private function countJsonItems(array $data, string $key): int
+    {
+        if (!isset($data[$key])) {
+            return 0;
+        }
+
+        $value = $data[$key];
+
+        if (is_array($value)) {
+            return count($value);
+        }
+
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            if (is_array($decoded)) {
+                return count($decoded);
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * Calculate price with discount.
      */
     public function calculatePriceWithDiscount(float $basePrice, ?int $discountCodeId): float
     {
@@ -104,27 +97,17 @@ class OrderPricingService
         $discountAmount = 0;
 
         if ($discountCode->discount_type === 'percentage') {
-            // Percentage discount
             $discountAmount = ($basePrice * $discountCode->discount_value) / 100;
         } elseif ($discountCode->discount_type === 'byJd') {
-            // Fixed amount discount
             $discountAmount = $discountCode->discount_value;
         }
 
         $finalPrice = $basePrice - $discountAmount;
-        
-        // Ensure price doesn't go below zero
         $finalPrice = max(0, $finalPrice);
 
         return round($finalPrice, 2);
     }
 
-    /**
-     * Calculate both base price and price with discount.
-     *
-     * @param array $orderData
-     * @return array ['base_price' => float, 'price_with_discount' => float]
-     */
     public function calculateOrderPrices(array $orderData): array
     {
         $basePrice = $this->calculateBasePrice($orderData);
@@ -137,14 +120,6 @@ class OrderPricingService
         ];
     }
 
-    /**
-     * Validate that frontend-provided prices match server-side calculations.
-     *
-     * @param array $orderData
-     * @param float|null $frontendBasePrice
-     * @param float|null $frontendDiscountedPrice
-     * @return array ['is_valid' => bool, 'errors' => array, 'calculated_prices' => array]
-     */
     public function validateFrontendPrices(
         array $orderData,
         ?float $frontendBasePrice = null,
@@ -153,8 +128,6 @@ class OrderPricingService
         $calculatedPrices = $this->calculateOrderPrices($orderData);
         $errors = [];
         $isValid = true;
-
-        // Allow small rounding differences (0.01)
         $tolerance = 0.01;
 
         if ($frontendBasePrice !== null) {
@@ -180,4 +153,3 @@ class OrderPricingService
         ];
     }
 }
-

@@ -171,6 +171,27 @@
                     </a>
                 </li>
 
+                <li>
+                    <a href="{{ route('videos.index') }}">
+                        <i class="mdi mdi-video-outline"></i>
+                        <span> Videos </span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ route('specialized-departments.index') }}">
+                        <i class="mdi mdi-domain"></i>
+                        <span> Specialized Departments </span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ route('plans.index') }}">
+                        <i class="mdi mdi-clipboard-list-outline"></i>
+                        <span> Plans </span>
+                    </a>
+                </li>
+
                 <li class="menu-title mt-2">Manager</li>
 
                 <li>

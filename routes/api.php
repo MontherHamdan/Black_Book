@@ -78,12 +78,10 @@ Route::prefix('v1')->group(function () {
     Route::resource('orders', OrderController::class)->only(['store']);
 
     // Videos 
-    Route::apiResource('videos', VideoController::class);
-    Route::post('videos/{video}/update', [VideoController::class , 'update']);
+    Route::apiResource('videos', VideoController::class)->only(['index', 'show']);
 
     // Specialized Departments
-    Route::apiResource('specialized-departments', SpecializedDepartmentController::class);
-
+    Route::apiResource('specialized-departments', SpecializedDepartmentController::class)->only(['index', 'show']);
     // Plans
-    Route::apiResource('plans', PlanController::class);
+    Route::apiResource('plans', PlanController::class)->only(['index', 'show']);
 });

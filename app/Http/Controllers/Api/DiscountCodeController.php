@@ -5,58 +5,36 @@ namespace App\Http\Controllers\Api;
 use App\Models\DiscountCode;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Str;
 
 class DiscountCodeController extends Controller
 {
     /**
-     * Display a listing of the discount codes.
+     * Check whether a discount code is valid and return its details.
+     *
+     * GET /api/v1/discount_codes/check?code=XXXXX
      */
-    public function index()
+    public function check(Request $request)
     {
-        $discountCodes = DiscountCode::all();
-        return response()->json([
-            'success' => true,
-            'data' => $discountCodes,
+        $request->validate([
+            'code' => 'required|string',
         ]);
-    }
 
-    /**
-     * Store a newly created discount code.
-     */
-    public function store(Request $request)
-    {
-        // Validate the input
-        $validated = $request->validate([
-            'group' => 'required|string|in:G1,G2,G3,G4,G5',
-        ]);
-    
-        // Map group to discount values
-        $discountValues = [
-            'G1' => 1,
-            'G2' => 2,
-            'G3' => 3,
-            'G4' => 4,
-            'G5' => 5,
-        ];
-    
-        // Generate a unique 5-character alphanumeric discount code
-        do {
-            $discountCode = Str::upper(Str::random(5));
-        } while (DiscountCode::where('discount_code', $discountCode)->exists());
-    
-        // Create the discount code
-        $discount = DiscountCode::create([
-            'discount_code' => $discountCode,
-            'discount_value' => $discountValues[$validated['group']],
-            'discount_type' => 'ByJd',
-        ]);
-    
+        $discount = DiscountCode::where('discount_code', strtoupper($request->code))->first();
+
+        if (! $discount) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Discount code not found.',
+            ], 404);
+        }
+
         return response()->json([
-            'success' => true,
-            
-            'message' => 'Discount code created successfully.',
-            'data' => $discount,
-        ], 201);
+            'success'        => true,
+            'message'        => 'Discount code is valid.',
+            'discount_code'  => $discount->discount_code,
+            'discount_value' => $discount->discount_value,
+            'discount_type'  => $discount->discount_type,
+            'code_name'      => $discount->code_name,
+        ]);
     }
 }

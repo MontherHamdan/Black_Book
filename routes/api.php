@@ -59,7 +59,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/governorates/{id}/addresses', [AddressController::class , 'getAddressesByGovernorate']);
 
     // ******************* Discount Codes **********************************
-    Route::resource('/discount_codes', DiscountCodeController::class)->only(['index', 'store']);
+    Route::get('/discount_codes/check', [DiscountCodeController::class, 'check']);
 
     // *******************User Upload Image ******************************************
     Route::post('/user_upload_image', [UserImageController::class , 'store']);

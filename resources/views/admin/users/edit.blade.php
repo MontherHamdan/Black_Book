@@ -106,7 +106,27 @@
                             @endif
                         </div>
                     </div>
-
+<hr>
+                    <h5 class="text-primary mb-3"><i class="fas fa-coins me-2"></i>إعدادات عمولة المصمم</h5>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="base_order_price" class="form-label">السعر الأساسي للطلب</label>
+                            <input type="number" step="0.01" min="0" name="base_order_price" id="base_order_price" class="form-control" value="{{ old('base_order_price', $user->base_order_price) }}">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="decoration_price" class="form-label">سعر صورة الزخرفة</label>
+                            <input type="number" step="0.01" min="0" name="decoration_price" id="decoration_price" class="form-control" value="{{ old('decoration_price', $user->decoration_price) }}">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="custom_gift_price" class="form-label">سعر الإهداء المخصص</label>
+                            <input type="number" step="0.01" min="0" name="custom_gift_price" id="custom_gift_price" class="form-control" value="{{ old('custom_gift_price', $user->custom_gift_price) }}">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="internal_image_price" class="form-label">سعر الصورة الداخلية</label>
+                            <input type="number" step="0.01" min="0" name="internal_image_price" id="internal_image_price" class="form-control" value="{{ old('internal_image_price', $user->internal_image_price) }}">
+                        </div>
+                    </div>
+                    <hr>
                     {{-- Role --}}
                     <div class="row">
                         <div class="col-md-6 mb-3">

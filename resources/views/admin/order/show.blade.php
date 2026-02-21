@@ -989,12 +989,12 @@
                                 @csrf
                                 @method('PUT')
 
-                                <textarea
-                                    name="design_followup_note"
-                                    class="form-control auto-dir"
-                                    dir="auto"
-                                    rows="3"
-                                    placeholder="اكتب ملاحظات المتابعة على التصميم هنا...">{{ old('design_followup_note', $designFollowupText) }}</textarea>
+         <textarea
+    name="design_followup_note"
+    class="form-control auto-dir"
+    dir="auto"
+    rows="3"
+    placeholder="اكتب ملاحظة جديدة لتضاف إلى الملاحظات السابقة...">{{ old('design_followup_note') }}</textarea>
 
                                 <div class="text-end mt-2">
                                     <button type="submit" class="btn btn-outline-primary btn-sm">

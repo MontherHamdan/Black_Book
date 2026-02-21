@@ -11,7 +11,7 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    public const ROLE_ADMIN    = 'admin';
+    public const ROLE_ADMIN = 'admin';
     public const ROLE_DESIGNER = 'designer';
 
     /**
@@ -27,6 +27,10 @@ class User extends Authenticatable
         'password',
         'is_admin',
         'role',
+        'base_order_price',
+        'decoration_price',
+        'custom_gift_price',
+        'internal_image_price',
     ];
 
     /**
@@ -46,14 +50,14 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'is_admin'          => 'boolean',
+        'is_admin' => 'boolean',
     ];
 
     /*
-    |--------------------------------------------------------------------------
-    | Role Helpers
-    |--------------------------------------------------------------------------
-    */
+     |--------------------------------------------------------------------------
+     | Role Helpers
+     |--------------------------------------------------------------------------
+     */
 
     public function isAdmin(): bool
     {
@@ -67,14 +71,19 @@ class User extends Authenticatable
     }
 
     /*
-    |--------------------------------------------------------------------------
-    | Relations
-    |--------------------------------------------------------------------------
-    */
+     |--------------------------------------------------------------------------
+     | Relations
+     |--------------------------------------------------------------------------
+     */
 
     public function designerOrders()
     {
         // الطلبات اللي هذا اليوزر معيّن عليها كمصمم
         return $this->hasMany(Order::class, 'designer_id');
+    }
+
+    public function canAccessAdmin()
+    {
+        return $this->is_admin == 1 || in_array($this->role, ['designer', 'admin']);
     }
 }

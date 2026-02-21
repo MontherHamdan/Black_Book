@@ -5,7 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-
+use Illuminate\Support\Facades\Auth;
 class AdminMiddleware
 {
     /**
@@ -15,9 +15,9 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(!auth()->check()){
-            return redirect()->route('login')->withErrors('Access denied');
+        if (Auth::check() && Auth::user()->canAccessAdmin()) {
+            return $next($request);
         }
-        return $next($request);
+        return redirect('/')->with('error', 'Sorry, you do not have permission to access this page.');
     }
 }

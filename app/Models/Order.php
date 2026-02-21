@@ -65,7 +65,7 @@ class Order extends Model
         'university_major_id',
         'diploma_id',
         'diploma_major_id',
-
+        'designer_commission',
         'custom_design_image_id',
     ];
 
@@ -77,7 +77,8 @@ class Order extends Model
         'designer_done_at' => 'datetime',
         'is_with_additives' => 'boolean',
         'gift_type' => 'string',
-        'custom_design_image_id' => 'array'
+        'custom_design_image_id' => 'array',
+        'designer_commission' => 'decimal:2',
     ];
 
     /*
@@ -109,12 +110,12 @@ class Order extends Model
 
     public function bookDecoration()
     {
-        return $this->belongsTo(BookDecoration::class , 'book_decorations_id');
+        return $this->belongsTo(BookDecoration::class, 'book_decorations_id');
     }
 
     public function frontImage()
     {
-        return $this->belongsTo(UserImage::class , 'front_image_id');
+        return $this->belongsTo(UserImage::class, 'front_image_id');
     }
 
     // public function additionalImage()
@@ -124,12 +125,12 @@ class Order extends Model
 
     public function transparentPrinting()
     {
-        return $this->belongsTo(UserImage::class , 'transparent_printing_id');
+        return $this->belongsTo(UserImage::class, 'transparent_printing_id');
     }
 
     public function svg()
     {
-        return $this->belongsTo(Svg::class , 'svg_id');
+        return $this->belongsTo(Svg::class, 'svg_id');
     }
 
 
@@ -158,7 +159,7 @@ class Order extends Model
 
     public function designer()
     {
-        return $this->belongsTo(User::class , 'designer_id');
+        return $this->belongsTo(User::class, 'designer_id');
     }
 
 
@@ -200,7 +201,7 @@ class Order extends Model
 
     public function calculateIsWithAdditives(): bool
     {
-        $hasSponge = (bool)$this->is_sponge;
+        $hasSponge = (bool) $this->is_sponge;
 
         $back = $this->back_image_ids;
         if (is_string($back)) {
@@ -232,22 +233,22 @@ class Order extends Model
     }
     public function university()
     {
-        return $this->belongsTo(University::class , 'university_id');
+        return $this->belongsTo(University::class, 'university_id');
     }
 
     public function universityMajor()
     {
-        return $this->belongsTo(Major::class , 'university_major_id');
+        return $this->belongsTo(Major::class, 'university_major_id');
     }
 
     public function diploma()
     {
-        return $this->belongsTo(Diploma::class , 'diploma_id');
+        return $this->belongsTo(Diploma::class, 'diploma_id');
     }
 
     public function diplomaMajor()
     {
-        return $this->belongsTo(DiplomaMajor::class , 'diploma_major_id');
+        return $this->belongsTo(DiplomaMajor::class, 'diploma_major_id');
     }
 
     /*

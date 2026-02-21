@@ -11,21 +11,30 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // 👈 كل الطلبات (نفس الأرقام للـ Admin وللمصمم)
+        /** @var \App\Models\User $authUser */
+        $authUser = auth()->user();
+
+        // 👈 الاستعلام الأساسي للإحصائيات العلوية (Cards & Charts)
         $ordersQuery = Order::query();
+
+        // 🛡️ 🔴 الإضافة: حصر الكروت العلوية بطلبات المصمم نفسه فقط (إذا لم يكن أدمن)
+        if (!$authUser->isAdmin() && $authUser->isDesigner()) {
+            $ordersQuery->where('designer_id', $authUser->id);
+        }
 
         // ✅ نفس الـ statuses المستخدمة في صفحة الطلبات / updateStatus
         $statusList = [
-            'Pending',          // تم التصميم
-            'Completed',        // تم الاعتماد
-            'preparing',        // قيد التجهيز
-            'Received',         // تم التسليم
-            'Out for Delivery', // مرتجع
-            'Canceled',         // رفض الاستلام
-            'error',            // خطأ
+            'new_order', // 👈 طلب جديد (ضفناها هون)
+            'needs_modification', // 👈 يوجد تعديل (ضفناها هون)
+            'Pending',
+            'Completed',
+            'preparing',
+            'Received',
+            'Out for Delivery',
+            'Canceled',
         ];
 
-        // نحسب عدد كل حالة مرة واحدة
+        // نحسب عدد كل حالة مرة واحدة (رح تنحسب حسب الفلتر اللي فوق)
         $statusCounts = [];
         foreach ($statusList as $status) {
             $statusCounts[$status] = (clone $ordersQuery)
@@ -33,16 +42,17 @@ class DashboardController extends Controller
                 ->count();
         }
 
-        // نربطهم بنفس المتغيّرات الموجودة أصلًا (عشان partials ما تتكسّر)
-        $pendingCount        = $statusCounts['Pending'];
-        $preparingCount      = $statusCounts['preparing'];
-        $completedCount      = $statusCounts['Completed'];
+        // نربطهم بنفس المتغيّرات الموجودة أصلًا
+        $newOrderCount = $statusCounts['new_order'];
+        $needsModificationCount = $statusCounts['needs_modification'];
+        $pendingCount = $statusCounts['Pending'];
+        $preparingCount = $statusCounts['preparing'];
+        $completedCount = $statusCounts['Completed'];
         $outForDeliveryCount = $statusCounts['Out for Delivery'];
-        $receivedCount       = $statusCounts['Received'];
-        $canceledCount       = $statusCounts['Canceled'];
-        $errorCount          = $statusCounts['error'];   // ⭐ الجديد رقم 7
+        $receivedCount = $statusCounts['Received'];
+        $canceledCount = $statusCounts['Canceled'];
 
-        // إجمالي الطلبات
+        // إجمالي الطلبات (الشخصية للمصمم، أو الكلية للأدمن)
         $totalOrders = (clone $ordersQuery)->count();
 
         // توزيع الحالات (للـ charts)
@@ -65,7 +75,7 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        // ✅ Orders by School (جامعة / دبلوم) بدل school_name
+        // ✅ Orders by School (جامعة / دبلوم)
         $ordersBySchool = (clone $ordersQuery)
             ->leftJoin('universities', 'orders.university_id', '=', 'universities.id')
             ->leftJoin('diplomas', 'orders.diploma_id', '=', 'diplomas.id')
@@ -81,17 +91,19 @@ class DashboardController extends Controller
             ->orderByDesc('total_orders')
             ->get();
 
+        // ==========================================
+        // 🌟 القسم العام (بيظهر للجميع بدون فلاتر شخصية)
+        // ==========================================
+
         // أول 4 يوزرز (كما هو)
         $recentUsers = User::orderBy('id', 'asc')
             ->take(4)
             ->get();
 
+        // Scoreboard (يظهر للجميع لزيادة التنافس)
         $designersScoreboard = User::where('role', User::ROLE_DESIGNER)
             ->withCount([
-                // إجمالي الطلبات المعيّنة للمصمم
                 'designerOrders as total_orders',
-
-                // الطلبات التي اعتبرنا أن المصمم أنهى شغله فيها
                 'designerOrders as completed_orders' => function ($q) {
                     $q->where('designer_done', true);
                 },
@@ -99,16 +111,31 @@ class DashboardController extends Controller
             ->orderByDesc('total_orders')
             ->get();
 
+        $designerNotes = collect();
+        $totalCommission = 0;
 
+        if (!$authUser->isAdmin() && $authUser->isDesigner()) {
+            $designerNotes = Order::where('designer_id', $authUser->id)
+                ->whereNotNull('design_followup_note')
+                ->where('design_followup_note', '!=', '')
+                ->orderBy('updated_at', 'desc')
+                ->get(['id', 'username_ar', 'username_en', 'design_followup_note']);
 
+            $doneStatuses = ['preparing', 'Completed', 'Received', 'Out for Delivery'];
+
+            $totalCommission = Order::where('designer_id', $authUser->id)
+                ->whereIn('status', $doneStatuses)
+                ->sum('designer_commission');
+        }
         return view('admin.dashboard', compact(
+            'newOrderCount',
+            'needsModificationCount',
             'pendingCount',
             'preparingCount',
             'outForDeliveryCount',
             'completedCount',
             'receivedCount',
             'canceledCount',
-            'errorCount',             // ⭐ لا تنسى تمريره للـ view
             'orderStatuses',
             'totalOrders',
             'ordersWithAdditives',
@@ -116,7 +143,9 @@ class DashboardController extends Controller
             'topSellingProducts',
             'ordersBySchool',
             'recentUsers',
-            'designersScoreboard'
+            'designersScoreboard',
+            'designerNotes',
+            'totalCommission'
         ));
     }
 }

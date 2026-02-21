@@ -41,6 +41,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders/fetch', [OrderWebController::class , 'fetchOrders'])->name('orders.fetch');
     Route::post('/orders/update-status', [OrderWebController::class , 'updateStatus'])->name('orders.updateStatus');
     Route::delete('/orders/{id}', [OrderWebController::class , 'destroy'])->name('orders.destroy');
+    Route::post('/orders/bulk-delete', [OrderWebController::class , 'bulkDelete'])->name('orders.bulkDelete');
     Route::post('orders/add-note', [OrderWebController::class , 'addNote'])->name('orders.addNote');
     Route::get('/orders/{order}/notes', [OrderWebController::class , 'getNotes'])->name('orders.getNotes');
     Route::get('/orders/{id}', [OrderWebController::class , 'show'])->name('orders.show');

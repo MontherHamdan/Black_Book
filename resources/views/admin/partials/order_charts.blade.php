@@ -1,3 +1,4 @@
+@if(auth()->check() && auth()->user()->is_admin == 1)
 <div class="row">
     <!-- Order Status Card -->
     <div class="col-xl-4 d-flex">
@@ -45,3 +46,4 @@
 
 
 </div>
+@endif

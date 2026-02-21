@@ -92,7 +92,27 @@
                                 class="form-control">
                         </div>
                     </div>
-
+<hr>
+                    <h5 class="text-primary mb-3"><i class="fas fa-coins me-2"></i>إعدادات عمولة المصمم</h5>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="base_order_price" class="form-label">السعر الأساسي للطلب</label>
+                            <input type="number" step="0.01" min="0" name="base_order_price" id="base_order_price" class="form-control" placeholder="مثال: 1.50" value="{{ old('base_order_price', 0) }}">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="decoration_price" class="form-label">سعر صورة الزخرفة</label>
+                            <input type="number" step="0.01" min="0" name="decoration_price" id="decoration_price" class="form-control" placeholder="مثال: 0.25" value="{{ old('decoration_price', 0) }}">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="custom_gift_price" class="form-label">سعر الإهداء المخصص</label>
+                            <input type="number" step="0.01" min="0" name="custom_gift_price" id="custom_gift_price" class="form-control" placeholder="مثال: 0.25" value="{{ old('custom_gift_price', 0) }}">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="internal_image_price" class="form-label">سعر الصورة الداخلية</label>
+                            <input type="number" step="0.01" min="0" name="internal_image_price" id="internal_image_price" class="form-control" placeholder="مثال: 0.50" value="{{ old('internal_image_price', 0) }}">
+                        </div>
+                    </div>
+                    <hr>
                     {{-- Role --}}
                     <div class="row">
                         <div class="col-md-6 mb-3">

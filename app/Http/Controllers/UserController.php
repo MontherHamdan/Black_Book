@@ -22,12 +22,16 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users,email',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
-            'title'    => 'nullable|string|max:255',
-            'image'    => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
-            'role'     => 'required|in:' . User::ROLE_ADMIN . ',' . User::ROLE_DESIGNER,
+            'title' => 'nullable|string|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+            'role' => 'required|in:' . User::ROLE_ADMIN . ',' . User::ROLE_DESIGNER,
+            'base_order_price' => 'nullable|numeric|min:0',
+            'decoration_price' => 'nullable|numeric|min:0',
+            'custom_gift_price' => 'nullable|numeric|min:0',
+            'internal_image_price' => 'nullable|numeric|min:0',
         ]);
 
         $imagePath = null;
@@ -38,14 +42,18 @@ class UserController extends Controller
         $role = $request->role;
 
         User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
+            'name' => $request->name,
+            'email' => $request->email,
             'password' => Hash::make($request->password),
-            'title'    => $request->title,
-            'image'    => $imagePath,
-            'role'     => $role,
+            'title' => $request->title,
+            'image' => $imagePath,
+            'role' => $role,
             // للتوافق مع الكود القديم:
             'is_admin' => $role === User::ROLE_ADMIN,
+            'base_order_price' => $request->base_order_price ?? 0,
+            'decoration_price' => $request->decoration_price ?? 0,
+            'custom_gift_price' => $request->custom_gift_price ?? 0,
+            'internal_image_price' => $request->internal_image_price ?? 0,
         ]);
 
         return redirect()->route('users.index')->with('success', 'User created successfully.');
@@ -65,22 +73,30 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $request->validate([
-            'name'  => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'title' => 'nullable|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
-            'role'  => 'required|in:' . User::ROLE_ADMIN . ',' . User::ROLE_DESIGNER,
+            'role' => 'required|in:' . User::ROLE_ADMIN . ',' . User::ROLE_DESIGNER,
+            'base_order_price' => 'nullable|numeric|min:0',
+            'decoration_price' => 'nullable|numeric|min:0',
+            'custom_gift_price' => 'nullable|numeric|min:0',
+            'internal_image_price' => 'nullable|numeric|min:0',
         ]);
 
         $role = $request->role;
 
         $data = [
-            'name'  => $request->name,
+            'name' => $request->name,
             'email' => $request->email,
             'title' => $request->title,
-            'role'  => $role,
+            'role' => $role,
             // برضه نحافظ على is_admin
             'is_admin' => $role === User::ROLE_ADMIN,
+            'base_order_price' => $request->base_order_price ?? 0,
+            'decoration_price' => $request->decoration_price ?? 0,
+            'custom_gift_price' => $request->custom_gift_price ?? 0,
+            'internal_image_price' => $request->internal_image_price ?? 0,
         ];
 
         if ($request->filled('password')) {

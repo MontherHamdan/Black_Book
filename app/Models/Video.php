@@ -20,8 +20,10 @@ class Video extends Model
     public function getVideoUrlAttribute()
     {
         if ($this->video) {
-            return asset('storage/' . $this->video);
+            return url('storage/' . $this->video);
         }
         return null;
     }
+
+
 }

@@ -35,8 +35,6 @@ class Order extends Model
         'user_type',
         'username_ar',
         'username_en',
-        'school_name',
-        'major_name',
         'svg_id',
         'svg_title',
         'note',
@@ -67,6 +65,11 @@ class Order extends Model
         'diploma_major_id',
         'designer_commission',
         'custom_design_image_id',
+        'notebook_followup_note',
+        'designer_read_notes',
+        'is_commission_paid',
+        'commission_paid_at',
+        'paid_commission'
     ];
 
     protected $casts = [
@@ -79,6 +82,9 @@ class Order extends Model
         'gift_type' => 'string',
         'custom_design_image_id' => 'array',
         'designer_commission' => 'decimal:2',
+        'designer_read_notes' => 'boolean',
+        'is_commission_paid' => 'boolean',
+        'commission_paid_at' => 'datetime',
     ];
 
     /*

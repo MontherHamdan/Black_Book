@@ -1,685 +1,355 @@
+/**
+ * order-show.js
+ * ─────────────
+ * Handles interactive elements on the order show page:
+ *  1. Status dropdown → AJAX update + badge refresh
+ *  2. Designer dropdown / assign-me button → AJAX update
+ *  3. Dynamic major dropdowns in graduate info modal
+ */
 document.addEventListener('DOMContentLoaded', function () {
-    // ⬅️ إعدادات قادمة من Blade
-    const config = window.orderShowConfig || {};
-    const csrfToken =
-        config.csrfToken ||
-        document.querySelector('meta[name="csrf-token"]')?.content;
-    const updateStatusUrl = config.updateStatusUrl;
-    const updateDesignerUrl = config.updateDesignerUrl;
+    'use strict';
 
-    // 🔹 أزرار نسخ SVG
-    const copyButtons = document.querySelectorAll('.copy-svg-button');
-    const nameSvgButtons = document.querySelectorAll('.copy-name-svg-btn');
+    var cfg = window.orderShowConfig || {};
+    var csrfToken = cfg.csrfToken;
 
-    // 🔹 أزرار تغيير حالة الطلب
-    const statusLinks = document.querySelectorAll('.change-status-item');
+    /* ──────────────────────────────────────────────
+       1. STATUS CHANGE  →  Badge update
+    ────────────────────────────────────────────── */
+    var statusSelect = document.querySelector('.js-order-status-select');
+    if (statusSelect) {
+        statusSelect.addEventListener('change', function () {
+            var orderId = this.dataset.orderId;
+            var newStatus = this.value;
 
-    // 🔹 أزرار نسخ العبارة (gift_title)
-    const copyGiftButtons = document.querySelectorAll('.copy-gift-btn');
-
-    // 🔹 فورمات الملاحظات (AJAX)
-    const deliveryFollowupForm = document.querySelector(
-        'form.js-delivery-followup-form'
-    );
-    const designFollowupForm = document.querySelector(
-        'form.js-design-followup-form'
-    );
-    const bindingFollowupForm = document.querySelector(
-        'form.js-binding-followup-form'
-    );
-
-    // 🔹 كاروْسِلات تحميل صورة واحدة
-    const singleDownloadConfigs = [
-        {
-            carouselId: 'finalBackImagesCarousel',
-            buttonId: 'downloadCurrentFinalBackImage'
-        },
-        {
-            carouselId: 'finalAdditionalImagesCarousel',
-            buttonId: 'downloadCurrentFinalAdditionalImage'
-        },
-        {
-            carouselId: 'internalImagesCarousel',
-            buttonId: 'downloadCurrentInternalImage'
-        },
-        {
-            carouselId: 'anotherDesignCarousel',
-            buttonId: 'downloadCurrentAnotherImage'
-        }
-    ];
-
-
-    // ✅ إنشاء toast container مرة واحدة فقط
-    let toastContainer = document.getElementById('toast-container');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.id = 'toast-container';
-        toastContainer.style.position = 'fixed';
-        toastContainer.style.bottom = '20px';
-        toastContainer.style.right = '20px';
-        toastContainer.style.zIndex = '9999';
-        document.body.appendChild(toastContainer);
-    }
-
-    function showToast(message, type = 'success') {
-        const toast = document.createElement('div');
-        toast.textContent = message;
-        toast.style.padding = '10px 20px';
-        toast.style.marginTop = '10px';
-        toast.style.borderRadius = '5px';
-        toast.style.color = '#fff';
-        toast.style.fontSize = '14px';
-        toast.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
-        toast.style.opacity = '0';
-        toast.style.transition =
-            'opacity 0.3s ease, transform 0.3s ease';
-
-        if (type === 'success') {
-            toast.style.backgroundColor = '#28a745';
-        } else if (type === 'error') {
-            toast.style.backgroundColor = '#dc3545';
-        }
-
-        toastContainer.appendChild(toast);
-
-        setTimeout(function () {
-            toast.style.opacity = '1';
-            toast.style.transform = 'translateY(-10px)';
-        }, 100);
-
-        setTimeout(function () {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateY(0)';
-            setTimeout(function () {
-                toast.remove();
-            }, 300);
-        }, 3000);
-    }
-
-    // 🧩 نسخ SVG من div.svg-preview
-    copyButtons.forEach(function (button) {
-        button.addEventListener('click', function () {
-            const svgPreviewDiv = document.querySelector('.svg-preview');
-            if (!svgPreviewDiv) return;
-
-            const svgCode = svgPreviewDiv.innerHTML.trim();
-
-            navigator.clipboard
-                .writeText(svgCode)
-                .then(function () {
-                    showToast(
-                        'تم نسخ SVG الخاص بالطلب إلى الحافظة ✅',
-                        'success'
-                    );
-                })
-                .catch(function (err) {
-                    console.error('Failed to copy SVG code: ', err);
-                    showToast(
-                        'فشل نسخ كود SVG. جرّب متصفح آخر.',
-                        'error'
-                    );
-                });
-        });
-    });
-
-    // 🧩 نسخ SVG للاسم من data-svg
-    nameSvgButtons.forEach(function (button) {
-        button.addEventListener('click', function () {
-            const svgCode = button.getAttribute('data-svg');
-            if (!svgCode) {
-                showToast(
-                    'لا يوجد SVG مربوط بهذا الاسم حالياً.',
-                    'error'
-                );
-                return;
-            }
-
-            navigator.clipboard
-                .writeText(svgCode)
-                .then(function () {
-                    showToast(
-                        'تم نسخ SVG المرتبط بالاسم إلى الحافظة ✅',
-                        'success'
-                    );
-                })
-                .catch(function (err) {
-                    console.error(
-                        'Failed to copy name SVG code: ',
-                        err
-                    );
-                    showToast(
-                        'فشل نسخ كود SVG للاسم. جرّب متصفح آخر.',
-                        'error'
-                    );
-                });
-        });
-    });
-
-    // 🔁 تغيير حالة الطلب من show (بدون refresh)
-    if (statusLinks.length && updateStatusUrl && csrfToken) {
-        statusLinks.forEach(function (link) {
-            link.addEventListener('click', function (e) {
-                e.preventDefault();
-
-                const orderId = this.getAttribute('data-order-id');
-                const newStatus = this.getAttribute('data-new-status');
-
-                fetch(updateStatusUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                        Accept: 'application/json'
-                    },
-                    body: JSON.stringify({
-                        id: orderId,
-                        status: newStatus
-                    })
-                })
-                    .then((response) => response.json())
-                    .then((data) => {
-                        if (data.success) {
-                            // 👇 تحديث البادج بدل ما نعمل reload
-                            const statusBadge = document.getElementById('orderStatusDropdownInfo');
-                            if (statusBadge) {
-                                statusBadge.className =
-                                    'badge badge-status dropdown-toggle ' + (data.class || '');
-
-                                const textSpan = statusBadge.querySelector('.badge-status-text');
-
-                                if (textSpan) {
-                                    textSpan.textContent = data.label || newStatus;
-                                } else {
-                                    statusBadge.textContent = data.label || newStatus;
+            fetch(cfg.updateStatusUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ id: orderId, status: newStatus }),
+            })
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    if (data.success) {
+                        // Update badge
+                        var badge = document.querySelector('.js-order-status-badge-header');
+                        if (badge) {
+                            // Remove old status-* and bg-* classes
+                            var classesToRemove = [];
+                            badge.classList.forEach(function (c) {
+                                if (c.startsWith('status-') || c.startsWith('bg-')) {
+                                    classesToRemove.push(c);
                                 }
-                            }
+                            });
+                            classesToRemove.forEach(function (c) { badge.classList.remove(c); });
 
+                            // Add new classes
+                            var newClasses = data.class.split(' ');
+                            newClasses.forEach(function (c) {
+                                if (c.trim()) badge.classList.add(c.trim());
+                            });
 
-
-                            showToast(
-                                'تم تحديث حالة التصميم بنجاح ✅',
-                                'success'
-                            );
-                        } else {
-                            showToast(
-                                data.message || 'فشل تحديث الحالة.',
-                                'error'
-                            );
-                        }
-                    })
-                    .catch(() => {
-                        showToast(
-                            'حدث خطأ أثناء تحديث الحالة.',
-                            'error'
-                        );
-                    });
-            });
-        });
-    }
-
-    // 🔽 تغيير حالة الطلب من الهيدر (select)
-    const statusSelects = document.querySelectorAll('.js-order-status-select');
-
-    if (statusSelects.length && updateStatusUrl && csrfToken) {
-        const headerStatusClassMap = {
-            'Pending': 'status-pending',
-            'Completed': 'status-completed',
-            'preparing': 'status-preparing',
-            'Received': 'status-received',
-            'Out for Delivery': 'status-out-for-delivery',
-            'Canceled': 'status-canceled',
-            'error': 'status-error',
-        };
-
-        // كل كلاس محتمل لحالات التصميم
-        const allStatusClasses = [
-            'status-pending',
-            'status-completed',
-            'status-preparing',
-            'status-received',
-            'status-out-for-delivery',
-            'status-canceled',
-            'status-error',
-            'status-unknown',
-        ];
-
-        statusSelects.forEach(function (select) {
-            select.addEventListener('change', function () {
-                const orderId = this.dataset.orderId;
-                const newStatus = this.value;
-
-                fetch(updateStatusUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        id: orderId,
-                        status: newStatus
-                    })
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (!data.success) {
-                            showToast(
-                                data.message || 'فشل تحديث حالة التصميم.',
-                                'error'
-                            );
-                            return;
-                        }
-
-                        // ✅ تحديث شارة الهيدر بدون مسح الكلاسات الأخرى
-                        const headerBadge = document.querySelector('.js-order-status-badge-header');
-                        if (headerBadge) {
-                            const statusClass = headerStatusClassMap[newStatus] || 'status-unknown';
-
-                            // شيل كل كلاس status-* قديم
-                            headerBadge.classList.remove(...allStatusClasses);
-                            // أضف الكلاس الجديد فقط
-                            headerBadge.classList.add(statusClass);
-
-                            const textSpan = headerBadge.querySelector('.badge-status-text');
-                            if (textSpan) {
-                                textSpan.textContent = data.label || newStatus;
+                            // Update text
+                            var textEl = badge.querySelector('.badge-status-text');
+                            if (textEl) {
+                                textEl.textContent = data.label;
                             }
                         }
+                    } else {
+                        alert(data.message || 'حدث خطأ أثناء تحديث الحالة.');
+                    }
+                })
+                .catch(function () {
+                    alert('حدث خطأ في الاتصال.');
+                });
+        });
+    }
 
-                        showToast('تم تحديث حالة التصميم من الهيدر بنجاح ✅', 'success');
-                    })
-                    .catch(() => {
-                        showToast('حدث خطأ أثناء تحديث حالة التصميم.', 'error');
-                    });
+    /* ──────────────────────────────────────────────
+       2. DESIGNER CHANGE (Admin dropdown)
+    ────────────────────────────────────────────── */
+    var designerSelect = document.querySelector('.js-designer-select');
+    if (designerSelect) {
+        designerSelect.addEventListener('change', function () {
+            var orderId = this.dataset.orderId;
+            var designerId = this.value;
+
+            fetch(cfg.updateDesignerUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ order_id: orderId, designer_id: designerId || null }),
+            })
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    if (data.success) {
+                        // Update designer name in pill
+                        var nameEl = document.querySelector('.js-designer-name');
+                        if (nameEl) {
+                            var selectedOption = designerSelect.options[designerSelect.selectedIndex];
+                            nameEl.textContent = designerId ? selectedOption.text : 'غير معيّن';
+                        }
+                    } else {
+                        alert(data.message || 'حدث خطأ أثناء تحديث المصمم.');
+                    }
+                })
+                .catch(function () {
+                    alert('حدث خطأ في الاتصال.');
+                });
+        });
+    }
+
+    /* ──────────────────────────────────────────────
+       3. ASSIGN ME BUTTON (Designer self-assign)
+    ────────────────────────────────────────────── */
+    var assignBtn = document.querySelector('.js-assign-me-btn');
+    if (assignBtn) {
+        assignBtn.addEventListener('click', function () {
+            var orderId = this.dataset.orderId;
+            var designerId = this.dataset.designerId;
+
+            fetch(cfg.updateDesignerUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ order_id: orderId, designer_id: designerId }),
+            })
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.message || 'حدث خطأ أثناء تعيين المصمم.');
+                    }
+                })
+                .catch(function () {
+                    alert('حدث خطأ في الاتصال.');
+                });
+        });
+    }
+
+    /* ──────────────────────────────────────────────
+       4. DYNAMIC MAJOR DROPDOWNS in Graduate Modal
+    ────────────────────────────────────────────── */
+    function populateMajors(parentSelect, majorSelect, currentMajorId) {
+        majorSelect.innerHTML = '<option value="">اختر التخصص</option>';
+        var selected = parentSelect.options[parentSelect.selectedIndex];
+        if (!selected || !selected.value) return;
+
+        try {
+            var majors = JSON.parse(selected.getAttribute('data-majors') || '[]');
+            majors.forEach(function (m) {
+                var opt = document.createElement('option');
+                opt.value = m.id;
+                opt.textContent = m.name;
+                if (currentMajorId && parseInt(m.id) === parseInt(currentMajorId)) {
+                    opt.selected = true;
+                }
+                majorSelect.appendChild(opt);
             });
-        });
-    }
-
-
-    // 📚 AJAX لحفظ ملاحظات المتابعة على التجليد
-    if (bindingFollowupForm && csrfToken) {
-        bindingFollowupForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            const form = this;
-            const url = form.action;
-            const formData = new FormData(form); // يشمل الصور لو رفعتها
-
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken,
-                    Accept: 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: formData
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    if (!data.success) {
-                        showToast(
-                            data.message ||
-                            'فشل حفظ ملاحظات التجليد.',
-                            'error'
-                        );
-                        return;
-                    }
-
-                    const box = document.getElementById(
-                        'binding-followup-box'
-                    );
-                    if (box && data.html) {
-                        box.innerHTML = data.html;
-                    }
-
-                    showToast(
-                        data.message ||
-                        'تم حفظ ملاحظات التجليد بنجاح ✅',
-                        'success'
-                    );
-                })
-                .catch(() => {
-                    showToast(
-                        'حدث خطأ أثناء حفظ ملاحظات التجليد.',
-                        'error'
-                    );
-                });
-        });
-    }
-
-    // ✏️ نسخ gift_title (لو موجودة أزرار)
-    copyGiftButtons.forEach((btn) => {
-        btn.addEventListener('click', function () {
-            const text = this.dataset.text || '';
-            if (!text) return;
-
-            navigator.clipboard
-                .writeText(text)
-                .then(() =>
-                    showToast(
-                        'تم نسخ العبارة بنجاح! ✅',
-                        'success'
-                    )
-                )
-                .catch(() =>
-                    showToast('حدث خطأ أثناء النسخ.', 'error')
-                );
-        });
-    });
-
-    // 📦 AJAX لحفظ ملاحظات التوصيل
-    if (deliveryFollowupForm && csrfToken) {
-        deliveryFollowupForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            const form = this;
-            const url = form.action;
-            const formData = new FormData(form);
-
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken,
-                    Accept: 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: formData
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    if (!data.success) {
-                        showToast(
-                            data.message ||
-                            'فشل حفظ ملاحظات التوصيل.',
-                            'error'
-                        );
-                        return;
-                    }
-
-                    const box = document.getElementById(
-                        'delivery-followup-box'
-                    );
-                    if (box && data.html) {
-                        box.innerHTML = data.html;
-                    }
-
-                    showToast(
-                        data.message ||
-                        'تم حفظ ملاحظات التوصيل بنجاح ✅',
-                        'success'
-                    );
-                })
-                .catch(() => {
-                    showToast(
-                        'حدث خطأ أثناء حفظ ملاحظات التوصيل.',
-                        'error'
-                    );
-                });
-        });
-    }
-
-    // 🎨 AJAX لحفظ ملاحظات المتابعة على التصميم
-    if (designFollowupForm && csrfToken) {
-        designFollowupForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            const form = this;
-            const url = form.action;
-            const formData = new FormData(form);
-
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken,
-                    Accept: 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: formData
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    if (!data.success) {
-                        showToast(
-                            data.message ||
-                            'فشل حفظ ملاحظات المتابعة.',
-                            'error'
-                        );
-                        return;
-                    }
-
-                    const box = document.getElementById(
-                        'design-followup-box'
-                    );
-                    if (box && data.html) {
-                        box.innerHTML = data.html;
-                    }
-
-                    showToast(
-                        data.message ||
-                        'تم حفظ ملاحظات المتابعة بنجاح ✅',
-                        'success'
-                    );
-                })
-                .catch(() => {
-                    showToast(
-                        'حدث خطأ أثناء حفظ ملاحظات المتابعة.',
-                        'error'
-                    );
-                });
-        });
-    }
-
-    // 🖼️ فنكشن عامة لتحميل الصورة النشطة من أي كاروْسيل
-    function attachSingleImageDownloader(carouselId, buttonId) {
-        const carouselElem =
-            document.getElementById(carouselId);
-        const downloadBtn =
-            document.getElementById(buttonId);
-
-        if (!carouselElem || !downloadBtn) return;
-
-        function getActiveImageSrc() {
-            const activeItem =
-                carouselElem.querySelector(
-                    '.carousel-item.active img'
-                );
-            return activeItem
-                ? activeItem.getAttribute('src')
-                : null;
+        } catch (e) {
+            // ignore JSON parse errors
         }
+    }
 
-        downloadBtn.addEventListener('click', function () {
-            const src = getActiveImageSrc();
-            if (!src) return;
+    var uniSelect = document.getElementById('modalUniversitySelect');
+    var uniMajorSelect = document.getElementById('modalUniversityMajorSelect');
+    var dipSelect = document.getElementById('modalDiplomaSelect');
+    var dipMajorSelect = document.getElementById('modalDiplomaMajorSelect');
 
-            const link = document.createElement('a');
-            link.href = src;
+    if (uniSelect && uniMajorSelect) {
+        // Populate on load if university is already selected
+        populateMajors(uniSelect, uniMajorSelect, cfg.currentUniversityMajorId);
 
-            const parts = src.split('/');
-            link.download =
-                parts[parts.length - 1] || 'image.jpg';
-
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        uniSelect.addEventListener('change', function () {
+            populateMajors(uniSelect, uniMajorSelect, null);
+            // Clear diploma if university is selected
+            if (this.value && dipSelect) {
+                dipSelect.value = '';
+                if (dipMajorSelect) dipMajorSelect.innerHTML = '<option value="">اختر التخصص</option>';
+            }
         });
     }
-    // 🖼️ تحميل جميع الصور داخل حاوية معيّنة (كاروسيل أو بلوك عادي)
-    function attachAllImagesDownloader(containerSelector, buttonId) {
-        const container = document.querySelector(containerSelector);
-        const btn = document.getElementById(buttonId);
 
-        if (!container || !btn) return;
+    if (dipSelect && dipMajorSelect) {
+        // Populate on load if diploma is already selected
+        populateMajors(dipSelect, dipMajorSelect, cfg.currentDiplomaMajorId);
 
-        btn.addEventListener('click', function () {
-            const imgs = container.querySelectorAll('img');
-            if (!imgs.length) return;
-
-            imgs.forEach((img, index) => {
-                const src = img.getAttribute('src');
-                if (!src) return;
-
-                const a = document.createElement('a');
-                a.href = src;
-
-                const parts = src.split('/');
-                const baseName = parts[parts.length - 1] || `image-${index + 1}.jpg`;
-                a.download = baseName;
-
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            });
+        dipSelect.addEventListener('change', function () {
+            populateMajors(dipSelect, dipMajorSelect, null);
+            // Clear university if diploma is selected
+            if (this.value && uniSelect) {
+                uniSelect.value = '';
+                if (uniMajorSelect) uniMajorSelect.innerHTML = '<option value="">اختر التخصص</option>';
+            }
         });
     }
-    // 📷 تحميل صورة واحدة من خلال سلكتور معيّن
-    function attachSingleImageDownloaderBySelector(imgSelector, buttonId) {
-        const img = document.querySelector(imgSelector);
-        const btn = document.getElementById(buttonId);
 
-        if (!img || !btn) return;
+    /* ──────────────────────────────────────────────
+       5. IMAGE DOWNLOAD HANDLING
+    ────────────────────────────────────────────── */
 
-        btn.addEventListener('click', function () {
-            const src = img.getAttribute('src');
-            if (!src) return;
+    /**
+     * Helper to download an image from a URL programmatically
+     */
+    async function downloadImageURL(url, defaultFilename) {
+        if (!url) return;
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
 
             const a = document.createElement('a');
-            a.href = src;
+            a.href = blobUrl;
 
-            const parts = src.split('/');
-            const baseName = parts[parts.length - 1] || 'image.jpg';
-            a.download = baseName;
+            // Extract filename from URL or use default
+            let filename = defaultFilename || 'image.jpg';
+            const urlParts = url.split('/');
+            const lastPart = urlParts[urlParts.length - 1];
+            if (lastPart && lastPart.indexOf('.') !== -1) {
+                filename = lastPart.split('?')[0]; // Remove query params if any
+            }
 
+            a.download = filename;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
+            window.URL.revokeObjectURL(blobUrl);
+        } catch (err) {
+            console.error('Error downloading image, falling back to window.open', err);
+            // Fallback
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = defaultFilename || 'image.jpg';
+            a.target = '_blank';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    }
+
+    async function downloadMultipleImages(urls, prefix) {
+        if (!urls || urls.length === 0) return;
+        for (let i = 0; i < urls.length; i++) {
+            await downloadImageURL(urls[i], prefix + '_' + (i + 1) + '.jpg');
+            // Small delay to prevent browser blocking all of them at once
+            await new Promise(r => setTimeout(r, 300));
+        }
+    }
+
+    // Helper to get active carousel image
+    function getActiveCarouselImageUrl(carouselId) {
+        const carousel = document.getElementById(carouselId);
+        if (!carousel) return null;
+        const activeItem = carousel.querySelector('.carousel-item.active img');
+        return activeItem ? activeItem.src : null;
+    }
+
+    // Helper to get all carousel images
+    function getAllCarouselImageUrls(carouselId) {
+        const carousel = document.getElementById(carouselId);
+        if (!carousel) return [];
+        const imgs = carousel.querySelectorAll('.carousel-item img');
+        return Array.from(imgs).map(img => img.src);
+    }
+
+    // Helper to get single static image from a block
+    function getStaticImageUrl(blockId) {
+        const block = document.getElementById(blockId);
+        if (!block) return null;
+        const img = block.querySelector('img');
+        return img ? img.src : null;
+    }
+
+    // 1. Internal Images
+    const btnDownCurrInternal = document.getElementById('downloadCurrentInternalImage');
+    const btnDownAllInternal = document.getElementById('downloadAllInternalImages');
+    if (btnDownCurrInternal) {
+        btnDownCurrInternal.addEventListener('click', function (e) {
+            e.preventDefault();
+            const url = getActiveCarouselImageUrl('internalImagesCarousel');
+            if (url) downloadImageURL(url, 'internal_image.jpg');
+        });
+    }
+    if (btnDownAllInternal) {
+        btnDownAllInternal.addEventListener('click', function (e) {
+            e.preventDefault();
+            const urls = getAllCarouselImageUrls('internalImagesCarousel');
+            downloadMultipleImages(urls, 'internal_image');
         });
     }
 
-    // تفعيل كل الكاروسلات المحددة
-    singleDownloadConfigs.forEach((cfg) =>
-        attachSingleImageDownloader(
-            cfg.carouselId,
-            cfg.buttonId
-        )
-    );
-    // 🎯 تحميل جميع الصور في كل بلوك
-    attachAllImagesDownloader('#internalImagesCarousel .carousel-inner', 'downloadAllInternalImages');
-    attachAllImagesDownloader('#transparentImageBlock', 'downloadAllTransparentImages');
-    attachAllImagesDownloader('#decorationImageBlock', 'downloadAllDecorationImages');
-
-    // ✅ جديدة لمعلومات الخريج
-    attachAllImagesDownloader('#designImageBlock', 'downloadAllDesignImages');
-    attachAllImagesDownloader('#anotherDesignBlock', 'downloadAllAnotherImages');
-    attachAllImagesDownloader('#frontImageBlock', 'downloadAllFrontImages');
-
-    // 🎯 تحميل الصورة الحالية للبلوكات المفردة
-    attachSingleImageDownloaderBySelector('#transparentImageBlock img', 'downloadCurrentTransparentImage');
-    attachSingleImageDownloaderBySelector('#decorationImageBlock img', 'downloadCurrentDecorationImage');
-
-    // ✅ جديدة لمعلومات الخريج
-    attachSingleImageDownloaderBySelector('#designImageBlock img', 'downloadCurrentDesignImage');
-    attachSingleImageDownloaderBySelector('#frontImageBlock img', 'downloadCurrentFrontImage');
-
-
-    // 🎯 تحديث المصمم المسؤول (أدمن: select) – (مصمم: تعيين نفسه)
-    if (updateDesignerUrl && csrfToken) {
-        const designerSelects = document.querySelectorAll('.js-designer-select');
-        const assignMeButtons = document.querySelectorAll('.js-assign-me-btn');
-
-        // 🟦 1) أدمن يحدد مصمم من الـ select
-        designerSelects.forEach(function (select) {
-            select.addEventListener('change', function () {
-                const orderId = this.dataset.orderId;
-                const designerId = this.value || null;
-
-                fetch(updateDesignerUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        order_id: orderId,
-                        designer_id: designerId,
-                    }),
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (!data.success) {
-                            showToast(data.message || 'فشل تحديث المصمم.', 'error');
-                            return;
-                        }
-
-                        // ✅ حدّث الاسم المعروض في الكرت
-                        const card = this.closest('.order-header-chip');
-                        const nameSpan = card?.querySelector('.js-designer-name');
-
-                        if (nameSpan) {
-                            if (designerId) {
-                                const selectedOption = this.options[this.selectedIndex];
-                                nameSpan.textContent = selectedOption.textContent.trim();
-                            } else {
-                                nameSpan.innerHTML = '<span class="text-muted">غير معيّن</span>';
-                            }
-                        }
-
-                        showToast(data.message || 'تم تحديث المصمم بنجاح ✅', 'success');
-                    })
-                    .catch(() => {
-                        showToast('حدث خطأ أثناء تحديث المصمم.', 'error');
-                    });
-            });
+    // 2. Transparent Image
+    const btnDownCurrTransparent = document.getElementById('downloadCurrentTransparentImage');
+    if (btnDownCurrTransparent) {
+        btnDownCurrTransparent.addEventListener('click', function (e) {
+            e.preventDefault();
+            const url = getStaticImageUrl('transparentImageBlock');
+            if (url) downloadImageURL(url, 'transparent_image.jpg');
         });
+    }
 
-        // 🟨 2) مصمم يعيّن نفسه بالزر
-        assignMeButtons.forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                const orderId = this.dataset.orderId;
-                const designerId = this.dataset.designerId;
+    // 3. Decoration Image
+    const btnDownCurrDecoration = document.getElementById('downloadCurrentDecorationImage');
+    if (btnDownCurrDecoration) {
+        btnDownCurrDecoration.addEventListener('click', function (e) {
+            e.preventDefault();
+            const url = getStaticImageUrl('decorationImageBlock');
+            if (url) downloadImageURL(url, 'decoration_image.jpg');
+        });
+    }
 
-                fetch(updateDesignerUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        order_id: orderId,
-                        designer_id: designerId,
-                    }),
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (!data.success) {
-                            showToast(data.message || 'فشل تعيينك كمصمم.', 'error');
-                            return;
-                        }
+    // 4. Another Design Images
+    const btnDownCurrAnother = document.getElementById('downloadCurrentAnotherImage');
+    const btnDownAllAnother = document.getElementById('downloadAllAnotherImages');
+    if (btnDownCurrAnother) {
+        btnDownCurrAnother.addEventListener('click', function (e) {
+            e.preventDefault();
+            const url = getActiveCarouselImageUrl('anotherDesignCarousel');
+            if (url) downloadImageURL(url, 'another_design.jpg');
+        });
+    }
+    if (btnDownAllAnother) {
+        btnDownAllAnother.addEventListener('click', function (e) {
+            e.preventDefault();
+            const urls = getAllCarouselImageUrls('anotherDesignCarousel');
+            downloadMultipleImages(urls, 'another_design');
+        });
+    }
 
-                        const card = this.closest('.order-header-chip');
-                        const nameSpan = card?.querySelector('.js-designer-name');
+    // 5. Front Image
+    const btnDownCurrFront = document.getElementById('downloadCurrentFrontImage');
+    if (btnDownCurrFront) {
+        btnDownCurrFront.addEventListener('click', function (e) {
+            e.preventDefault();
+            const url = getStaticImageUrl('frontImageBlock');
+            if (url) downloadImageURL(url, 'front_image.jpg');
+        });
+    }
 
-                        // 🔁 حدّث الاسم إلى اسم المصمم الحالي (موجود في الزر نفسه أو في data-name لو حبيت تضيفه)
-                        const currentName = '{{ auth()->user()->name }}'; // أو حطها في data-name بالـ Blade
-                        if (nameSpan) {
-                            nameSpan.textContent = currentName;
-                        }
-
-                        // أخفي الزر وأظهر Badge "أنت المصمم المسؤول"
-                        this.remove();
-                        const badge = document.createElement('span');
-                        badge.className = 'badge bg-success mt-1';
-                        badge.textContent = 'أنت المصمم المسؤول عن هذا الطلب';
-                        card.querySelector('.order-header-body').appendChild(badge);
-
-                        showToast(data.message || 'تم تعيينك كمصمم للطلب ✅', 'success');
-                    })
-                    .catch(() => {
-                        showToast('حدث خطأ أثناء تعيينك كمصمم.', 'error');
-                    });
-            });
+    // 6. Final Back Images
+    const btnDownCurrBack = document.getElementById('downloadCurrentFinalBackImage');
+    const btnDownAllBack = document.getElementById('downloadAllFinalBackImages');
+    if (btnDownCurrBack) {
+        btnDownCurrBack.addEventListener('click', function (e) {
+            e.preventDefault();
+            const url = getActiveCarouselImageUrl('finalBackImagesCarousel');
+            if (url) downloadImageURL(url, 'back_image.jpg');
+        });
+    }
+    if (btnDownAllBack) {
+        btnDownAllBack.addEventListener('click', function (e) {
+            e.preventDefault();
+            const urls = getAllCarouselImageUrls('finalBackImagesCarousel');
+            downloadMultipleImages(urls, 'back_image');
         });
     }
 

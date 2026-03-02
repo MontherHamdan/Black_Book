@@ -132,17 +132,9 @@ class BookDesignController extends Controller
      */
     public function destroy(BookDesign $bookDesign)
     {
-        // Delete the image from storage if it exists
-        if ($bookDesign->image) {
-            $oldImagePath = str_replace(url('storage') . '/', '', $bookDesign->image); // Extract relative path
-            if (Storage::disk('public')->exists($oldImagePath)) {
-                Storage::disk('public')->delete($oldImagePath);
-            }
-        }
-
-        // Delete the BookDesign record
+        // ما بنحذف الصورة هون عشان نقدر نسترجعها بعدين
         $bookDesign->delete();
 
-        return redirect()->route('book-designs.index')->with('success', 'Book Design deleted successfully.');
+        return redirect()->route('book-designs.index')->with('success', 'Book Design moved to trash successfully.');
     }
 }

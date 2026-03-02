@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class BookDesign extends Model
 {
     use HasFactory;
-
+    use SoftDeletes;
     protected $table = 'book_designs';
-    protected $fillable = ['image', 'category_id', 'sub_category_id','is_uploaded_by_user'];
+    protected $fillable = ['image', 'category_id', 'sub_category_id', 'is_uploaded_by_user'];
 
     public function category()
     {

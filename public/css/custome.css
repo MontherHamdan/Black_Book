@@ -11,7 +11,7 @@
   /* Increased border thickness */
 }
 
- :root {
+:root {
   --order-primary: #4f46e5;
   /* Indigo */
   --order-primary-soft: #eef2ff;
@@ -391,32 +391,43 @@ body {
   color: #fff !important;
 }
 
-/* Images & carousels */
+/* Images & carousels — unified sizing (synced with show.blade.php .unified-image) */
 .img-fluid.img-thumbnail {
-  max-width: 250px;
-  height: 200px;
+  max-width: 350px;
+  height: 350px;
   object-fit: cover;
-  border-radius: 16px;
+  border-radius: 12px;
   border: 1px solid var(--order-border-soft);
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
 }
 
 #backImagesCarousel img,
 #internalImagesCarousel img,
-#finalBackImagesCarousel img {
-  max-width: 500px;
-  height: 350px;
-  object-fit: contain;
+#finalBackImagesCarousel img,
+#anotherDesignCarousel img {
+  max-width: 350px !important;
+  height: 350px !important;
+  object-fit: cover !important;
+  object-position: top center !important;
 }
 
 .custom-carousel-control {
-  width: 5%;
+  width: 15%;
+  opacity: 1;
+  top: 50%;
+  transform: translateY(-50%);
+  height: auto;
+  padding: 20px 0;
 }
 
 .custom-carousel-control .carousel-control-prev-icon,
 .custom-carousel-control .carousel-control-next-icon {
   background-color: var(--order-primary);
   border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
 }
 
 /* SVG preview container */
@@ -1081,9 +1092,15 @@ textarea.form-control:focus {
   /* للنص فوق وتحت الصورة */
 }
 
+/* ⬅️ الكاروسيل داخل image-block لازم يأخذ العرض الكامل عشان الأسهم تكون على الأطراف */
+.image-block .carousel {
+  align-self: stretch;
+  width: 100%;
+}
+
 /* 🔹 الكاروسيل نفسه يكون عرضه مقبول وفي النص */
 #internalImagesCarousel {
-  max-width: 320px;
+  max-width: 380px;
   width: 100%;
   margin: 0 auto 1rem;
   /* ⬅️ يخليه بالنص */
@@ -1141,7 +1158,7 @@ textarea.form-control:focus {
 }
 
 .design-image-wrapper {
-  width: 50%;
+  max-width: 380px;
   margin: 0 auto;
   /* ⬅️ توسيط أفقي */
   border-radius: 12px;
@@ -1152,13 +1169,13 @@ textarea.form-control:focus {
   /* ⬅️ توسيط أفقي للصورة */
   align-items: center;
   /* ⬅️ توسيط عمودي (احترافي) */
-  background: #f3f4f6;
+  background: transparent;
 }
 
 .design-image-full {
   width: 100%;
-  height: auto;
+  height: 350px;
   display: block;
-  object-fit: contain;
-  /* لا قص */
+  object-fit: cover;
+  object-position: top center;
 }

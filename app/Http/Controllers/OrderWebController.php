@@ -17,7 +17,10 @@ use App\Models\UserImage;
 use Illuminate\Support\Facades\Log;
 use App\Support\ArabicNameNormalizer;
 use App\Models\SvgName;
-
+use App\Models\BookType;
+use App\Models\DiscountCode;
+use App\Models\University;
+use App\Models\Diploma;
 class OrderWebController extends Controller
 {
     public function index()
@@ -60,6 +63,11 @@ class OrderWebController extends Controller
         // نحمل المصمم لو مش محمل
         $order->loadMissing('designer');
 
+        $bookTypes = BookType::orderBy('name_ar')->get(['id', 'name_ar']);
+        $discountCodes = DiscountCode::orderBy('discount_code')->get(['id', 'discount_code', 'code_name']);
+        $universities = University::with('majors')->orderBy('name')->get(['id', 'name']);
+        $diplomas = Diploma::with('majors')->orderBy('name')->get(['id', 'name']);
+
         // 🔹 فلاغات عامة عن المستخدم
         $isAdmin = $authUser->isAdmin();
         $isDesigner = $authUser->isDesigner();
@@ -75,7 +83,7 @@ class OrderWebController extends Controller
         // =========================
         // 🔹 1) SVG الخاص بالاسم العربي
         // =========================
-        $svgCodeForName = $this->resolveNameSvg($order->username_ar ?? null);
+        $svgCodeForName = $this->resolveNameSvg($order->username_ar ?? null, $order->id);
 
         // =========================
         // 🔹 2) إعداد Config الحالات
@@ -202,6 +210,10 @@ class OrderWebController extends Controller
 
         return view('admin.order.show', [
             'order' => $order,
+            'bookTypes' => $bookTypes,
+            'discountCodes' => $discountCodes,
+            'universities' => $universities,
+            'diplomas' => $diplomas,
             'decorations' => $decorations,
             'designers' => $designers,
 
@@ -344,6 +356,7 @@ class OrderWebController extends Controller
         $additivesFilter = $request->input('additives'); // with_additives / with_out_additives
         $dateFrom = $request->input('date_from');
         $dateTo = $request->input('date_to');
+        $designerFilter = $request->input('designer_id');
 
         $query = Order::with([
             'discountCode',
@@ -353,7 +366,13 @@ class OrderWebController extends Controller
             'transparentPrinting',
             'designer',
         ]);
-
+        if (!empty($designerFilter)) {
+            if ($designerFilter === 'unassigned') {
+                $query->whereNull('designer_id'); // للبحث عن الطلبات غير المسندة لأحد
+            } else {
+                $query->where('designer_id', $designerFilter);
+            }
+        }
 
         // 🔎 بحث عام
         if (!empty($searchValue)) {
@@ -431,7 +450,7 @@ class OrderWebController extends Controller
                 'data' => $createdAtFormatted,
                 'status_created_diff' => $statusDiff,
 
-                'username' => $order->username_ar . ' / ' . $order->username_en,
+                'username' => $order->username_ar,
                 'order' => $order->bookType?->name_ar ?? '',
                 'governorate' => $order->governorate,
                 'address' => $order->address,
@@ -544,44 +563,11 @@ class OrderWebController extends Controller
 
         $order->save();
 
-        // 👇 نفس config الموجود في الـ Blade عشان نرجع label + class جاهزين للـ JS
-        $statusConfig = [
-            'new_order' => [
-                'class' => 'bg-primary text-white',
-                'label' => 'طلب جديد',
-            ],
-            'needs_modification' => [
-                'class' => 'bg-danger text-white',
-                'label' => 'يوجد تعديل',
-            ],
-            'Pending' => [
-                'class' => 'bg-warning text-dark',
-                'label' => 'تم التصميم',
-            ],
-            'Completed' => [
-                'class' => 'bg-info text-dark',
-                'label' => 'تم الاعتماد',
-            ],
-            'preparing' => [
-                'class' => 'bg-purple',
-                'label' => 'قيد التجهيز',
-            ],
-            'Received' => [
-                'class' => 'bg-success text-white',
-                'label' => 'تم التسليم',
-            ],
-            'Out for Delivery' => [
-                'class' => 'bg-orange',
-                'label' => 'مرتجع',
-            ],
-            'Canceled' => [
-                'class' => 'bg-maroon',
-                'label' => 'رفض الإستلام',
-            ],
-        ];
+        // نستخدم نفس الـ statusConfig عشان الكلاسات تتطابق مع الـ CSS
+        $statusConfig = $this->statusConfig();
 
         $cfg = $statusConfig[$order->status] ?? [
-            'class' => 'bg-secondary',
+            'class' => 'status-unknown',
             'label' => $order->status,
         ];
 
@@ -1222,7 +1208,21 @@ class OrderWebController extends Controller
         }
 
         // 📝 ملاحظات المتابعة على التجليد
-        $order->binding_followup_note = $request->input('binding_followup_note');
+        // 📝 ملاحظات المتابعة على التجليد (إضافة تراكمية)
+        if ($request->filled('binding_followup_note')) {
+            $newNote = trim($request->input('binding_followup_note'));
+            $timestamp = now()->format('Y-m-d h:i A');
+            $formattedNote = "--- {$timestamp} ---\n{$newNote}";
+
+            if (empty($order->binding_followup_note)) {
+                $order->binding_followup_note = $formattedNote;
+            } else {
+                $order->binding_followup_note = $order->binding_followup_note . "\n\n" . $formattedNote;
+            }
+
+            // عشان تبين عند المصمم كـ غير مقروءة
+            $order->designer_read_notes = false;
+        }
         $order->save();
 
         // ⚡ لو الطلب جاينا بـ AJAX → نرجّع JSON ونترك الصفحة زي ما هي
@@ -1272,7 +1272,19 @@ class OrderWebController extends Controller
         ]);
 
         $order = Order::findOrFail($id);
-        $order->delivery_followup_note = $request->input('delivery_followup_note');
+
+        // 📝 ملاحظات التوصيل (إضافة تراكمية)
+        if ($request->filled('delivery_followup_note')) {
+            $newNote = trim($request->input('delivery_followup_note'));
+            $timestamp = now()->format('Y-m-d h:i A');
+            $formattedNote = "--- {$timestamp} ---\n{$newNote}";
+
+            if (empty($order->delivery_followup_note)) {
+                $order->delivery_followup_note = $formattedNote;
+            } else {
+                $order->delivery_followup_note = $order->delivery_followup_note . "\n\n" . $formattedNote;
+            }
+        }
         $order->save();
 
         // 👇 لو الطلب من AJAX (fetch) نرجع JSON
@@ -1326,6 +1338,8 @@ class OrderWebController extends Controller
             } else {
                 $order->design_followup_note = $order->design_followup_note . "\n\n" . $formattedNote;
             }
+
+            $order->designer_read_notes = false;
         }
         $order->save();
 
@@ -1372,7 +1386,7 @@ class OrderWebController extends Controller
     /**
      * جلب كود الـ SVG الخاص بالاسم العربي (أول اسم) إن وجد.
      */
-    private function resolveNameSvg(?string $usernameAr): ?string
+    private function resolveNameSvg(?string $usernameAr, $orderId): ?array
     {
         if (!$usernameAr) {
             return null;
@@ -1385,11 +1399,48 @@ class OrderWebController extends Controller
 
         $normalized = ArabicNameNormalizer::normalize($firstArabicName);
 
-        /** @var \App\Models\SvgName|null $svgNameRow */
         $svgNameRow = SvgName::where('normalized_name', $normalized)->first();
 
         if ($svgNameRow && !empty($svgNameRow->svg_code)) {
-            return $svgNameRow->svg_code;
+
+            // 1. إنشاء مجلد مؤقت للـ SVGs
+            $svgDir = storage_path('app/public/temp_svgs');
+            if (!is_dir($svgDir)) {
+                mkdir($svgDir, 0755, true);
+            }
+
+            // 2. اسم ملف فريد (بدون استخدام ?v= في الرابط لأن الفوتوشوب يكرهها)
+            $fileName = 'name_' . $orderId . '_' . uniqid() . '.svg';
+            $filePath = $svgDir . '/' . $fileName;
+
+            // 3. تنظيف وتجهيز كود الـ SVG
+            $svgCode = trim($svgNameRow->svg_code);
+
+            // إزالة أي ترويسة XML قديمة لتجنب التكرار
+            $svgCode = preg_replace('/<\?xml.*?\?>/is', '', $svgCode);
+
+            // إذا لم يكن يحتوي على <svg> أصلاً (عبارة عن مسارات فقط)
+            if (!preg_match('/<svg/i', $svgCode)) {
+                $svgCode = '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 1000 1000" width="1000" height="1000">' . "\n" . $svgCode . "\n" . '</svg>';
+            } else {
+                // التأكد من وجود xmlns والأبعاد الثابتة
+                if (!preg_match('/xmlns=/i', $svgCode)) {
+                    $svgCode = preg_replace('/<svg/i', '<svg xmlns="http://www.w3.org/2000/svg" version="1.1"', $svgCode, 1);
+                }
+                $svgCode = preg_replace('/width\s*=\s*["\']?[0-9.]+%\s*["\']?/i', 'width="1000"', $svgCode);
+                $svgCode = preg_replace('/height\s*=\s*["\']?[0-9.]+%\s*["\']?/i', 'height="1000"', $svgCode);
+            }
+
+            // إضافة الترويسة الرسمية كأول سطر
+            $svgCode = '<?xml version="1.0" encoding="utf-8"?>' . "\n" . trim($svgCode);
+
+            // 4. الحفظ والإرجاع
+            file_put_contents($filePath, $svgCode);
+
+            return [
+                'code' => $svgCode,
+                'url' => asset('storage/temp_svgs/' . $fileName) // 👈 رابط نظيف 100% بدون استعلامات
+            ];
         }
 
         return null;
@@ -1424,5 +1475,272 @@ class OrderWebController extends Controller
         }
 
         return [$designImagePath, $designTitle];
+    }
+
+    public function updateNotebookFollowup(Request $request, Order $order)
+    {
+        $user = $request->user();
+
+        if (!$user->isAdmin() && !$user->isDesigner()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'غير مصرح لك بتعديل ملاحظات الدفتر.',
+                ], 403);
+            }
+
+            abort(403, 'غير مصرح لك بتعديل ملاحظات الدفتر.');
+        }
+
+        $data = $request->validate([
+            'notebook_followup_note' => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        if (!empty($data['notebook_followup_note'])) {
+            $newNote = trim($data['notebook_followup_note']);
+            $timestamp = now()->format('Y-m-d h:i A');
+
+            $formattedNote = "--- {$timestamp} ---\n{$newNote}";
+
+            if (empty($order->notebook_followup_note)) {
+                $order->notebook_followup_note = $formattedNote;
+            } else {
+                $order->notebook_followup_note = $order->notebook_followup_note . "\n\n" . $formattedNote;
+            }
+
+            $order->designer_read_notes = false;
+        }
+
+        $order->save();
+
+        if ($request->expectsJson()) {
+            $html = $order->notebook_followup_note
+                ? nl2br(e($order->notebook_followup_note))
+                : '<span class="text-muted">لا توجد ملاحظات دفتر حتى الآن.</span>';
+
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'message' => 'تم حفظ ملاحظات الدفتر بنجاح.',
+            ]);
+        }
+
+        return back()->with('success', 'تم حفظ ملاحظات الدفتر بنجاح.');
+    }
+
+    public function updateOrderCoreData(Request $request, Order $order)
+    {
+        $user = $request->user();
+        if (!$user->isAdmin() && !$user->isDesigner()) {
+            abort(403, 'غير مصرح لك بتعديل بيانات الطلب.');
+        }
+
+        $validated = $request->validate([
+            'book_type_id' => 'nullable|exists:book_types,id',
+            'user_gender' => 'nullable|in:male,female',
+            'final_price' => 'nullable|numeric',
+            'final_price_with_discount' => 'nullable|numeric',
+            'discount_code_id' => 'nullable|exists:discount_codes,id',
+            'is_with_additives' => 'nullable',
+        ]);
+
+        // Handle checkbox — not sent when unchecked
+        $validated['is_with_additives'] = $request->boolean('is_with_additives');
+
+        $order->update($validated);
+
+        return back()->with('success', 'تم تحديث تفاصيل الطلب بنجاح.');
+    }
+
+    public function updateGraduateInfo(Request $request, Order $order)
+    {
+        $user = $request->user();
+        if (!$user->isAdmin() && !$user->isDesigner()) {
+            abort(403, 'غير مصرح لك بتعديل بيانات الخريج.');
+        }
+
+        $validated = $request->validate([
+            'username_ar' => 'required|string|max:255',
+            'username_en' => 'nullable|string|max:255',
+            'user_phone_number' => 'nullable|string|max:50',
+            'university_id' => 'nullable|exists:universities,id',
+            'university_major_id' => 'nullable|exists:majors,id',
+            'diploma_id' => 'nullable|exists:diplomas,id',
+            'diploma_major_id' => 'nullable|exists:diploma_majors,id',
+            'note' => 'nullable|string',
+            'front_image' => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:20480',
+            'back_images' => 'nullable|array',
+            'back_images.*' => 'image|mimes:jpg,jpeg,png,webp,gif|max:20480',
+            'custom_design_images' => 'nullable|array',
+            'custom_design_images.*' => 'image|mimes:jpg,jpeg,png,webp,gif|max:20480',
+            'new_svg' => 'nullable|file|mimes:svg,txt|max:512',
+        ]);
+
+        // Update university / diploma IDs only (school_name & major_name columns are DROPPED)
+        if ($request->filled('university_id')) {
+            $order->university_id = $request->university_id;
+            // Clear diploma fields if university is selected
+            $order->diploma_id = null;
+            $order->diploma_major_id = null;
+
+            if ($request->filled('university_major_id')) {
+                $order->university_major_id = $request->university_major_id;
+            }
+        } elseif ($request->filled('diploma_id')) {
+            $order->diploma_id = $request->diploma_id;
+            // Clear university fields if diploma is selected
+            $order->university_id = null;
+            $order->university_major_id = null;
+
+            if ($request->filled('diploma_major_id')) {
+                $order->diploma_major_id = $request->diploma_major_id;
+            }
+        }
+
+        if (array_key_exists('username_ar', $validated)) {
+            $order->username_ar = $validated['username_ar'];
+        }
+        if (array_key_exists('username_en', $validated)) {
+            $order->username_en = $validated['username_en'];
+        }
+        if (array_key_exists('note', $validated)) {
+            $order->note = $validated['note'];
+        }
+        if (array_key_exists('user_phone_number', $validated)) {
+            $order->user_phone_number = $validated['user_phone_number'];
+        }
+
+        // 🖼️ Front Image upload
+        if ($request->hasFile('front_image')) {
+            $file = $request->file('front_image');
+            $imageName = time() . '_' . $file->getClientOriginalName();
+            $file->storeAs('user_images', $imageName, 'public');
+            $userImage = UserImage::create(['image_path' => $imageName]);
+            $order->front_image_id = $userImage->id;
+        }
+
+        // 🖼️ Back Images upload (overwrite)
+        if ($request->hasFile('back_images')) {
+            $backIds = [];
+            foreach ($request->file('back_images') as $file) {
+                $imageName = time() . '_' . $file->getClientOriginalName();
+                $file->storeAs('user_images', $imageName, 'public');
+                $userImage = UserImage::create(['image_path' => $imageName]);
+                $backIds[] = $userImage->id;
+            }
+            // Merge with existing or overwrite
+            $existingIds = $order->back_image_ids;
+            if (is_string($existingIds)) {
+                $existingIds = json_decode($existingIds, true) ?? [];
+            }
+            $order->back_image_ids = json_encode(array_merge((array) $existingIds, $backIds));
+        }
+
+        // 🖼️ Custom Design Images upload (overwrite)
+        if ($request->hasFile('custom_design_images')) {
+            $customIds = [];
+            foreach ($request->file('custom_design_images') as $file) {
+                $imageName = time() . '_' . $file->getClientOriginalName();
+                $file->storeAs('user_images', $imageName, 'public');
+                $userImage = UserImage::create(['image_path' => $imageName]);
+                $customIds[] = $userImage->id;
+            }
+            $existingIds = $order->custom_design_image_id;
+            if (is_string($existingIds)) {
+                $existingIds = json_decode($existingIds, true) ?? [];
+            }
+            $order->custom_design_image_id = json_encode(array_merge((array) $existingIds, $customIds));
+        }
+
+        // SVG Upload
+        if ($request->hasFile('new_svg')) {
+            $content = file_get_contents($request->file('new_svg')->getRealPath());
+            if ($order->svg) {
+                $order->svg->update(['svg_code' => $content]);
+            } else {
+                $svg = \App\Models\Svg::create(['svg_code' => $content, 'title' => 'Uploaded via Graduate Modal']);
+                $order->svg_id = $svg->id;
+            }
+        }
+
+        $order->save();
+
+        return back()->with('success', 'تم تحديث معلومات الخريج بنجاح.');
+    }
+
+    public function updateInternalBook(Request $request, Order $order)
+    {
+        $user = $request->user();
+        if (!$user->isAdmin() && !$user->isDesigner()) {
+            abort(403, 'غير مصرح لك بتعديل الدفتر من الداخل.');
+        }
+
+        $validated = $request->validate([
+            'gift_type' => 'nullable|string',
+            'gift_title' => 'nullable|string',
+            'notebook_followup_note' => 'nullable|string',
+        ]);
+
+        $order->update($validated);
+
+        return back()->with('success', 'تم تحديث الدفتر من الداخل بنجاح.');
+    }
+
+    public function updateBindingTab(Request $request, Order $order)
+    {
+        $user = $request->user();
+        if (!$user->isAdmin() && !$user->isDesigner()) {
+            abort(403, 'غير مصرح لك بتعديل التجليد.');
+        }
+
+        $validated = $request->validate([
+            'book_decorations_id' => 'nullable|exists:book_decorations,id',
+            'pages_number' => 'nullable|integer',
+            'is_sponge' => 'nullable|boolean',
+            'new_svg' => 'nullable|file|mimes:svg,txt|max:512',
+        ]);
+
+        if (array_key_exists('book_decorations_id', $validated)) {
+            $order->book_decorations_id = $validated['book_decorations_id'];
+        }
+        if (array_key_exists('pages_number', $validated)) {
+            $order->pages_number = $validated['pages_number'];
+        }
+        $order->is_sponge = $request->boolean('is_sponge');
+
+        if ($request->hasFile('new_svg')) {
+            $content = file_get_contents($request->file('new_svg')->getRealPath());
+            if ($order->svg) {
+                $order->svg->update(['svg_code' => $content]);
+            } else {
+                $svg = \App\Models\Svg::create(['svg_code' => $content, 'title' => 'Uploaded via Modal']);
+                $order->svg_id = $svg->id;
+            }
+        }
+
+        $order->save();
+
+        return back()->with('success', 'تم تحديث معلومات التجليد بنجاح.');
+    }
+
+    public function updateDeliveryInfo(Request $request, Order $order)
+    {
+        $user = $request->user();
+        if (!$user->isAdmin() && !$user->isDesigner()) {
+            abort(403, 'غير مصرح لك بتعديل معلومات التوصيل.');
+        }
+
+        $validated = $request->validate([
+            'delivery_number_one' => 'nullable|string|max:255',
+            'delivery_number_two' => 'nullable|string|max:255',
+            'governorate' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
+            'final_price' => 'nullable|numeric',
+            'final_price_with_discount' => 'nullable|numeric',
+        ]);
+
+        $order->update($validated);
+
+        return back()->with('success', 'تم تحديث معلومات التوصيل بنجاح.');
     }
 }

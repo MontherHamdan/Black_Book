@@ -21,45 +21,57 @@ use App\Http\Controllers\SvgNameController;
 use App\Http\Controllers\PlanWebController;
 use App\Http\Controllers\SpecializedDepartmentWebController;
 use App\Http\Controllers\VideoWebController;
-
+use App\Http\Controllers\DesignerAccountingController;
 /* |-------------------------------------------------------------------------- | Web Routes |-------------------------------------------------------------------------- */
 
 // Login routes
-Route::get('/login', [AuthenticatedSessionController::class , 'create'])->name('auth.login');
-Route::post('/login', [AuthenticatedSessionController::class , 'store'])->name('auth.store');
+Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('auth.login');
+Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('auth.store');
 // Logout route
-Route::post('/logout', [AuthenticatedSessionController::class , 'destroy'])->name('auth.logout');
+Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('auth.logout');
 
 
 // Routes متاحة لأي يوزر مسجّل (Admin أو Designer)
 Route::middleware(['auth'])->group(function () {
     // Dashboard
-    Route::get('/', [DashboardController::class , 'index'])->name('admin.dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::put('/dashboard/orders/{id}/dismiss-notes', [DashboardController::class, 'dismissNotes'])->name('dashboard.dismissNotes');
 
     // Orders (Admin + Designers)
-    Route::get('/orders', [OrderWebController::class , 'index'])->name('orders.index');
-    Route::get('/orders/fetch', [OrderWebController::class , 'fetchOrders'])->name('orders.fetch');
-    Route::post('/orders/update-status', [OrderWebController::class , 'updateStatus'])->name('orders.updateStatus');
-    Route::delete('/orders/{id}', [OrderWebController::class , 'destroy'])->name('orders.destroy');
-    Route::post('/orders/bulk-delete', [OrderWebController::class , 'bulkDelete'])->name('orders.bulkDelete');
-    Route::post('orders/add-note', [OrderWebController::class , 'addNote'])->name('orders.addNote');
-    Route::get('/orders/{order}/notes', [OrderWebController::class , 'getNotes'])->name('orders.getNotes');
-    Route::get('/orders/{id}', [OrderWebController::class , 'show'])->name('orders.show');
-    Route::get('/orders/{order}/back-images/download', [OrderWebController::class , 'downloadAllBackImages'])->name('orders.backImages.download');
-    Route::get('/orders-export/excel', [OrderWebController::class , 'exportExcel'])->name('orders.exportExcel');
-    Route::get('/admin/orders/{order}/additional-images/download', [OrderWebController::class , 'downloadAllAdditionalImages'])
+    Route::get('/orders', [OrderWebController::class, 'index'])->name('orders.index');
+    Route::get('/orders/fetch', [OrderWebController::class, 'fetchOrders'])->name('orders.fetch');
+    Route::post('/orders/update-status', [OrderWebController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::delete('/orders/{id}', [OrderWebController::class, 'destroy'])->name('orders.destroy');
+    Route::post('/orders/bulk-delete', [OrderWebController::class, 'bulkDelete'])->name('orders.bulkDelete');
+    Route::post('orders/add-note', [OrderWebController::class, 'addNote'])->name('orders.addNote');
+    Route::get('/orders/{order}/notes', [OrderWebController::class, 'getNotes'])->name('orders.getNotes');
+    Route::put('/orders/{order}/update-notebook-followup', [OrderWebController::class, 'updateNotebookFollowup'])->name('orders.updateNotebookFollowup');
+    Route::get('/orders/{id}', [OrderWebController::class, 'show'])->name('orders.show');
+    Route::get('/orders/{order}/back-images/download', [OrderWebController::class, 'downloadAllBackImages'])->name('orders.backImages.download');
+    Route::get('/orders-export/excel', [OrderWebController::class, 'exportExcel'])->name('orders.exportExcel');
+    Route::get('/admin/orders/{order}/additional-images/download', [OrderWebController::class, 'downloadAllAdditionalImages'])
         ->name('orders.additionalImages.download');
-    Route::post('/orders/update-designer', [OrderWebController::class , 'updateDesigner'])
+    Route::post('/orders/update-designer', [OrderWebController::class, 'updateDesigner'])
         ->name('orders.updateDesigner');
-    Route::put('/admin/orders/{order}/binding', [OrderWebController::class , 'updateBinding'])
+    Route::put('/admin/orders/{order}/binding', [OrderWebController::class, 'updateBinding'])
         ->name('orders.updateBinding');
     Route::put('/admin/orders/{order}/delivery-followup', [
-        OrderWebController::class ,
+        OrderWebController::class,
         'updateDeliveryFollowup',
     ])->name('orders.updateDeliveryFollowup');
 
-    Route::put('/orders/{order}/design-followup', [OrderWebController::class , 'updateDesignFollowup'])
+    Route::put('/orders/{order}/design-followup', [OrderWebController::class, 'updateDesignFollowup'])
         ->name('orders.updateDesignFollowup');
+
+    // New editable order routes
+    Route::put('/orders/{order}/core-data', [OrderWebController::class, 'updateOrderCoreData'])->name('orders.updateCoreData');
+    Route::put('/orders/{order}/graduate-info', [OrderWebController::class, 'updateGraduateInfo'])->name('orders.updateGraduateInfo');
+    Route::put('/orders/{order}/internal-book', [OrderWebController::class, 'updateInternalBook'])->name('orders.updateInternalBook');
+    Route::put('/orders/{order}/binding-tab', [OrderWebController::class, 'updateBindingTab'])->name('orders.updateBindingTab');
+    Route::put('/orders/{order}/delivery-info', [OrderWebController::class, 'updateDeliveryInfo'])->name('orders.updateDeliveryInfo');
+
+    Route::put('/orders/{order}/dismiss-notes', [OrderWebController::class, 'dismissNotes'])->name('orders.dismissNotes');
+
 });
 
 // Admin-only routes (إعدادات النظام)
@@ -80,17 +92,17 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('book-types', BookTypeController::class);
 
     // book type sub media
-    Route::post('book-type-sub-media', [BookTypeSubMediaController::class , 'store'])->name('book-type-sub-media.store');
-    Route::delete('book-type-sub-media/{subMedia}', [BookTypeSubMediaController::class , 'destroy'])->name('book-type-sub-media.destroy');
+    Route::post('book-type-sub-media', [BookTypeSubMediaController::class, 'store'])->name('book-type-sub-media.store');
+    Route::delete('book-type-sub-media/{subMedia}', [BookTypeSubMediaController::class, 'destroy'])->name('book-type-sub-media.destroy');
 
     // Book Decorations
     Route::resource('book-decorations', BookDecorationController::class);
 
     // Governorates and Addresses
     Route::resource('governorates', GovernorateController::class);
-    Route::post('governorates/{governorate}/add-address', [GovernorateController::class , 'addAddress'])->name('governorates.addAddress');
-    Route::delete('addresses/{address}', [GovernorateController::class , 'deleteAddress'])->name('addresses.delete');
-    Route::get('/governorates/{id}/addresses', [GovernorateController::class , 'getAddresses'])->name('governorates.addresses');
+    Route::post('governorates/{governorate}/add-address', [GovernorateController::class, 'addAddress'])->name('governorates.addAddress');
+    Route::delete('addresses/{address}', [GovernorateController::class, 'deleteAddress'])->name('addresses.delete');
+    Route::get('/governorates/{id}/addresses', [GovernorateController::class, 'getAddresses'])->name('governorates.addresses');
 
     // Discount Code 
     Route::resource('discount-codes', DiscountCodeController::class);
@@ -110,18 +122,18 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // univeristies majors  
     Route::resource('universities', UniversityController::class);
-    Route::get('/universities/{university}/majors', [UniversityController::class , 'fetchMajors']);
-    Route::post('/universities/{university}/add-major', [UniversityController::class , 'storeMajor']);
-    Route::delete('/universities/{university}/delete-major/{major}', [UniversityController::class , 'deleteMajor'])->name('majors.delete');
+    Route::get('/universities/{university}/majors', [UniversityController::class, 'fetchMajors']);
+    Route::post('/universities/{university}/add-major', [UniversityController::class, 'storeMajor']);
+    Route::delete('/universities/{university}/delete-major/{major}', [UniversityController::class, 'deleteMajor'])->name('majors.delete');
 
     // phone numbers 
     Route::resource('phone-numbers', PhoneNumberController::class)->only(['index', 'destroy']);
 
     // diploma and majors 
     Route::resource('diplomas', DiplomaController::class);
-    Route::post('diplomas/{diplomaId}/majors', [DiplomaController::class , 'storeMajor'])->name('diplomas.storeMajor');
-    Route::delete('diplomas/{diplomaId}/majors/{majorId}', [DiplomaController::class , 'deleteMajor'])->name('diplomas.deleteMajor');
-    Route::get('diplomas/{diplomaId}/majors', [DiplomaController::class , 'fetchMajors'])->name('diplomas.fetchMajors');
+    Route::post('diplomas/{diplomaId}/majors', [DiplomaController::class, 'storeMajor'])->name('diplomas.storeMajor');
+    Route::delete('diplomas/{diplomaId}/majors/{majorId}', [DiplomaController::class, 'deleteMajor'])->name('diplomas.deleteMajor');
+    Route::get('diplomas/{diplomaId}/majors', [DiplomaController::class, 'fetchMajors'])->name('diplomas.fetchMajors');
 
     // Plans
     Route::resource('plans', PlanWebController::class);
@@ -131,4 +143,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // Videos
     Route::resource('videos', VideoWebController::class);
+
+    // Designer Accounting
+    Route::get('/designer-accounting', [DesignerAccountingController::class, 'index'])->name('designer-accounting.index');
+    Route::get('/designer-accounting/{user}', [DesignerAccountingController::class, 'show'])->name('designer-accounting.show');
+    Route::post('/designer-accounting/{user}/settle', [DesignerAccountingController::class, 'settle'])
+        ->name('designer-accounting.settle');
+
+    Route::post('/designer-accounting/{user}/custom-settle', [DesignerAccountingController::class, 'customSettle'])
+        ->name('designer-accounting.customSettle');
 });

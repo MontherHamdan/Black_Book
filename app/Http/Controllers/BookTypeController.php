@@ -120,16 +120,7 @@ class BookTypeController extends Controller
      */
     public function destroy(BookType $bookType)
     {
-        // Delete the image from storage if it exists
-        if ($bookType->image) {
-            $oldImagePath = str_replace(url('storage') . '/', '', $bookType->image); // Extract the relative path
-
-            if (file_exists(public_path('storage/' . $oldImagePath))) {
-                unlink(public_path('storage/' . $oldImagePath));
-            }
-        }
-
-        // Delete the book type record
+        // the record and its relationship logic stay mostly intact, just soft deleting the record
         $bookType->delete();
 
         // Redirect to the index page with a success message

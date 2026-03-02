@@ -109,7 +109,7 @@ class Order extends Model
 
     public function bookType()
     {
-        return $this->belongsTo(BookType::class);
+        return $this->belongsTo(BookType::class)->withTrashed();
     }
 
     public function bookDesign()

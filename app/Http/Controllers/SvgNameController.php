@@ -22,16 +22,16 @@ class SvgNameController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name'            => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'normalized_name' => ['required', 'string', 'max:255'],
-            'svg_code'        => ['nullable', 'string'], // longText
+            'svg_code' => ['nullable', 'string'], // longText
         ]);
 
         SvgName::create($data);
 
         return redirect()
             ->route('svg-names.index')
-            ->with('success', 'تم إضافة الاسم و كود الـ SVG بنجاح.');
+            ->with('success', 'SVG name and code added successfully.');
     }
 
     public function edit(SvgName $svgName)
@@ -42,15 +42,24 @@ class SvgNameController extends Controller
     public function update(Request $request, SvgName $svgName)
     {
         $data = $request->validate([
-            'name'            => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'normalized_name' => ['required', 'string', 'max:255'],
-            'svg_code'        => ['nullable', 'string'],
+            'svg_code' => ['nullable', 'string'],
         ]);
 
         $svgName->update($data);
 
         return redirect()
             ->route('svg-names.index')
-            ->with('success', 'تم تحديث بيانات الاسم و كود الـ SVG بنجاح.');
+            ->with('success', 'SVG name and code updated successfully.');
+    }
+
+    public function destroy(SvgName $svgName)
+    {
+        $svgName->delete();
+
+        return redirect()
+            ->route('svg-names.index')
+            ->with('success', 'SVG name and code deleted successfully.');
     }
 }

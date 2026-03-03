@@ -1,151 +1,116 @@
 @extends('admin.layout')
 
 @section('content')
-<div class="row">
-    <div class="col-12">
-        <div class="card shadow-sm border-0">
-            <div class="d-flex justify-content-between align-items-center p-3">
-                <h1 class="mb-0 text-primary">SVGs</h1>
-                <a href="{{ route('svgs.create') }}" class="btn btn-success">
-                    <i class="fas fa-plus me-1"></i> Add New SVG
-                </a>
-            </div>
+    <style>
+        .svg-form-card {
+            border-radius: 16px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
 
-            <div class="card-body">
-                <table id="responsive-datatable" class="table table-striped table-bordered dt-responsive ">
-                    <thead>
-                        <tr>
-                            <th class="text-center">ID</th>
-                            <th class="text-center">Title</th>
-                            <th class="text-center">Preview</th>
-                            <th class="text-center">Actions</th>
-                            <th class="text-center">Copy Code</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($svgs as $svg)
-                        <tr>
-                            <td class="text-center">{{ $svg->id }}</td>
-                            <td class="text-center">{{ $svg->title ?? 'No Title' }}</td>
-                            <td class="text-center">
-                                <!-- Center SVG Preview -->
-                                <div class="svg-preview-container"
-                                    style="display: flex; justify-content: center; align-items: center; height: 100%;">
-                                    <div class="svg-preview img-thumbnail"
-                                        style="width: 70px; height: 70px; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+        .form-control-custom {
+            border-radius: 12px;
+            border: 2px solid #eef2f7;
+            padding: 12px 18px;
+            transition: 0.3s;
+        }
+
+        .form-control-custom:focus {
+            border-color: #fdcb6e;
+            box-shadow: 0 0 0 4px rgba(253, 203, 110, 0.1);
+        }
+
+        .svg-preview-box {
+            border-radius: 12px;
+            border: 2px dashed #eef2f7;
+            padding: 20px;
+            text-align: center;
+            background: #fcfdfd;
+        }
+
+        .svg-preview-box svg {
+            max-width: 100%;
+            height: 120px;
+        }
+    </style>
+
+    <div class="container-fluid py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card svg-form-card">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-0 text-center">
+                        <h3 class="mb-0 text-warning fw-bold"><i class="fas fa-edit me-2"></i>تعديل العبارة (SVG)</h3>
+                        <p class="text-muted mt-1">أنت الآن تقوم بتعديل العبارة رقم: #{{ $svg->id }}</p>
+                    </div>
+
+                    <div class="card-body p-4 p-md-5">
+                        @if ($errors->any())
+                            <div class="alert alert-danger rounded-3 border-0 shadow-sm">
+                                <ul class="mb-0">
+                                    @foreach ($errors->all() as $error)
+                                        <li><i class="fas fa-exclamation-circle me-2"></i>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
+                        <form action="{{ route('svgs.update', $svg->id) }}" method="POST">
+                            @csrf
+                            @method('PUT')
+
+                            <div class="row g-4">
+                                <div class="col-12 mb-2">
+                                    <label class="form-label fw-bold text-muted small text-uppercase">المعاينة الحالية
+                                        (Preview)</label>
+                                    <div class="svg-preview-box d-flex justify-content-center align-items-center">
                                         {!! $svg->svg_code !!}
                                     </div>
                                 </div>
-                            </td>
-                            <td class="text-center">
-                                <div class="dropdown">
-                                    <a class="dropdown-toggle" id="dropdownMenuButton{{ $svg->id }}"
-                                        data-bs-toggle="dropdown" style="cursor: pointer" aria-expanded="false">
-                                        <i class="fas fa-ellipsis-h"></i>
-                                    </a>
-                                    <ul class="dropdown-menu"
-                                        aria-labelledby="dropdownMenuButton{{ $svg->id }}">
-                                        <li>
-                                            <a href="{{ route('svgs.edit', $svg->id) }}" class="dropdown-item"
-                                                title="Edit SVG">
-                                                <i class="fas fa-edit me-2"></i>Edit
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <form action="{{ route('svgs.destroy', $svg->id) }}" method="POST">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="dropdown-item text-danger"
-                                                    onclick="return confirm('Are you sure you want to delete this SVG?')">
-                                                    <i class="fas fa-trash me-2"></i>Delete
-                                                </button>
-                                            </form>
-                                        </li>
-                                    </ul>
+
+                                <div class="col-md-6">
+                                    <label for="title" class="form-label fw-bold text-muted small text-uppercase">Title
+                                        (Optional)</label>
+                                    <input type="text" name="title" id="title" class="form-control form-control-custom"
+                                        value="{{ old('title', $svg->title) }}">
                                 </div>
-                            </td>
-                            <td class="text-center">
-                                <button class="btn btn-primary btn-sm copy-svg-button">
-                                    <i class="fas fa-copy me-1"></i> Copy
+
+                                <div class="col-md-6">
+                                    <label for="category_id"
+                                        class="form-label fw-bold text-muted small text-uppercase">Category <span
+                                            class="text-danger">*</span></label>
+                                    <select name="category_id" id="category_id" class="form-select form-control-custom"
+                                        required>
+                                        <option value="" disabled>-- اختر القسم --</option>
+                                        @foreach($categories as $category)
+                                            <option value="{{ $category->id }}" {{ (old('category_id', $svg->category_id) == $category->id) ? 'selected' : '' }}>
+                                                {{ $category->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="col-12">
+                                    <label for="svg_code" class="form-label fw-bold text-muted small text-uppercase">SVG
+                                        Code (XML) <span class="text-danger">*</span></label>
+                                    <textarea name="svg_code" id="svg_code"
+                                        class="form-control form-control-custom text-start" rows="8" dir="ltr"
+                                        required>{{ old('svg_code', $svg->svg_code) }}</textarea>
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-3 mt-5">
+                                <button type="submit" class="btn btn-warning rounded-pill px-5 flex-grow-1"
+                                    style="border: none; color: #fff; font-weight: bold;">
+                                    <i class="fas fa-check-circle me-2"></i> حفظ التعديلات
                                 </button>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="5" class="text-center text-muted">No SVGs found.</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                                <a href="{{ route('svgs.index') }}" class="btn btn-light rounded-pill px-4 text-secondary">
+                                    إلغاء وعودة
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
-<script>
-    // Attach event listener to dynamically copy SVG code
-    document.addEventListener('DOMContentLoaded', function() {
-        const copyButtons = document.querySelectorAll('.copy-svg-button');
-
-        // Create a reusable toast notification container
-        const toastContainer = document.createElement('div');
-        toastContainer.id = 'toast-container';
-        toastContainer.style.position = 'fixed';
-        toastContainer.style.bottom = '20px';
-        toastContainer.style.right = '20px';
-        toastContainer.style.zIndex = '9999';
-        document.body.appendChild(toastContainer);
-
-        copyButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const svgPreviewDiv = this.closest('tr').querySelector('.svg-preview');
-                const svgCode = svgPreviewDiv.innerHTML
-                    .trim(); // Extract the SVG code from the div
-
-                navigator.clipboard.writeText(svgCode)
-                    .then(() => {
-                        showToast('SVG code copied to clipboard!', 'success');
-                    })
-                    .catch(err => {
-                        console.error('Failed to copy SVG code: ', err);
-                        showToast('Failed to copy SVG code. Please try again.', 'error');
-                    });
-            });
-        });
-
-        // Function to show a toast notification
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.textContent = message;
-            toast.style.padding = '10px 20px';
-            toast.style.marginTop = '10px';
-            toast.style.borderRadius = '5px';
-            toast.style.color = '#fff';
-            toast.style.fontSize = '14px';
-            toast.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
-            toast.style.opacity = '0';
-            toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-
-            if (type === 'success') {
-                toast.style.backgroundColor = '#28a745'; // Green for success
-            } else if (type === 'error') {
-                toast.style.backgroundColor = '#dc3545'; // Red for error
-            }
-
-            toastContainer.appendChild(toast);
-
-            // Show the toast with animation
-            setTimeout(() => {
-                toast.style.opacity = '1';
-                toast.style.transform = 'translateY(-10px)';
-            }, 100);
-
-            // Remove the toast after 3 seconds
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateY(0)';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-    });
-</script>
 @endsection

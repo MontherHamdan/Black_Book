@@ -198,7 +198,12 @@
                             <span> Plans </span>
                         </a>
                     </li>
-
+                    <li>
+                        <a href="{{ route('countries.index') }}">
+                            <i class="mdi mdi-earth"></i>
+                            <span> Countries </span>
+                        </a>
+                    </li>
                     <li class="menu-title mt-2">Manager</li>
 
                     <li>

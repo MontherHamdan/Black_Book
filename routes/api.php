@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\BookDesginSubCategoryController;
 use App\Http\Controllers\Api\VideoController;
 use App\Http\Controllers\Api\SpecializedDepartmentController;
 use App\Http\Controllers\Api\PlanController;
+use App\Http\Controllers\Api\CountryApiController;
 /* |-------------------------------------------------------------------------- | API Routes |-------------------------------------------------------------------------- | | Here is where you can register API routes for your application. These | routes are loaded by the RouteServiceProvider and all of them will | be assigned to the "api" middleware group. Make something great! | */
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -85,4 +86,7 @@ Route::prefix('v1')->group(function () {
     Route::apiResource('specialized-departments', SpecializedDepartmentController::class)->only(['index', 'show']);
     // Plans
     Route::apiResource('plans', PlanController::class)->only(['index', 'show']);
+
+    // Countries
+    Route::get('countries', [CountryApiController::class, 'index']);
 });

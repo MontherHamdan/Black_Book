@@ -145,7 +145,7 @@
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert"
                     style="border-radius: 10px;">
-                    <i class="fas fa-check-circle me-2"></i><strong>نجاح!</strong> {{ session('success') }}
+                    <i class="fas fa-check-circle me-2"></i><strong></strong> {{ session('success') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif

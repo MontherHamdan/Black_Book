@@ -22,6 +22,8 @@ use App\Http\Controllers\PlanWebController;
 use App\Http\Controllers\SpecializedDepartmentWebController;
 use App\Http\Controllers\VideoWebController;
 use App\Http\Controllers\DesignerAccountingController;
+use App\Http\Controllers\CountryController;
+
 /* |-------------------------------------------------------------------------- | Web Routes |-------------------------------------------------------------------------- */
 
 // Login routes
@@ -162,4 +164,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::post('/designer-accounting/{user}/custom-settle', [DesignerAccountingController::class, 'customSettle'])
         ->name('designer-accounting.customSettle');
+
+    // Countries
+    Route::resource('countries', CountryController::class);
 });

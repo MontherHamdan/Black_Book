@@ -11,9 +11,15 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('svgs', function (Blueprint $table) {
-            $table->dropForeign(['book_design_category_id']);
+            if (Schema::hasColumn('svgs', 'book_design_category_id')) {
 
-            $table->dropColumn('book_design_category_id');
+                try {
+                    $table->dropForeign(['book_design_category_id']);
+                } catch (\Exception $e) {
+                }
+
+                $table->dropColumn('book_design_category_id');
+            }
         });
     }
 

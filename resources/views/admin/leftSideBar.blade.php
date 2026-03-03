@@ -12,10 +12,12 @@
                     $nameParts = explode(' ', Auth::user()->name);
                     $initials = collect($nameParts)
                         ->filter(function ($part) {
-                            return strlen($part) > 0; })
+                            return strlen($part) > 0;
+                        })
                         ->take(2)
                         ->map(function ($part) {
-                            return strtoupper(substr($part, 0, 1)); })
+                            return strtoupper(substr($part, 0, 1));
+                        })
                         ->implode('');
                 @endphp
                 <div class="rounded-circle d-inline-flex align-items-center justify-content-center bg-secondary text-white avatar-md"
@@ -140,6 +142,12 @@
                         </a>
                         <div class="collapse" id="svgsMenu">
                             <ul class="nav-second-level">
+                                <li>
+                                    <a href="{{ route('svg-categories.index') }}">
+                                        <i class="mdi mdi-format-list-bulleted-type"></i>
+                                        SVG Categories
+                                    </a>
+                                </li>
                                 <li>
                                     <a href="{{ route('svgs.index') }}">
                                         <i class="mdi mdi-vector-square"></i>

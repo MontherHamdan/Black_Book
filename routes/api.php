@@ -33,7 +33,7 @@ Route::prefix('v1')->group(function () {
 
     // *******************book_design **********************************
     Route::resource('/book_design', BookDesignController::class)->only(['index', 'store']);
-    Route::get('/book_design/all', [BookDesignController::class , 'all'])->name('book_design.all');
+    Route::get('/book_design/all', [BookDesignController::class, 'all'])->name('book_design.all');
 
     // *******************book_design_categoriese **********************************
     Route::resource('/book_design_categories', BookDesginCategoryController::class);
@@ -46,7 +46,7 @@ Route::prefix('v1')->group(function () {
 
     // *******************svgs ********************************************
     Route::resource('/svgs', SvgController::class);
-
+    Route::get('svg-categories', [SvgController::class, 'getCategoriesWithSvgs']);
     // *******************Universities and majors **********************************
     Route::resource('universities', UniversityController::class);
     Route::resource('/universities/{university_id}/majors', MajorController::class);
@@ -55,14 +55,14 @@ Route::prefix('v1')->group(function () {
     Route::resource('/book_decorations', BookDecorationController::class)->only(['index']);
 
     // *******************governorates and addresses **********************************
-    Route::get('/governorates', [GovernorateController::class , 'index']);
-    Route::get('/governorates/{id}/addresses', [AddressController::class , 'getAddressesByGovernorate']);
+    Route::get('/governorates', [GovernorateController::class, 'index']);
+    Route::get('/governorates/{id}/addresses', [AddressController::class, 'getAddressesByGovernorate']);
 
     // ******************* Discount Codes **********************************
     Route::get('/discount_codes/check', [DiscountCodeController::class, 'check']);
 
     // *******************User Upload Image ******************************************
-    Route::post('/user_upload_image', [UserImageController::class , 'store']);
+    Route::post('/user_upload_image', [UserImageController::class, 'store']);
 
     // create orders
     Route::resource('orders', OrderController::class)->only(['store']);
@@ -71,8 +71,9 @@ Route::prefix('v1')->group(function () {
     Route::resource('diplomas', DiplomaController::class);
 
     // Diploma Majors Routes
-    Route::get('diplomas/{diploma_id}/majors',
-    [DiplomaMajorController::class , 'index']
+    Route::get(
+        'diplomas/{diploma_id}/majors',
+        [DiplomaMajorController::class, 'index']
     );
 
     Route::resource('orders', OrderController::class)->only(['store']);

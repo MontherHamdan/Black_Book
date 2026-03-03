@@ -117,8 +117,18 @@ Route::middleware(['auth', 'admin'])->group(function () {
         'store',
         'edit',
         'update',
+        'destroy',
     ]);
 
+    // Svg Categories
+    Route::get('/svg-categories', [SvgController::class, 'categoryIndex'])->name('svg-categories.index');
+    Route::get('/svg-categories/create', [SvgController::class, 'createCategory'])->name('svg-categories.create');
+    Route::post('/svg-categories', [SvgController::class, 'storeCategory'])->name('svg-categories.store');
+
+    Route::get('/svg-categories/{svgCategory}/edit', [SvgController::class, 'editCategory'])->name('svg-categories.edit');
+    Route::put('/svg-categories/{svgCategory}', [SvgController::class, 'updateCategory'])->name('svg-categories.update');
+
+    Route::delete('/svg-categories/{svgCategory}', [SvgController::class, 'destroyCategory'])->name('svg-categories.destroy');
 
     // univeristies majors  
     Route::resource('universities', UniversityController::class);

@@ -13,13 +13,18 @@ document.addEventListener('DOMContentLoaded', function () {
     var csrfToken = cfg.csrfToken;
 
     /* ──────────────────────────────────────────────
-       1. STATUS CHANGE  →  Badge update
-    ────────────────────────────────────────────── */
+        1. STATUS CHANGE  →  Badge update
+     ────────────────────────────────────────────── */
     var statusSelect = document.querySelector('.js-order-status-select');
     if (statusSelect) {
+
+        // حفظ الحالة الأولية حتى نتمكن من العودة إليها عند حدوث خطأ
+        statusSelect.dataset.currentStatus = statusSelect.value;
+
         statusSelect.addEventListener('change', function () {
-            var orderId = this.dataset.orderId;
-            var newStatus = this.value;
+            var selectElement = this;
+            var orderId = selectElement.dataset.orderId;
+            var newStatus = selectElement.value;
 
             fetch(cfg.updateStatusUrl, {
                 method: 'POST',
@@ -30,13 +35,26 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 body: JSON.stringify({ id: orderId, status: newStatus }),
             })
-                .then(function (res) { return res.json(); })
+                .then(function (res) {
+                    // التقاط حالة 422 قبل عمل JSON parse لتجنب مشاكل الـ Promise
+                    if (res.status === 422) {
+                        return res.json().then(function (errData) {
+                            throw { status: 422, data: errData };
+                        });
+                    }
+                    if (!res.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return res.json();
+                })
                 .then(function (data) {
                     if (data.success) {
+                        // تحديث الحالة الحالية المحفوظة
+                        selectElement.dataset.currentStatus = newStatus;
+
                         // Update badge
                         var badge = document.querySelector('.js-order-status-badge-header');
                         if (badge) {
-                            // Remove old status-* and bg-* classes
                             var classesToRemove = [];
                             badge.classList.forEach(function (c) {
                                 if (c.startsWith('status-') || c.startsWith('bg-')) {
@@ -45,24 +63,59 @@ document.addEventListener('DOMContentLoaded', function () {
                             });
                             classesToRemove.forEach(function (c) { badge.classList.remove(c); });
 
-                            // Add new classes
                             var newClasses = data.class.split(' ');
                             newClasses.forEach(function (c) {
                                 if (c.trim()) badge.classList.add(c.trim());
                             });
 
-                            // Update text
                             var textEl = badge.querySelector('.badge-status-text');
                             if (textEl) {
                                 textEl.textContent = data.label;
                             }
                         }
                     } else {
+                        // فشل من نوع آخر
+                        selectElement.value = selectElement.dataset.currentStatus;
                         alert(data.message || 'حدث خطأ أثناء تحديث الحالة.');
                     }
                 })
-                .catch(function () {
-                    alert('حدث خطأ في الاتصال.');
+                .catch(function (error) {
+                    // إرجاع القائمة المنسدلة للحالة السابقة
+                    selectElement.value = selectElement.dataset.currentStatus;
+
+                    // إذا كان الخطأ هو 422 (نواقص التجليد)
+                    if (error.status === 422 && typeof Swal !== 'undefined') {
+                        let msg = error.data.message || "توجد ملفات ناقصة في الطلب.";
+
+                        // تحويل علامة (-) إلى نقطة (•) مع إضافة مسافات سطرية
+                        let formattedMessage = msg.replace(/-/g, '•').replace(/\n/g, '<br>');
+
+                        Swal.fire({
+                            title: '<span style="color: #e74a3b; font-family: Cairo; font-weight: bold;">تنبيه: ملفات غير مكتملة</span>',
+                            html: `
+                            <div style="text-align: right; direction: rtl; font-family: 'Cairo', sans-serif; line-height: 1.7;">
+                                <div style="background: #fff5f5; border-right: 5px solid #e74a3b; padding: 15px; border-radius: 10px; color: #be2617; text-align: right; font-size: 0.95rem; font-weight: 500;">
+                                    ${formattedMessage}
+                                </div>
+                                <p style="margin-top: 15px; font-size: 0.95rem; color: #6c757d;">
+                                    يرجى التوجه إلى تبويب <b>"تجليد الدفتر"</b> والنقر على خيار التعديل لرفع الملفات المطلوبة، ثم المحاولة مرة أخرى.
+                                </p>
+                            </div>
+                            `,
+                            icon: 'warning',
+                            confirmButtonText: 'حسناً',
+                            confirmButtonColor: '#4e73df',
+                        });
+                    } else {
+                        // إظهار رسالة خطأ احترافية بدلاً من alert العادي
+                        Swal.fire({
+                            title: '<span style="font-family: Cairo;">خطأ في الاتصال</span>',
+                            text: 'حدث خطأ أثناء التواصل مع الخادم. يرجى المحاولة مرة أخرى.',
+                            icon: 'error',
+                            confirmButtonText: 'موافق',
+                            confirmButtonColor: '#e74a3b'
+                        });
+                    }
                 });
         });
     }

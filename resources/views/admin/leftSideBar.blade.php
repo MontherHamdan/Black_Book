@@ -27,7 +27,7 @@
             @endif
 
             <h5 class="mt-2 mb-1 d-block">{{ Auth::user()->name }}</h5>
-            <p class="text-muted left-user-info">{{ Auth::user()->title }}</p>
+            <p class="text-muted left-user-info text-capitalize">{{ Auth::user()->role ?? 'No Role' }}</p>
 
             <div class="dropdown">
                 <a href="#" class="text-muted left-user-info" data-bs-toggle="dropdown" aria-expanded="false">
@@ -63,14 +63,45 @@
                     </a>
                 </li>
 
-                {{-- Orders: الكل يشوفه --}}
                 <li class="menu-title mt-2">Orders</li>
+
+                {{-- 1. Orders: متاح للجميع (آدمن، مشرف، مصمم، طابع) --}}
                 <li>
                     <a href="{{ route('orders.index') }}">
                         <i class="mdi mdi-cart-outline"></i>
                         <span> Orders </span>
                     </a>
                 </li>
+
+                {{-- 2. All Orders: متاح للآدمن والمشرف فقط --}}
+                @if(auth()->user()->isAdmin() || auth()->user()->isSupervisor())
+                    <li>
+                        <a href="{{ route('all-orders.index') }}">
+                            <i class="mdi mdi-format-list-bulleted"></i>
+                            <span> All Orders </span>
+                        </a>
+                    </li>
+                @endif
+
+                {{-- 3. Notebook Binding: متاح للآدمن، المشرف، والطابع --}}
+                @if(auth()->user()->isAdmin() || auth()->user()->isSupervisor() || auth()->user()->isPrinter())
+                    <li>
+                        <a href="{{ route('notebook-binding.index') }}">
+                            <i class="mdi mdi-book-open-variant"></i>
+                            <span> Notebook Binding </span>
+                        </a>
+                    </li>
+                @endif
+
+                {{-- 4. Delivery Dispatch: متاح للآدمن والمشرف فقط --}}
+                @if(auth()->user()->isAdmin() || auth()->user()->isSupervisor())
+                    <li>
+                        <a href="{{ route('delivery-dispatch.index') }}">
+                            <i class="mdi mdi-truck-delivery-outline"></i>
+                            <span> Delivery Dispatch </span>
+                        </a>
+                    </li>
+                @endif
 
                 {{-- باقي القوائم فقط للـ Admin --}}
                 @if($currentUser->isAdmin())

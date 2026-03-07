@@ -23,7 +23,9 @@ use App\Http\Controllers\SpecializedDepartmentWebController;
 use App\Http\Controllers\VideoWebController;
 use App\Http\Controllers\DesignerAccountingController;
 use App\Http\Controllers\CountryController;
-
+use App\Http\Controllers\NotebookBindingController;
+use App\Http\Controllers\PrintQueueController;
+use App\Http\Controllers\DeliveryDispatchController;
 /* |-------------------------------------------------------------------------- | Web Routes |-------------------------------------------------------------------------- */
 
 // Login routes
@@ -45,6 +47,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/orders/update-status', [OrderWebController::class, 'updateStatus'])->name('orders.updateStatus');
     Route::delete('/orders/{id}', [OrderWebController::class, 'destroy'])->name('orders.destroy');
     Route::post('/orders/bulk-delete', [OrderWebController::class, 'bulkDelete'])->name('orders.bulkDelete');
+    Route::post('/orders/bulk-update-status', [OrderWebController::class, 'bulkUpdateStatus'])->name('orders.bulkUpdateStatus');
     Route::post('orders/add-note', [OrderWebController::class, 'addNote'])->name('orders.addNote');
     Route::get('/orders/{order}/notes', [OrderWebController::class, 'getNotes'])->name('orders.getNotes');
     Route::put('/orders/{order}/update-notebook-followup', [OrderWebController::class, 'updateNotebookFollowup'])->name('orders.updateNotebookFollowup');
@@ -73,6 +76,19 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/orders/{order}/delivery-info', [OrderWebController::class, 'updateDeliveryInfo'])->name('orders.updateDeliveryInfo');
 
     Route::put('/orders/{order}/dismiss-notes', [OrderWebController::class, 'dismissNotes'])->name('orders.dismissNotes');
+
+    // Print Queues, All Orders, Delivery Dispatch
+    Route::get('/print-queues', [PrintQueueController::class, 'index'])->name('print-queues.index');
+    Route::get('/all-orders', [\App\Http\Controllers\AllOrdersController::class, 'index'])->name('all-orders.index');
+    Route::get('/delivery-dispatch', [DeliveryDispatchController::class, 'index'])->name('delivery-dispatch.index');
+
+    // Notebook Binding (Printer workspace)
+    Route::get('/notebook-binding', [NotebookBindingController::class, 'index'])
+        ->name('notebook-binding.index');
+    Route::post('/notebook-binding/mark-downloaded', [NotebookBindingController::class, 'markFileDownloaded'])
+        ->name('notebook-binding.mark-downloaded');
+    Route::post('/notebook-binding/bulk-mark-downloaded', [NotebookBindingController::class, 'bulkMarkDownloaded'])
+        ->name('notebook-binding.bulk-mark-downloaded');
 
 });
 
@@ -167,4 +183,5 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // Countries
     Route::resource('countries', CountryController::class);
+
 });

@@ -45,4 +45,6 @@
 
     <!-- Theme Config Js -->
     <script src="{{ asset('assets/js/config.js') }}"></script>
+
+    @stack('styles')
 </head>

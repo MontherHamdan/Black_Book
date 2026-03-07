@@ -108,8 +108,8 @@
         }
 
         /* ==================================================
-                               💎 تصميم الـ Pagination المبهر (Fintech Style)
-                               ================================================== */
+                                       💎 تصميم الـ Pagination المبهر (Fintech Style)
+                                       ================================================== */
         .custom-pagination-wrapper nav {
             width: 100%;
             display: flex;
@@ -187,11 +187,13 @@
 
     {{-- 🔹 قسم المصمم: جدول الملاحظات + كارد الأرباح --}}
     {{-- 🔹 قسم المصمم: جدول الملاحظات + كارد المحفظة --}}
-    @if(auth()->check() && auth()->user()->is_admin == 0 && auth()->user()->role === 'designer')
+    {{-- 🟢 الشرط الرئيسي: يسمح للآدمن، المشرف، والمصمم برؤية هذا القسم --}}
+    @if(auth()->check() && (auth()->user()->isAdmin() || auth()->user()->isSupervisor() || auth()->user()->isDesigner()))
         <div class="row mt-4" style="direction: rtl; text-align: right; font-family: 'Cairo', sans-serif;">
 
-            {{-- 1. جدول ملاحظات المتابعة (تصميم عصري ونظيف) --}}
-            <div class="col-xl-8 col-lg-8 mb-4">
+            {{-- 1. جدول ملاحظات المتابعة --}}
+            {{-- 💡 لمسة ذكية: إذا كان المستخدم مصمم نعطيه حجم 8، وإذا آدمن/مشرف نعطيه حجم 12 (عرض كامل) لأن المحفظة مخفية --}}
+            <div class="{{ auth()->user()->isDesigner() ? 'col-xl-8 col-lg-8' : 'col-12' }} mb-4">
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 bg-white">
                     <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center mt-2">
                         <h4 class="mb-0 text-primary fw-bold fs-5">
@@ -250,33 +252,36 @@
                 </div>
             </div>
 
-            {{-- 2. كارد المحفظة المالية (تصميم Fintech مبهر) --}}
-            <div class="col-xl-4 col-lg-4 mb-4">
-                <div
-                    class="card border-0 shadow-lg rounded-4 bg-primary text-white h-100 position-relative overflow-hidden card-fintech">
-                    <div class="card-body p-4 position-relative z-1 d-flex flex-column justify-content-between">
-                        <div>
-                            <div class="bg-white bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center mb-3 shadow-sm"
-                                style="width: 50px; height: 50px;">
-                                <i class="fas fa-wallet fs-4"></i>
+            {{-- 2. كارد المحفظة المالية (🔴 يظهر للمصمم فقط 🔴) --}}
+            @if(auth()->user()->isDesigner())
+                <div class="col-xl-4 col-lg-4 mb-4">
+                    <div
+                        class="card border-0 shadow-lg rounded-4 bg-primary text-white h-100 position-relative overflow-hidden card-fintech">
+                        <div class="card-body p-4 position-relative z-1 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="bg-white bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center mb-3 shadow-sm"
+                                    style="width: 50px; height: 50px;">
+                                    <i class="fas fa-wallet fs-4"></i>
+                                </div>
+                                <h6 class="text-white text-opacity-75 fw-bold mb-1">المستحقات المعلقة</h6>
+                                <h2 class="display-5 fw-bolder mb-0 lh-1">
+                                    {{ number_format($totalCommission, 2) }} <small class="fs-4">د.أ</small>
+                                </h2>
                             </div>
-                            <h6 class="text-white text-opacity-75 fw-bold mb-1">المستحقات المعلقة</h6>
-                            <h2 class="display-5 fw-bolder mb-0 lh-1">
-                                {{ number_format($totalCommission, 2) }} <small class="fs-4">د.أ</small>
-                            </h2>
-                        </div>
-                        <div
-                            class="mt-4 pt-3 border-top border-white border-opacity-20 d-flex align-items-center justify-content-between">
-                            <span class="small opacity-75"><i class="fas fa-info-circle me-1"></i> بانتظار التسوية
-                                المالية</span>
-                            <i class="fas fa-university fs-3 opacity-25"></i>
+                            <div
+                                class="mt-4 pt-3 border-top border-white border-opacity-20 d-flex align-items-center justify-content-between">
+                                <span class="small opacity-75"><i class="fas fa-info-circle me-1"></i> بانتظار التسوية
+                                    المالية</span>
+                                <i class="fas fa-university fs-3 opacity-25"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            @endif
+
         </div>
 
-        {{-- 💡 مودالات الملاحظات (تصميم مبهر بنظام التبويبات) --}}
+        {{-- 💡 مودالات الملاحظات (تظهر للجميع عشان يقدروا يقرأوا الملاحظات اللي بالجدول) --}}
         @foreach($designerNotes as $note)
             <div class="modal fade" id="notesModal-{{ $note->id }}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -285,7 +290,6 @@
                         <div class="modal-header border-0 bg-dark p-4 d-flex justify-content-between align-items-center text-white">
                             <div>
                                 <h3 class="modal-title fw-bold mb-1 text-white">ملاحظات المتابعة #{{ $note->id }}</h3>
-
                                 <span class="text-white opacity-75 fs-6">{{ $note->username_ar }}</span>
                             </div>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -357,16 +361,22 @@
                         </div>
 
                         <div class="modal-footer border-0 bg-light p-4 d-flex justify-content-between align-items-center">
-                            <div class="form-check form-switch custom-switch-lg mb-0 p-0 d-flex align-items-center">
-                                <label class="form-check-label fw-bold me-4 text-dark" for="dismissNotes-{{ $note->id }}">تمت
-                                    المراجعة</label>
-                                <input class="form-check-input js-dismiss-notes-btn cursor-pointer shadow-sm ms-0" type="checkbox"
-                                    id="dismissNotes-{{ $note->id }}" data-order-id="{{ $note->id }}">
-                            </div>
+                            {{-- 🔴 زر "تمت المراجعة" يظهر للمصمم فقط 🔴 --}}
+                            @if(auth()->user()->isDesigner())
+                                <div class="form-check form-switch custom-switch-lg mb-0 p-0 d-flex align-items-center">
+                                    <label class="form-check-label fw-bold me-4 text-dark" for="dismissNotes-{{ $note->id }}">تمت
+                                        المراجعة</label>
+                                    <input class="form-check-input js-dismiss-notes-btn cursor-pointer shadow-sm ms-0" type="checkbox"
+                                        id="dismissNotes-{{ $note->id }}" data-order-id="{{ $note->id }}">
+                                </div>
+                            @else
+                                <div></div> {{-- ديف فارغ للحفاظ على المسافات (Flexbox) --}}
+                            @endif
+
                             <a href="{{ route('orders.show', ['id' => $note->id]) }}#tab-graduate-info"
                                 id="executeBtn-{{ $note->id }}"
                                 class="btn btn-primary rounded-pill px-4 fw-bold shadow py-2 execute-order-btn">
-                                تنفيذ الطلب <i class="fas fa-arrow-left ms-2"></i>
+                                تفاصيل الطلب <i class="fas fa-arrow-left ms-2"></i>
                             </a>
                         </div>
                     </div>
@@ -374,88 +384,87 @@
             </div>
         @endforeach
 
-        {{-- 🔹 سجل العمولات (تصميم مبهر ومحاذى لليمين) --}}
-        <div class="row mt-4" style="direction: rtl; text-align: right;">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
-                    <div class="card-body p-4">
-                        <h5 class="fw-bold text-dark mb-4 border-bottom pb-3">
-                            <i class="fas fa-history text-success me-2 ms-1"></i> سجل العمولات المنجزة
-                        </h5>
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle text-center">
-                                <thead class="bg-soft-success">
-                                    <tr class="text-success small fw-bold">
-                                        <th class="py-3">رقم الطلب</th>
-                                        <th>اسم الخريج</th>
-                                        <th>الزخرفة</th>
-                                        <th>الإهداء المخصص</th>
-                                        <th>العمولة النهائية</th>
-                                        <th>تاريخ الإنجاز</th>
-                                        <th>الحالة المالية</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @php
-                                        $doneStatuses = ['preparing', 'Completed', 'Received', 'Out for Delivery'];
-                                        // 🔴 التعديل هنا: استخدام paginate(5) بدلاً من get() لعرض 5 طلبات في كل صفحة
-                                        $historyOrders = auth()->user()->designerOrders()
-                                            ->whereIn('status', $doneStatuses)
-                                            ->orderBy('updated_at', 'desc')
-                                            ->paginate(5);
-                                    @endphp
-
-                                    @forelse($historyOrders as $history)
-                                        <tr>
-                                            <td class="fw-bold">#{{ $history->id }}</td>
-                                            <td class="fw-semibold text-dark">{{ $history->username_ar }}</td>
-                                            <td>{!! $history->book_decorations_id ? '<span class="text-success fw-bold">نعم</span>' : '<span class="text-muted">لا</span>' !!}
-                                            </td>
-                                            <td>{!! $history->gift_type === 'custom' ? '<span class="text-warning fw-bold">نعم</span>' : '<span class="text-muted">لا</span>' !!}
-                                            </td>
-
-                                            <td class="text-success fw-bolder fs-5">
-                                                @if($history->is_commission_paid)
-                                                    {{ number_format($history->paid_commission, 2) }}
-                                                @else
-                                                    {{ number_format($history->designer_commission - $history->paid_commission, 2) }}
-                                                @endif
-                                                <small class="fs-6">د.أ</small>
-                                            </td>
-
-                                            <td class="text-muted small">{{ $history->updated_at->format('Y-m-d') }}</td>
-                                            <td>
-                                                @if($history->is_commission_paid)
-                                                    <span class="badge bg-soft-success text-success rounded-pill px-3 py-2">
-                                                        <i class="fas fa-check-circle me-1 ms-1"></i> مدفوع
-                                                    </span>
-                                                @else
-                                                    <span class="badge bg-soft-warning text-warning rounded-pill px-3 py-2">
-                                                        <i class="fas fa-clock me-1 ms-1"></i> قيد الانتظار
-                                                    </span>
-                                                @endif
-                                            </td>
+        {{-- 🔹 سجل العمولات (🔴 يظهر للمصمم فقط 🔴) --}}
+        @if(auth()->user()->isDesigner())
+            <div class="row mt-4" style="direction: rtl; text-align: right;">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold text-dark mb-4 border-bottom pb-3">
+                                <i class="fas fa-history text-success me-2 ms-1"></i> سجل العمولات المنجزة
+                            </h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle text-center">
+                                    <thead class="bg-soft-success">
+                                        <tr class="text-success small fw-bold">
+                                            <th class="py-3">رقم الطلب</th>
+                                            <th>اسم الخريج</th>
+                                            <th>الزخرفة</th>
+                                            <th>الإهداء المخصص</th>
+                                            <th>العمولة النهائية</th>
+                                            <th>تاريخ الإنجاز</th>
+                                            <th>الحالة المالية</th>
                                         </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="7" class="py-5 text-muted">لا يوجد سجل عمولات حتى الآن</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody>
+                                        @php
+                                            $doneStatuses = ['preparing', 'Completed', 'Received', 'Out for Delivery'];
+                                            $historyOrders = auth()->user()->designerOrders()
+                                                ->whereIn('status', $doneStatuses)
+                                                ->orderBy('updated_at', 'desc')
+                                                ->paginate(5);
+                                        @endphp
 
-                        {{-- 🔴 قسم الـ Pagination الخرافي --}}
-                        @if($historyOrders->hasPages())
-                            <div class="mt-4 pt-3 border-top custom-pagination-wrapper">
-                                {{ $historyOrders->links('pagination::bootstrap-5') }}
+                                        @forelse($historyOrders as $history)
+                                            <tr>
+                                                <td class="fw-bold">#{{ $history->id }}</td>
+                                                <td class="fw-semibold text-dark">{{ $history->username_ar }}</td>
+                                                <td>{!! $history->book_decorations_id ? '<span class="text-success fw-bold">نعم</span>' : '<span class="text-muted">لا</span>' !!}
+                                                </td>
+                                                <td>{!! $history->gift_type === 'custom' ? '<span class="text-warning fw-bold">نعم</span>' : '<span class="text-muted">لا</span>' !!}
+                                                </td>
+                                                <td class="text-success fw-bolder fs-5">
+                                                    @if($history->is_commission_paid)
+                                                        {{ number_format($history->paid_commission, 2) }}
+                                                    @else
+                                                        {{ number_format($history->designer_commission - $history->paid_commission, 2) }}
+                                                    @endif
+                                                    <small class="fs-6">د.أ</small>
+                                                </td>
+                                                <td class="text-muted small">{{ $history->updated_at->format('Y-m-d') }}</td>
+                                                <td>
+                                                    @if($history->is_commission_paid)
+                                                        <span class="badge bg-soft-success text-success rounded-pill px-3 py-2">
+                                                            <i class="fas fa-check-circle me-1 ms-1"></i> مدفوع
+                                                        </span>
+                                                    @else
+                                                        <span class="badge bg-soft-warning text-warning rounded-pill px-3 py-2">
+                                                            <i class="fas fa-clock me-1 ms-1"></i> قيد الانتظار
+                                                        </span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="7" class="py-5 text-muted">لا يوجد سجل عمولات حتى الآن</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
                             </div>
-                        @endif
 
+                            {{-- 🔴 قسم الـ Pagination الخرافي --}}
+                            @if($historyOrders->hasPages())
+                                <div class="mt-4 pt-3 border-top custom-pagination-wrapper">
+                                    {{ $historyOrders->links('pagination::bootstrap-5') }}
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        @endif
+
     @endif
 
     {{-- 🔹 Designers Scoreboard --}}
@@ -601,8 +610,9 @@
                             <div class="flex-grow-1 overflow-hidden">
                                 <h5 class="mt-0 mb-1">{{ $user->name }}</h5>
                                 <p class="text-muted mb-2 font-13 text-truncate">{{ $user->email }}</p>
-                                <small class="d-block text-truncate {{ $colorClass }}" style="max-width: 150px;">
-                                    {{ $user->title ?? 'No Title' }}
+                                <small class="d-block text-truncate text-capitalize fw-bold {{ $colorClass }}"
+                                    style="max-width: 150px;">
+                                    {{ $user->role ?? 'No Role' }}
                                 </small>
                             </div>
                         </div>

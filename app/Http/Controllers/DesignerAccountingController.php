@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class DesignerAccountingController extends Controller
 {
-    private $doneStatuses = ['preparing', 'Completed', 'Received', 'Out for Delivery'];
+    private $doneStatuses = ['preparing', 'Completed', 'Received', 'out_for_delivery', 'returned'];
 
     public function index()
     {

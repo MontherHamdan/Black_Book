@@ -13,7 +13,8 @@ class User extends Authenticatable
 
     public const ROLE_ADMIN = 'admin';
     public const ROLE_DESIGNER = 'designer';
-
+    public const ROLE_SUPERVISOR = 'supervisor';
+    public const ROLE_PRINTER = 'printer';
     /**
      * The attributes that are mass assignable.
      *
@@ -69,7 +70,15 @@ class User extends Authenticatable
     {
         return $this->role === self::ROLE_DESIGNER;
     }
+    public function isSupervisor(): bool
+    {
+        return $this->role === self::ROLE_SUPERVISOR;
+    }
 
+    public function isPrinter(): bool
+    {
+        return $this->role === self::ROLE_PRINTER;
+    }
     /*
      |--------------------------------------------------------------------------
      | Relations
@@ -78,12 +87,11 @@ class User extends Authenticatable
 
     public function designerOrders()
     {
-        // الطلبات اللي هذا اليوزر معيّن عليها كمصمم
         return $this->hasMany(Order::class, 'designer_id');
     }
 
     public function canAccessAdmin()
     {
-        return $this->is_admin == 1 || in_array($this->role, ['designer', 'admin']);
+        return $this->is_admin == 1 || in_array($this->role, [self::ROLE_DESIGNER, self::ROLE_ADMIN, self::ROLE_SUPERVISOR, self::ROLE_PRINTER]);
     }
 }

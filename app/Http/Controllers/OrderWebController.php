@@ -29,7 +29,10 @@ class OrderWebController extends Controller
             ->orderBy('name')
             ->get(['id', 'name']);
 
-        return view('admin.order.index', compact('designers'));
+        $allowedStatuses = $this->getAllowedStatuses(auth()->user());
+        unset($allowedStatuses['out_for_delivery']);
+
+        return view('admin.order.index', compact('designers', 'allowedStatuses'));
     }
 
     public function show($id)
@@ -88,7 +91,8 @@ class OrderWebController extends Controller
         // =========================
         // 🔹 2) إعداد Config الحالات
         // =========================
-        $statusConfig = $this->statusConfig();
+        $statusConfig = $this->getAllowedStatuses($authUser);
+        unset($statusConfig['out_for_delivery']);
 
         // الهيدر
         $currentStatusHeader = $statusConfig[$order->status] ?? [
@@ -97,6 +101,8 @@ class OrderWebController extends Controller
         ];
 
         $canChangeStatusHeader = $isAdmin
+            || (method_exists($authUser, 'isSupervisor') && $authUser->isSupervisor())
+            || (method_exists($authUser, 'isPrinter') && $authUser->isPrinter())
             || ($order->designer && $order->designer->id === $authUser->id);
 
         $canChangeDesignerHeader =
@@ -306,12 +312,20 @@ class OrderWebController extends Controller
                 'class' => 'status-preparing',
                 'label' => 'قيد التجهيز',
             ],
+            'Printed' => [
+                'class' => 'status-printed bg-primary text-white p-1 rounded',
+                'label' => 'تم الطباعة',
+            ],
             'Received' => [
                 'class' => 'status-received',
                 'label' => 'تم التسليم',
             ],
-            'Out for Delivery' => [
-                'class' => 'status-out-for-delivery',
+            'out_for_delivery' => [
+                'class' => 'status-soft-warning',
+                'label' => 'خرج مع التوصيل',
+            ],
+            'returned' => [
+                'class' => 'status-soft-orange',
                 'label' => 'مرتجع',
             ],
             'Canceled' => [
@@ -319,6 +333,30 @@ class OrderWebController extends Controller
                 'label' => 'رفض الإستلام',
             ],
         ];
+    }
+
+    /**
+     * إرجاع الحالات المسموحة بناءً على دور المستخدم.
+     */
+    private function getAllowedStatuses($user): array
+    {
+        $all = $this->statusConfig();
+
+        if ($user->isAdmin()) {
+            return $all;
+        }
+
+        if ($user->isDesigner()) {
+            $allowed = ['Pending', 'needs_modification', 'Completed', 'preparing'];
+        } elseif ($user->isSupervisor()) {
+            $allowed = ['needs_modification', 'Completed', 'Printed', 'Received', 'out_for_delivery', 'returned', 'Canceled'];
+        } elseif ($user->isPrinter()) {
+            $allowed = ['preparing', 'Printed'];
+        } else {
+            $allowed = [];
+        }
+
+        return array_intersect_key($all, array_flip($allowed));
     }
 
     /**
@@ -366,6 +404,13 @@ class OrderWebController extends Controller
             'transparentPrinting',
             'designer',
         ]);
+
+        // 🚫 إخفاء طلبات "قيد التجهيز" فقط عن المصممين — الأدمن والمشرف والطابع يشوفونها
+        $authUser = auth()->user();
+        if ($authUser->isDesigner() && !$authUser->isAdmin() && !$authUser->isSupervisor()) {
+            $query->where('status', '!=', 'preparing');
+        }
+
         if (!empty($designerFilter)) {
             if ($designerFilter === 'unassigned') {
                 $query->whereNull('designer_id'); // للبحث عن الطلبات غير المسندة لأحد
@@ -490,7 +535,7 @@ class OrderWebController extends Controller
     {
         $request->validate([
             'id' => 'required|exists:orders,id',
-            'status' => 'required|in:new_order,needs_modification,Pending,preparing,Completed,Out for Delivery,Received,Canceled',
+            'status' => 'required|in:new_order,needs_modification,Pending,preparing,Completed,Printed,out_for_delivery,Received,returned,Canceled',
         ]);
 
         /** @var \App\Models\User $user */
@@ -498,7 +543,7 @@ class OrderWebController extends Controller
         $order = Order::with('designer')->findOrFail($request->id); // جلبنا الديزاينر مع الطلب
 
         // 🛡️ التحقق من الصلاحيات
-        if (!$user->isAdmin()) {
+        if (!$user->isAdmin() && !$user->isSupervisor() && !$user->isPrinter()) {
             if (!$user->isDesigner() || $order->designer_id !== $user->id) {
                 return response()->json([
                     'success' => false,
@@ -507,15 +552,60 @@ class OrderWebController extends Controller
             }
         }
 
+        // 🛡️ التحقق من الحالة المسموحة للدور
+        $allowedStatuses = $this->getAllowedStatuses($user);
+        if (!array_key_exists($request->status, $allowedStatuses)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'غير مصرح لك بتغيير الحالة إلى هذه القيمة.',
+            ], 403);
+        }
+
         $newStatus = $request->status;
+
+        // 🛡️ حماية: منع المصمم من التغيير إلى "قيد التجهيز" إذا لم يرفع الملفات
+        if ($newStatus === 'preparing') {
+            $missingFiles = [];
+
+            if (!$order->designer_design_file) {
+                $missingFiles[] = 'صورة تصميم الدفتر النهائي';
+            }
+
+            if (!$order->designer_decoration_file) {
+                $missingFiles[] = 'صورة الزخرفة';
+            }
+
+            // فحص الإهداء المخصص
+            if ($order->gift_type === 'custom' && !$order->designer_gift_file) {
+                $missingFiles[] = 'صورة الإهداء المخصص';
+            }
+
+            // فحص عدد الصور الداخلية (يجب أن يتطابق مع ما أرسله المستخدم)
+            $userInternalCount = $order->additionalImagesFromIds()->count();
+            $designerInternalCount = is_array($order->designer_internal_files) ? count($order->designer_internal_files) : 0;
+
+            if ($userInternalCount > 0 && $designerInternalCount !== $userInternalCount) {
+                $missingFiles[] = "الصور الداخلية (طلب العميل $userInternalCount صورة، وأنت رفعت $designerInternalCount صورة)";
+            }
+
+            // إذا في ملفات ناقصة، نرجع Error للفرونت إيند
+            if (!empty($missingFiles)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "عذراً، لا يمكنك تغيير الحالة إلى 'قيد التجهيز'. يرجى رفع الملفات التالية في تبويب تجليد الدفتر:\n- " . implode("\n- ", $missingFiles),
+                ], 422);
+            }
+        }
 
         // ✅ الحالات اللي نعتبر عندها شغل المصمم "منجَز"
         $designerDoneStatuses = [
             'Completed',        // تم الاعتماد
             'Received',         // تم التسليم
-            'Out for Delivery', // مرتجع
+            'out_for_delivery', // خرج مع التوصيل
+            'returned',         // مرتجع
             'Canceled',         // رفض الإستلام
-            'preparing',        // قيد التجهيز (أضفناها هنا لتُحسب العمولة بمجرد تغييرها لهذه الحالة)
+            'preparing',        // قيد التجهيز
+            'Printed',          // تم الطباعة
         ];
 
         // تحديث حالة الطلب
@@ -654,6 +744,42 @@ class OrderWebController extends Controller
             'message' => "تم حذف {$deletedCount} طلب بنجاح.",
             'deleted_count' => $deletedCount,
             'errors' => $errors,
+        ]);
+    }
+
+    /**
+     * Bulk update status for multiple orders.
+     */
+    public function bulkUpdateStatus(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        // Only admins, supervisors, and printers can do this.
+        if (!$user->isAdmin() && !$user->isSupervisor() && !$user->isPrinter()) {
+            return response()->json(['success' => false, 'message' => 'غير مصرح لك بتغيير الحالة.'], 403);
+        }
+
+        $request->validate([
+            'order_ids' => 'required|array',
+            'order_ids.*' => 'required|exists:orders,id',
+            'status' => 'required|string',
+        ]);
+
+        $status = $request->input('status');
+        $orderIds = $request->input('order_ids', []);
+
+        // Validate if the user is allowed to set this specific status
+        $allowed = $this->getAllowedStatuses($user);
+        if (!array_key_exists($status, $allowed)) {
+            return response()->json(['success' => false, 'message' => 'غير مصرح لك بتعيين هذه الحالة.'], 403);
+        }
+
+        Order::whereIn('id', $orderIds)->update(['status' => $status]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "تم تحديث حالة " . count($orderIds) . " طلب بنجاح",
         ]);
     }
 
@@ -1698,6 +1824,10 @@ class OrderWebController extends Controller
             'pages_number' => 'nullable|integer',
             'is_sponge' => 'nullable|boolean',
             'new_svg' => 'nullable|file|mimes:svg,txt|max:512',
+            'designer_design_file' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'designer_decoration_file' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'designer_internal_files.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'designer_gift_file' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
         ]);
 
         if (array_key_exists('book_decorations_id', $validated)) {
@@ -1718,9 +1848,26 @@ class OrderWebController extends Controller
             }
         }
 
+        if ($request->hasFile('designer_design_file')) {
+            $order->designer_design_file = $request->file('designer_design_file')->store('designer_uploads', 'public');
+        }
+        if ($request->hasFile('designer_decoration_file')) {
+            $order->designer_decoration_file = $request->file('designer_decoration_file')->store('designer_uploads', 'public');
+        }
+        if ($request->hasFile('designer_gift_file')) {
+            $order->designer_gift_file = $request->file('designer_gift_file')->store('designer_uploads', 'public');
+        }
+        if ($request->hasFile('designer_internal_files')) {
+            $internalPaths = [];
+            foreach ($request->file('designer_internal_files') as $file) {
+                $internalPaths[] = $file->store('designer_uploads', 'public');
+            }
+            $order->designer_internal_files = $internalPaths; // Overwrite
+        }
+
         $order->save();
 
-        return back()->with('success', 'تم تحديث معلومات التجليد بنجاح.');
+        return back()->with('success', 'تم تحديث معلومات التجليد وحفظ ملفات المصمم بنجاح.');
     }
 
     public function updateDeliveryInfo(Request $request, Order $order)

@@ -20,7 +20,8 @@ class Order extends Model
     public const STATUS_PREPARING = 'preparing';
     public const STATUS_COMPLETED = 'Completed';
     public const STATUS_SHIPPING = 'shipping'; // ضفتها لأنها بالكونترولر
-    public const STATUS_OUT_FOR_DELIVERY = 'Out for Delivery';
+    public const STATUS_OUT_FOR_DELIVERY = 'out_for_delivery';
+    public const STATUS_RETURNED = 'returned';
     public const STATUS_RECEIVED = 'Received';
     public const STATUS_CANCELED = 'Canceled';
 
@@ -73,6 +74,15 @@ class Order extends Model
         'designer_read_notes',
         'is_with_additives',
         'deleted_at',
+
+        'designer_design_file',
+        'designer_decoration_file',
+        'designer_internal_files',
+        'designer_gift_file',
+        'is_design_downloaded',
+        'is_internal_downloaded',
+        'is_decoration_downloaded',
+        'is_gift_downloaded',
     ];
 
     protected $casts = [
@@ -88,6 +98,11 @@ class Order extends Model
         'designer_read_notes' => 'boolean',
         'is_commission_paid' => 'boolean',
         'commission_paid_at' => 'datetime',
+        'designer_internal_files' => 'array',
+        'is_design_downloaded' => 'boolean',
+        'is_internal_downloaded' => 'boolean',
+        'is_decoration_downloaded' => 'boolean',
+        'is_gift_downloaded' => 'boolean',
     ];
 
     /*

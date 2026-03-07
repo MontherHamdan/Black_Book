@@ -461,6 +461,8 @@
             // مصفوفة المصممين + صلاحيات المستخدم الحالي
             const DESIGNERS = @json($designers);
             const IS_ADMIN = @json(auth()->user()->isAdmin());
+            const IS_SUPERVISOR = @json(method_exists(auth()->user(), 'isSupervisor') ? auth()->user()->isSupervisor() : false);
+            const IS_PRINTER = @json(method_exists(auth()->user(), 'isPrinter') ? auth()->user()->isPrinter() : false);
             const CURRENT_USER_ID = @json(auth()->id());
 
             function loadNotes(orderId) {
@@ -481,14 +483,14 @@
 
                         notes.forEach(function (note) {
                             const itemHtml = `
-                                                                                <li class="chat-message">
-                                                                                    <div class="chat-header">
-                                                                                        <span class="chat-author"><i class="fas fa-user-circle me-1"></i>${note.user_name}</span>
-                                                                                        <span class="chat-time"><i class="far fa-clock me-1"></i>${note.created_at}</span>
-                                                                                    </div>
-                                                                                    <p class="chat-content">${note.content}</p>
-                                                                                </li>
-                                                                            `;
+                                                                                                    <li class="chat-message">
+                                                                                                        <div class="chat-header">
+                                                                                                            <span class="chat-author"><i class="fas fa-user-circle me-1"></i>${note.user_name}</span>
+                                                                                                            <span class="chat-time"><i class="far fa-clock me-1"></i>${note.created_at}</span>
+                                                                                                        </div>
+                                                                                                        <p class="chat-content">${note.content}</p>
+                                                                                                    </li>
+                                                                                                `;
                             $list.append(itemHtml);
                         });
                     },
@@ -518,18 +520,19 @@
                         console.error('DataTables AJAX error:', xhr);
                         console.error('Response text:', xhr.responseText);
 
-                        alert(
-                            'حدث خطأ في جلب البيانات من السيرفر.\n' +
-                            'الكود: ' + xhr.status + '\n' +
-                            'افتحي Console / Network عشان تشوفي التفاصيل.'
-                        );
+                        Swal.fire({
+                            title: 'خطأ في جلب البيانات',
+                            text: 'الكود: ' + xhr.status + ' — افتحي Console / Network عشان تشوفي التفاصيل.',
+                            icon: 'error',
+                            confirmButtonColor: '#dc2626'
+                        });
                     }
                 },
                 lengthMenu: [10, 25, 50, 100],
                 pageLength: 10,
                 columns: [
                     @if(auth()->user()->isAdmin())
-                                                                                                                {
+                                                                                                                                                        {
                             data: null,
                             name: 'checkbox',
                             orderable: false,
@@ -581,11 +584,19 @@
                                     class: 'status-soft-purple',
                                     label: 'قيد التجهيز'
                                 },
+                                Printed: {
+                                    class: 'status-soft-primary',
+                                    label: 'تم الطباعة'
+                                },
                                 Received: {
                                     class: 'status-soft-success',
                                     label: 'تم التسليم'
                                 },
-                                'Out for Delivery': {
+                                out_for_delivery: {
+                                    class: 'status-soft-warning',
+                                    label: 'خرج مع التوصيل'
+                                },
+                                returned: {
                                     class: 'status-soft-orange',
                                     label: 'مرتجع'
                                 },
@@ -598,20 +609,13 @@
                             const defaultConfig = statusConfig.error || { class: 'status-soft-info', label: data };
                             const currentStatus = statusConfig[data] || defaultConfig;
 
-                            const allStatuses = [
-                                'new_order',
-                                'needs_modification',
-                                'Pending',
-                                'Completed',
-                                'preparing',
-                                'Received',
-                                'Out for Delivery',
-                                'Canceled'
-                            ];
+                            const allStatuses = Object.keys(@json($allowedStatuses));
 
                             // هل المستخدم يقدر يغير الحالة؟
                             const canChangeStatus =
                                 IS_ADMIN ||
+                                IS_SUPERVISOR ||
+                                IS_PRINTER ||
                                 (row.designer && row.designer.id === CURRENT_USER_ID);
 
                             // المدة اللي رجعناها من الـ Controller
@@ -622,12 +626,12 @@
                             // لو ما عنده صلاحية → Badge كبير + المدة فقط
                             if (!canChangeStatus) {
                                 return `
-                                                                    <div class="text-center">
-                                                                        <span class="status-badge-soft shadow-sm ${currentStatus.class}">
-                                                                            ${currentStatus.label}
-                                                                        </span>
-                                                                    </div>
-                                                                `;
+                                                                                        <div class="text-center">
+                                                                                            <span class="status-badge-soft shadow-sm ${currentStatus.class}">
+                                                                                                ${currentStatus.label}
+                                                                                            </span>
+                                                                                        </div>
+                                                                                    `;
                             }
 
                             // لو عنده صلاحية → Dropdown + المدة تحت
@@ -638,35 +642,35 @@
                                 .map(function (status) {
                                     const cfg = statusConfig[status] || defaultConfig;
                                     return `
-                                                                        <li>
-                                                                            <a class="dropdown-item change-status-item py-2"
-                                                                               href="#"
-                                                                               data-order-id="${row.id}"
-                                                                               data-new-status="${status}">
-                                                                                <span class="status-badge-soft w-100 ${cfg.class}">${cfg.label}</span>
-                                                                            </a>
-                                                                        </li>
-                                                                    `;
+                                                                                            <li>
+                                                                                                <a class="dropdown-item change-status-item py-2"
+                                                                                                   href="#"
+                                                                                                   data-order-id="${row.id}"
+                                                                                                   data-new-status="${status}">
+                                                                                                    <span class="status-badge-soft w-100 ${cfg.class}">${cfg.label}</span>
+                                                                                                </a>
+                                                                                            </li>
+                                                                                        `;
                                 })
                                 .join('');
 
                             return `
-                                                                <div class="text-center">
-                                                                    <div class="dropdown d-inline">
-                                                                        <span
-                                                                            class="status-badge-soft shadow-sm dropdown-toggle ${currentStatus.class}"
-                                                                            id="statusDropdown${row.id}"
-                                                                            data-bs-toggle="dropdown"
-                                                                            aria-expanded="false"
-                                                                            style="cursor: pointer;">
-                                                                            ${currentStatus.label}
-                                                                        </span>
-                                                                        <ul class="dropdown-menu shadow-sm border-0 rounded-4 p-2" aria-labelledby="statusDropdown${row.id}">
-                                                                            ${dropdownItems}
-                                                                        </ul>
-                                                                    </div>
-                                                                </div>
-                                                            `;
+                                                                                    <div class="text-center">
+                                                                                        <div class="dropdown d-inline">
+                                                                                            <span
+                                                                                                class="status-badge-soft shadow-sm dropdown-toggle ${currentStatus.class}"
+                                                                                                id="statusDropdown${row.id}"
+                                                                                                data-bs-toggle="dropdown"
+                                                                                                aria-expanded="false"
+                                                                                                style="cursor: pointer;">
+                                                                                                ${currentStatus.label}
+                                                                                            </span>
+                                                                                            <ul class="dropdown-menu shadow-sm border-0 rounded-4 p-2" aria-labelledby="statusDropdown${row.id}">
+                                                                                                ${dropdownItems}
+                                                                                            </ul>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                `;
                         }
                     },
 
@@ -699,14 +703,14 @@
                             }
 
                             return `
-                                                                                <select class="form-select form-select-sm order-designer-select"
-                                                                                        data-order-id="${row.id}"
-                                                                                        data-current-designer-id="${currentDesignerId || ''}"
-                                                                                        ${disabledAttr}>
-                                                                                    ${notAssignedOption}
-                                                                                    ${optionsHtml}
-                                                                                </select>
-                                                                            `;
+                                                                                                    <select class="form-select form-select-sm order-designer-select"
+                                                                                                            data-order-id="${row.id}"
+                                                                                                            data-current-designer-id="${currentDesignerId || ''}"
+                                                                                                            ${disabledAttr}>
+                                                                                                        ${notAssignedOption}
+                                                                                                        ${optionsHtml}
+                                                                                                    </select>
+                                                                                                `;
                         }
                     },
                     {
@@ -753,12 +757,12 @@
                             }
 
                             return `
-                                                                                <span>${data}</span>
-                                                                                <a href="https://wa.me/${waNumber}" target="_blank"
-                                                                                   class="ms-2 text-success" title="WhatsApp">
-                                                                                    <i class="fab fa-whatsapp"></i>
-                                                                                </a>
-                                                                            `;
+                                                                                                    <span>${data}</span>
+                                                                                                    <a href="https://wa.me/${waNumber}" target="_blank"
+                                                                                                       class="ms-2 text-success" title="WhatsApp">
+                                                                                                        <i class="fab fa-whatsapp"></i>
+                                                                                                    </a>
+                                                                                                `;
                         }
                     },
                     {
@@ -803,27 +807,29 @@
                 initComplete: function () {
                     // 1. فلتر الحالة
                     const statusDropdown = $(`
-                                                                <select id="statusFilter" class="form-select" style="width: 230px;height:34px; margin-left: 15px;">
-                                                                    <option value="">تصفية حسب الحالة</option>
-                                                                    <option value="new_order">طلب جديد</option>
-                                                                    <option value="needs_modification">يوجد تعديل</option>
-                                                                    <option value="Pending">تم التصميم</option>
-                                                                    <option value="Completed">تم الاعتماد</option>
-                                                                    <option value="preparing">قيد التجهيز</option>
-                                                                    <option value="Received">تم التسليم</option>
-                                                                    <option value="Out for Delivery">مرتجع</option>
-                                                                    <option value="Canceled">رفض الإستلام</option>
-                                                                </select>
-                                                            `);
+                                                                                    <select id="statusFilter" class="form-select" style="width: 230px;height:34px; margin-left: 15px;">
+                                                                                        <option value="">تصفية حسب الحالة</option>
+                                                                                        <option value="new_order">طلب جديد</option>
+                                                                                        <option value="needs_modification">يوجد تعديل</option>
+                                                                                        <option value="Pending">تم التصميم</option>
+                                                                                        <option value="Completed">تم الاعتماد</option>
+                                                                                        <option value="preparing">قيد التجهيز</option>
+                                                                                        <option value="Printed">تم الطباعة</option>
+                                                                                        <option value="Received">تم التسليم</option>
+                                                                                        <option value="out_for_delivery">خرج مع التوصيل</option>
+                                                                                        <option value="returned">مرتجع</option>
+                                                                                        <option value="Canceled">رفض الإستلام</option>
+                                                                                    </select>
+                                                                                `);
 
                     // 2. فلتر الإضافات
                     const additivesDropdown = $(`
-                                                                <select id="additivesFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
-                                                                    <option value="">تصفية حسب الإضافات</option>
-                                                                    <option value="with_additives">مع إضافات</option>
-                                                                    <option value="with_out_additives">بدون إضافات</option>
-                                                                </select>
-                                                            `);
+                                                                                    <select id="additivesFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
+                                                                                        <option value="">تصفية حسب الإضافات</option>
+                                                                                        <option value="with_additives">مع إضافات</option>
+                                                                                        <option value="with_out_additives">بدون إضافات</option>
+                                                                                    </select>
+                                                                                `);
 
                     // 3. فلتر المصمم (هاد اللي كان ناقص عندك)
                     let designerOptions = '<option value="">تصفية حسب المصمم</option>';
@@ -837,10 +843,10 @@
                     }
 
                     const designerDropdown = $(`
-                                                                <select id="designerFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
-                                                                    ${designerOptions}
-                                                                </select>
-                                                            `);
+                                                                                    <select id="designerFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
+                                                                                        ${designerOptions}
+                                                                                    </select>
+                                                                                `);
 
                     // 4. تنسيق الحاوية وإضافة الفلاتر
                     $('.dataTables_filter').css({
@@ -898,15 +904,15 @@
                         if (response.success) {
                             table.ajax.reload(null, false);
                         } else {
-                            alert(response.message || 'Failed to update order status. Please try again.');
+                            Swal.fire({ title: 'خطأ', text: response.message || 'فشل تحديث حالة الطلب.', icon: 'error', confirmButtonColor: '#dc2626' });
                         }
                     },
                     error: function (xhr) {
-                        let msg = 'An error occurred while updating the status.';
+                        let msg = 'حدث خطأ أثناء تحديث الحالة.';
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             msg = xhr.responseJSON.message;
                         }
-                        alert(msg);
+                        Swal.fire({ title: 'خطأ', text: msg, icon: 'error', confirmButtonColor: '#dc2626' });
                     }
                 });
             });
@@ -928,7 +934,7 @@
                     },
                     success: function (response) {
                         if (!response.success) {
-                            alert(response.message || 'Failed to update designer.');
+                            Swal.fire({ title: 'خطأ', text: response.message || 'فشل تحديث المصمم.', icon: 'error', confirmButtonColor: '#dc2626' });
                             select.val(previousDesignerId || '');
                             return;
                         }
@@ -937,11 +943,11 @@
                         table.ajax.reload(null, false);
                     },
                     error: function (xhr) {
-                        let msg = 'An error occurred while updating designer.';
+                        let msg = 'حدث خطأ أثناء تحديث المصمم.';
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             msg = xhr.responseJSON.message;
                         }
-                        alert(msg);
+                        Swal.fire({ title: 'خطأ', text: msg, icon: 'error', confirmButtonColor: '#dc2626' });
                         select.val(previousDesignerId || '');
                     }
                 });
@@ -966,7 +972,7 @@
                 const content = $('#noteContent').val().trim();
 
                 if (!content) {
-                    alert('Please enter a note.');
+                    Swal.fire({ title: 'تنبيه', text: 'يرجى إدخال ملاحظة.', icon: 'warning', confirmButtonColor: '#f59e0b' });
                     return;
                 }
 
@@ -983,24 +989,24 @@
                             $('#noteContent').val('');
                             const note = response.note;
                             const newItem = `
-                                                                        <li class="chat-message">
-                                                                            <div class="chat-header">
-                                                                                <span class="chat-author"><i class="fas fa-user-circle me-1"></i>${note.user_name}</span>
-                                                                                <span class="chat-time"><i class="far fa-clock me-1"></i>${note.created_at}</span>
-                                                                            </div>
-                                                                            <p class="chat-content">${note.content}</p>
-                                                                        </li>
-                                                                    `;
+                                                                                            <li class="chat-message">
+                                                                                                <div class="chat-header">
+                                                                                                    <span class="chat-author"><i class="fas fa-user-circle me-1"></i>${note.user_name}</span>
+                                                                                                    <span class="chat-time"><i class="far fa-clock me-1"></i>${note.created_at}</span>
+                                                                                                </div>
+                                                                                                <p class="chat-content">${note.content}</p>
+                                                                                            </li>
+                                                                                        `;
                             $('#notesList').prepend(newItem);
                             // Remove empty indicator if exists
                             $('#notesList').find('.text-muted.text-center').remove();
                             table.ajax.reload(null, false);
                         } else {
-                            alert('Failed to save note. Please try again.');
+                            Swal.fire({ title: 'خطأ', text: 'فشل حفظ الملاحظة.', icon: 'error', confirmButtonColor: '#dc2626' });
                         }
                     },
                     error: function () {
-                        alert('An error occurred while saving the note.');
+                        Swal.fire({ title: 'خطأ', text: 'حدث خطأ أثناء حفظ الملاحظة.', icon: 'error', confirmButtonColor: '#dc2626' });
                     }
                 });
             });
@@ -1068,33 +1074,56 @@
                     }).get();
 
                     if (orderIds.length === 0) {
-                        alert('لم يتم تحديد أي طلبات للحذف.');
+                        Swal.fire({ title: 'تنبيه', text: 'لم يتم تحديد أي طلبات للحذف.', icon: 'warning', confirmButtonColor: '#f59e0b' });
                         return;
                     }
 
-                    if (!confirm(`هل أنت متأكد من حذف ${orderIds.length} طلب؟\n\nهذا الإجراء لا يمكن التراجع عنه!`)) {
-                        return;
-                    }
+                    Swal.fire({
+                        title: 'تأكيد الحذف الجماعي',
+                        html: `هل أنت متأكد من حذف <strong>${orderIds.length}</strong> طلب؟<br><br><span style="color:#dc2626;font-weight:700;">هذا الإجراء لا يمكن التراجع عنه!</span>`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'نعم، احذف',
+                        cancelButtonText: 'إلغاء',
+                        confirmButtonColor: '#dc2626',
+                        cancelButtonColor: '#94a3b8',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (!result.isConfirmed) return;
 
-                    const $btn = $(this);
-                    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> جاري الحذف...');
+                        const $btn = $('#bulkDeleteBtn');
+                        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> جاري الحذف...');
 
-                    $.ajax({
-                        url: '{{ route('orders.bulkDelete') }}',
-                        method: 'POST',
-                        data: {
-                            _token: '{{ csrf_token() }}',
-                            order_ids: orderIds
-                        },
-                        success: function (response) {
-                            if (response.success) {
-                                alert(response.message);
-                                $('#selectAllOrders').prop('checked', false);
-                                $('.order-checkbox').prop('checked', false);
-                                updateBulkDeleteButton();
-                                table.ajax.reload(null, false);
-                            } else {
-                                alert(response.message || 'حدث خطأ أثناء حذف الطلبات.');
+                        $.ajax({
+                            url: '{{ route('orders.bulkDelete') }}',
+                            method: 'POST',
+                            data: {
+                                _token: '{{ csrf_token() }}',
+                                order_ids: orderIds
+                            },
+                            success: function (response) {
+                                if (response.success) {
+                                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: response.message, showConfirmButton: false, timer: 3000, timerProgressBar: true });
+                                    $('#selectAllOrders').prop('checked', false);
+                                    $('.order-checkbox').prop('checked', false);
+                                    updateBulkDeleteButton();
+                                    table.ajax.reload(null, false);
+                                } else {
+                                    Swal.fire({ title: 'خطأ', text: response.message || 'حدث خطأ أثناء حذف الطلبات.', icon: 'error', confirmButtonColor: '#dc2626' });
+                                    const remainingCount = $('.order-checkbox:checked').length;
+                                    if (remainingCount > 0) {
+                                        $btn.prop('disabled', false).html('<i class="fas fa-trash me-1"></i> حذف المحدد (<span id="selectedCount">' + remainingCount + '</span>)');
+                                    } else {
+                                        updateBulkDeleteButton();
+                                    }
+                                }
+                            },
+                            error: function (xhr) {
+                                let message = 'حدث خطأ أثناء حذف الطلبات.';
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    message = xhr.responseJSON.message;
+                                }
+                                Swal.fire({ title: 'خطأ', text: message, icon: 'error', confirmButtonColor: '#dc2626' });
                                 const remainingCount = $('.order-checkbox:checked').length;
                                 if (remainingCount > 0) {
                                     $btn.prop('disabled', false).html('<i class="fas fa-trash me-1"></i> حذف المحدد (<span id="selectedCount">' + remainingCount + '</span>)');
@@ -1102,20 +1131,7 @@
                                     updateBulkDeleteButton();
                                 }
                             }
-                        },
-                        error: function (xhr) {
-                            let message = 'حدث خطأ أثناء حذف الطلبات.';
-                            if (xhr.responseJSON && xhr.responseJSON.message) {
-                                message = xhr.responseJSON.message;
-                            }
-                            alert(message);
-                            const remainingCount = $('.order-checkbox:checked').length;
-                            if (remainingCount > 0) {
-                                $btn.prop('disabled', false).html('<i class="fas fa-trash me-1"></i> حذف المحدد (<span id="selectedCount">' + remainingCount + '</span>)');
-                            } else {
-                                updateBulkDeleteButton();
-                            }
-                        }
+                        });
                     });
                 });
 
@@ -1124,31 +1140,41 @@
                     e.preventDefault();
                     const orderId = $(this).data('id');
 
-                    if (!confirm('هل أنت متأكد من حذف هذا الطلب؟\n\nهذا الإجراء لا يمكن التراجع عنه!')) {
-                        return;
-                    }
+                    Swal.fire({
+                        title: 'تأكيد حذف الطلب',
+                        html: `هل أنت متأكد من حذف الطلب <strong>#${orderId}</strong>؟<br><br><span style="color:#dc2626;font-weight:700;">هذا الإجراء لا يمكن التراجع عنه!</span>`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'نعم، احذف',
+                        cancelButtonText: 'إلغاء',
+                        confirmButtonColor: '#dc2626',
+                        cancelButtonColor: '#94a3b8',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (!result.isConfirmed) return;
 
-                    $.ajax({
-                        url: '/orders/' + orderId,
-                        method: 'DELETE',
-                        data: {
-                            _token: '{{ csrf_token() }}'
-                        },
-                        success: function (response) {
-                            if (response.success) {
-                                alert(response.message);
-                                table.ajax.reload(null, false);
-                            } else {
-                                alert(response.message || 'فشل حذف الطلب.');
+                        $.ajax({
+                            url: '/orders/' + orderId,
+                            method: 'DELETE',
+                            data: {
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function (response) {
+                                if (response.success) {
+                                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: response.message, showConfirmButton: false, timer: 2500, timerProgressBar: true });
+                                    table.ajax.reload(null, false);
+                                } else {
+                                    Swal.fire({ title: 'خطأ', text: response.message || 'فشل حذف الطلب.', icon: 'error', confirmButtonColor: '#dc2626' });
+                                }
+                            },
+                            error: function (xhr) {
+                                let message = 'حدث خطأ أثناء حذف الطلب.';
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    message = xhr.responseJSON.message;
+                                }
+                                Swal.fire({ title: 'خطأ', text: message, icon: 'error', confirmButtonColor: '#dc2626' });
                             }
-                        },
-                        error: function (xhr) {
-                            let message = 'حدث خطأ أثناء حذف الطلب.';
-                            if (xhr.responseJSON && xhr.responseJSON.message) {
-                                message = xhr.responseJSON.message;
-                            }
-                            alert(message);
-                        }
+                        });
                     });
                 });
 
@@ -1158,7 +1184,7 @@
                     $('#selectAllOrders').prop('checked', false);
                 });
             @endif
-                                                }); // ← نهاية $(document).ready()
+                                                                    }); // ← نهاية $(document).ready()
     </script>
 
 @endsection

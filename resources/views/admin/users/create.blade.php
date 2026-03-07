@@ -131,6 +131,14 @@
                                     {{ old('role') === \App\Models\User::ROLE_DESIGNER ? 'selected' : '' }}>
                                     Designer
                                 </option>
+                                <option value="{{ \App\Models\User::ROLE_SUPERVISOR }}"
+                                    {{ old('role') === \App\Models\User::ROLE_SUPERVISOR ? 'selected' : '' }}>
+                                    Supervisor
+                                </option>
+                                <option value="{{ \App\Models\User::ROLE_PRINTER }}"
+                                    {{ old('role') === \App\Models\User::ROLE_PRINTER ? 'selected' : '' }}>
+                                    Printer
+                                </option>
                             </select>
                         </div>
                     </div>

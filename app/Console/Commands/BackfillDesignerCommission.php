@@ -12,7 +12,7 @@ class BackfillDesignerCommission extends Command
 
     public function handle(): int
     {
-        $doneStatuses = ['preparing', 'Completed', 'Received', 'Out for Delivery', 'Canceled'];
+        $doneStatuses = ['preparing', 'Completed', 'Received', 'out_for_delivery', 'returned', 'Canceled'];
 
         $orders = Order::with('designer')
             ->whereNotNull('designer_id')

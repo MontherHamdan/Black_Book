@@ -28,7 +28,8 @@ class DashboardController extends Controller
             'Completed',
             'preparing',
             'Received',
-            'Out for Delivery',
+            'out_for_delivery',
+            'returned',
             'Canceled',
         ];
 
@@ -42,13 +43,15 @@ class DashboardController extends Controller
         $pendingCount = $statusCounts['Pending'];
         $preparingCount = $statusCounts['preparing'];
         $completedCount = $statusCounts['Completed'];
-        $outForDeliveryCount = $statusCounts['Out for Delivery'];
+        $outForDeliveryCount = $statusCounts['out_for_delivery'];
+        $returnedCount = $statusCounts['returned'] ?? 0;
         $receivedCount = $statusCounts['Received'];
         $canceledCount = $statusCounts['Canceled'];
 
         $totalOrders = (clone $ordersQuery)->count();
 
         $orderStatuses = (clone $ordersQuery)
+            ->whereNotIn('status', ['Printed', 'out_for_delivery'])
             ->select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
             ->pluck('count', 'status');
@@ -99,13 +102,12 @@ class DashboardController extends Controller
             ])
             ->orderByDesc('total_orders')
             ->get();
-
         $designerNotes = collect();
         $totalCommission = 0;
 
+        // 🟢 1. إذا كان المستخدم مصمم: يرى فقط ملاحظاته وعمولاته
         if (!$authUser->isAdmin() && $authUser->isDesigner()) {
 
-            // 🔴 التعديل هنا: جلب الطلبات كـ Models طبيعية (سطر واحد لكل طلب)
             $designerNotes = Order::where('designer_id', $authUser->id)
                 ->where(function ($q) {
                     $q->where('designer_read_notes', false)
@@ -119,7 +121,7 @@ class DashboardController extends Controller
                 ->orderBy('updated_at', 'desc')
                 ->get(['id', 'username_ar', 'username_en', 'design_followup_note', 'binding_followup_note', 'notebook_followup_note']);
 
-            $doneStatuses = ['preparing', 'Completed', 'Received', 'Out for Delivery'];
+            $doneStatuses = ['preparing', 'Completed', 'Received', 'out_for_delivery', 'returned'];
 
             $totalCommission = Order::where('designer_id', $authUser->id)
                 ->whereIn('status', $doneStatuses)
@@ -129,6 +131,22 @@ class DashboardController extends Controller
                     return $order->designer_commission - $order->paid_commission;
                 });
         }
+        // 🟢 2. إذا كان المستخدم آدمن أو مشرف: يرى كل الملاحظات (لكل الطلبات)
+        elseif ($authUser->isAdmin() || (method_exists($authUser, 'isSupervisor') && $authUser->isSupervisor())) {
+
+            $designerNotes = Order::where(function ($q) {
+                $q->where('designer_read_notes', false)
+                    ->orWhereNull('designer_read_notes');
+            })
+                ->where(function ($q) {
+                    $q->whereNotNull('design_followup_note')->where('design_followup_note', '!=', '')
+                        ->orWhereNotNull('binding_followup_note')->where('binding_followup_note', '!=', '')
+                        ->orWhereNotNull('notebook_followup_note')->where('notebook_followup_note', '!=', '');
+                })
+                ->orderBy('updated_at', 'desc')
+                ->get(['id', 'username_ar', 'username_en', 'design_followup_note', 'binding_followup_note', 'notebook_followup_note']);
+
+        }
 
         return view('admin.dashboard', compact(
             'newOrderCount',
@@ -136,6 +154,7 @@ class DashboardController extends Controller
             'pendingCount',
             'preparingCount',
             'outForDeliveryCount',
+            'returnedCount',
             'completedCount',
             'receivedCount',
             'canceledCount',

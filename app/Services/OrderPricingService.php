@@ -81,25 +81,42 @@ class OrderPricingService
 
     /**
      * Calculate price with discount.
+     * When $orderCount is provided, tiered discounts are checked first.
      */
-    public function calculatePriceWithDiscount(float $basePrice, ?int $discountCodeId): float
+    public function calculatePriceWithDiscount(float $basePrice, ?int $discountCodeId, ?int $orderCount = null): float
     {
         if (!$discountCodeId) {
             return $basePrice;
         }
 
         $discountCode = DiscountCode::find($discountCodeId);
-        
+
         if (!$discountCode) {
             return $basePrice;
         }
 
+        $discountValue = (float) $discountCode->discount_value;
+        $discountType = $discountCode->discount_type;
+
+        // Check for tier-based discount if order count is provided
+        if ($orderCount !== null && $orderCount >= 2) {
+            $tier = \App\Models\DiscountCodeTier::where('discount_code_id', $discountCodeId)
+                ->where('min_qty', '<=', $orderCount)
+                ->orderByDesc('min_qty')
+                ->first();
+
+            if ($tier) {
+                $discountValue = (float) $tier->discount_value;
+                $discountType = $tier->discount_type;
+            }
+        }
+
         $discountAmount = 0;
 
-        if ($discountCode->discount_type === 'percentage') {
-            $discountAmount = ($basePrice * $discountCode->discount_value) / 100;
-        } elseif ($discountCode->discount_type === 'byJd') {
-            $discountAmount = $discountCode->discount_value;
+        if ($discountType === 'percentage') {
+            $discountAmount = ($basePrice * $discountValue) / 100;
+        } elseif ($discountType === 'byJd') {
+            $discountAmount = $discountValue;
         }
 
         $finalPrice = $basePrice - $discountAmount;

@@ -14,11 +14,12 @@ class AutoCompleteDeliveries extends Command
     {
         $cutoff = now()->subHours(24);
 
-        $count = Order::where('status', 'out_for_delivery')
-            ->where('updated_at', '<=', $cutoff)
-            ->update(['status' => 'Received']);
+        $count = Order::where('status', Order::STATUS_OUT_FOR_DELIVERY)
+            ->whereNotNull('dispatched_at')
+            ->where('dispatched_at', '<=', $cutoff)
+            ->update(['status' => Order::STATUS_RECEIVED]);
 
-        $this->info("Auto-completed {$count} deliveries to 'Received'.");
+        $this->info("Auto-completed {$count} deliveries to 'Received' (using dispatched_at).");
 
         return self::SUCCESS;
     }

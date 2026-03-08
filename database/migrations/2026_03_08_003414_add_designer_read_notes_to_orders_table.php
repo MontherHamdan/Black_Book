@@ -19,7 +19,7 @@ return new class extends Migration {
         if (Schema::hasColumn('orders', 'designer_read_notes')) {
             Schema::table('orders', function (Blueprint $table) {
                 $table->dropColumn('designer_read_notes');
-            });
+            }); 
         }
     }
 };

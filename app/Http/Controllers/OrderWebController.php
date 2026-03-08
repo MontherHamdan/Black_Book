@@ -351,7 +351,7 @@ class OrderWebController extends Controller
         } elseif ($user->isSupervisor()) {
             $allowed = ['needs_modification', 'Completed', 'Printed', 'Received', 'out_for_delivery', 'returned', 'Canceled'];
         } elseif ($user->isPrinter()) {
-            $allowed = ['preparing', 'Printed'];
+            $allowed = ['preparing', 'Printed', 'out_for_delivery'];
         } else {
             $allowed = [];
         }
@@ -405,10 +405,10 @@ class OrderWebController extends Controller
             'designer',
         ]);
 
-        // 🚫 إخفاء طلبات "قيد التجهيز" فقط عن المصممين — الأدمن والمشرف والطابع يشوفونها
+        // 🚫 إخفاء طلبات "قيد التجهيز" و "خرج مع التوصيل" عن المصممين
         $authUser = auth()->user();
         if ($authUser->isDesigner() && !$authUser->isAdmin() && !$authUser->isSupervisor()) {
-            $query->where('status', '!=', 'preparing');
+            $query->whereNotIn('status', ['preparing', 'out_for_delivery']);
         }
 
         if (!empty($designerFilter)) {
@@ -608,8 +608,11 @@ class OrderWebController extends Controller
             'Printed',          // تم الطباعة
         ];
 
-        // تحديث حالة الطلب
+        // تحديث حالة الطلب وموعد الخروج للتوصيل
         $order->status = $newStatus;
+        if ($newStatus === \App\Models\Order::STATUS_OUT_FOR_DELIVERY) {
+            $order->dispatched_at = now();
+        }
 
         // 💰 حساب العمولة وتأكيد الإنجاز
         if (in_array($newStatus, $designerDoneStatuses, true)) {
@@ -775,7 +778,12 @@ class OrderWebController extends Controller
             return response()->json(['success' => false, 'message' => 'غير مصرح لك بتعيين هذه الحالة.'], 403);
         }
 
-        Order::whereIn('id', $orderIds)->update(['status' => $status]);
+        $updateData = ['status' => $status];
+        if ($status === \App\Models\Order::STATUS_OUT_FOR_DELIVERY) {
+            $updateData['dispatched_at'] = now();
+        }
+
+        Order::whereIn('id', $orderIds)->update($updateData);
 
         return response()->json([
             'success' => true,

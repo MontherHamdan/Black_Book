@@ -83,6 +83,7 @@ class Order extends Model
         'is_internal_downloaded',
         'is_decoration_downloaded',
         'is_gift_downloaded',
+        'dispatched_at',
     ];
 
     protected $casts = [
@@ -103,6 +104,7 @@ class Order extends Model
         'is_internal_downloaded' => 'boolean',
         'is_decoration_downloaded' => 'boolean',
         'is_gift_downloaded' => 'boolean',
+        'dispatched_at' => 'datetime',
     ];
 
     /*

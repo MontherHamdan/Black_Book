@@ -21,12 +21,12 @@ class OrderPricingService
         if (!empty($orderData['book_type_id'])) {
             $bookType = BookType::find($orderData['book_type_id']);
             
-            if ($bookType->deleted_at != null) {
+            if (isset($bookType->deleted_at) && $bookType->deleted_at != null) {
+                return false;
+            }else{
                 if ($bookType && $bookType->price) {
                     $price += (float) $bookType->price;
                 }
-            }else{
-                return false;
             }
         }
 

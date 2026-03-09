@@ -19,14 +19,16 @@ class OrderPricingService
 
         // 1. سعر المنتج الأساسي
         if (!empty($orderData['book_type_id'])) {
-            $bookType = BookType::find($orderData['book_type_id']);
+            $bookType = BookType::withTrashed()->find($orderData['book_type_id']);
             
-            if (isset($bookType->deleted_at) && $bookType->deleted_at != null) {
-                return false;
-            }else{
-                if ($bookType && $bookType->price) {
-                    $price += (float) $bookType->price;
-                }
+            if (!$bookType || $bookType->trashed()) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'book_type_id' => ['The selected book type is deleted or no longer available.']
+                ]);
+            }
+            
+            if ($bookType->price) {
+                $price += (float) $bookType->price;
             }
         }
 

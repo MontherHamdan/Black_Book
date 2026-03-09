@@ -185,19 +185,6 @@ class OrderController extends Controller
             );
 
             if (!$validation['is_valid']) {
-                // Log the price manipulation attempt
-                Log::warning('Price manipulation attempt detected', [
-                    'request_data' => $request->except(['front_image_id', 'back_image_ids', 'additional_images', 'transparent_printing_ids']),
-                    'frontend_prices' => [
-                        'base_price' => $frontendBasePrice,
-                        'discounted_price' => $frontendDiscountedPrice,
-                    ],
-                    'calculated_prices' => $validation['calculated_prices'],
-                    'errors' => $validation['errors'],
-                    'ip_address' => $request->ip(),
-                    'user_agent' => $request->userAgent(),
-                ]);
-
                 return response()->json([
                     'message' => 'Price validation failed. Please refresh and try again.',
                     'errors' => [

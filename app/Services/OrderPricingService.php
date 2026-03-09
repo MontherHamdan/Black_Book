@@ -20,8 +20,13 @@ class OrderPricingService
         // 1. سعر المنتج الأساسي
         if (!empty($orderData['book_type_id'])) {
             $bookType = BookType::find($orderData['book_type_id']);
-            if ($bookType && $bookType->price && $bookType->deleted_at != null) {
-                $price += (float) $bookType->price;
+            
+            if ($bookType->deleted_at != null) {
+                if ($bookType && $bookType->price) {
+                    $price += (float) $bookType->price;
+                }
+            }else{
+                return false;
             }
         }
 

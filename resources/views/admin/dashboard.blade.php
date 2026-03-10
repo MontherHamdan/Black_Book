@@ -108,8 +108,8 @@
         }
 
         /* ==================================================
-                                       💎 تصميم الـ Pagination المبهر (Fintech Style)
-                                       ================================================== */
+                                               💎 تصميم الـ Pagination المبهر (Fintech Style)
+                                               ================================================== */
         .custom-pagination-wrapper nav {
             width: 100%;
             display: flex;
@@ -384,7 +384,7 @@
             </div>
         @endforeach
 
-        {{-- 🔹 سجل العمولات (🔴 يظهر للمصمم فقط 🔴) --}}
+{{-- 🔹 سجل العمولات (🔴 يظهر للمصمم فقط 🔴) --}}
         @if(auth()->user()->isDesigner())
             <div class="row mt-4" style="direction: rtl; text-align: right;">
                 <div class="col-12">
@@ -401,37 +401,46 @@
                                             <th>اسم الخريج</th>
                                             <th>الزخرفة</th>
                                             <th>الإهداء المخصص</th>
+                                            <th>الصور الداخلية</th>
                                             <th>العمولة النهائية</th>
                                             <th>تاريخ الإنجاز</th>
                                             <th>الحالة المالية</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @php
-                                            $doneStatuses = ['preparing', 'Completed', 'Received', 'Out for Delivery'];
-                                            $historyOrders = auth()->user()->designerOrders()
-                                                ->whereIn('status', $doneStatuses)
-                                                ->orderBy('updated_at', 'desc')
-                                                ->paginate(5);
-                                        @endphp
-
                                         @forelse($historyOrders as $history)
                                             <tr>
                                                 <td class="fw-bold">#{{ $history->id }}</td>
                                                 <td class="fw-semibold text-dark">{{ $history->username_ar }}</td>
-                                                <td>{!! $history->book_decorations_id ? '<span class="text-success fw-bold">نعم</span>' : '<span class="text-muted">لا</span>' !!}
-                                                </td>
-                                                <td>{!! $history->gift_type === 'custom' ? '<span class="text-warning fw-bold">نعم</span>' : '<span class="text-muted">لا</span>' !!}
-                                                </td>
+                                                
+                                                <td>{!! $history->book_decorations_id ? '<span class="text-success fw-bold">نعم</span>' : '<span class="text-muted">لا</span>' !!}</td>
+                                                
+                                                <td>{!! $history->gift_type === 'custom' ? '<span class="text-warning fw-bold">نعم</span>' : '<span class="text-muted">لا</span>' !!}</td>
+                                                
+                                                {{-- فحص الصور الداخلية --}}
+                                                @php
+                                                    $hasInternalImages = false;
+                                                    $additionalIds = $history->additional_image_id;
+                                                    if (is_string($additionalIds)) {
+                                                        $additionalIds = json_decode($additionalIds, true);
+                                                    }
+                                                    if (is_array($additionalIds) && !empty($additionalIds)) {
+                                                        $hasInternalImages = true;
+                                                    }
+                                                @endphp
+                                                <td>{!! $hasInternalImages ? '<span class="text-primary fw-bold">نعم</span>' : '<span class="text-muted">لا</span>' !!}</td>
+
                                                 <td class="text-success fw-bolder fs-5">
                                                     @if($history->is_commission_paid)
-                                                        {{ number_format($history->paid_commission, 2) }}
+                                                        {{ number_format($history->paid_commission ?? 0, 2) }}
                                                     @else
-                                                        {{ number_format($history->designer_commission - $history->paid_commission, 2) }}
+                                                        {{ number_format(($history->designer_commission ?? 0) - ($history->paid_commission ?? 0), 2) }}
                                                     @endif
                                                     <small class="fs-6">د.أ</small>
                                                 </td>
+                                                
                                                 <td class="text-muted small">{{ $history->updated_at->format('Y-m-d') }}</td>
+                                                
                                                 <td>
                                                     @if($history->is_commission_paid)
                                                         <span class="badge bg-soft-success text-success rounded-pill px-3 py-2">
@@ -446,15 +455,14 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="7" class="py-5 text-muted">لا يوجد سجل عمولات حتى الآن</td>
+                                                <td colspan="8" class="py-5 text-muted">لا يوجد سجل عمولات حتى الآن</td>
                                             </tr>
                                         @endforelse
                                     </tbody>
                                 </table>
                             </div>
 
-                            {{-- 🔴 قسم الـ Pagination الخرافي --}}
-                            @if($historyOrders->hasPages())
+                            @if($historyOrders instanceof \Illuminate\Pagination\LengthAwarePaginator && $historyOrders->hasPages())
                                 <div class="mt-4 pt-3 border-top custom-pagination-wrapper">
                                     {{ $historyOrders->links('pagination::bootstrap-5') }}
                                 </div>

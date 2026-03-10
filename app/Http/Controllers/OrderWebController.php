@@ -347,7 +347,7 @@ class OrderWebController extends Controller
         }
 
         if ($user->isDesigner()) {
-            $allowed = ['Pending', 'needs_modification', 'Completed', 'preparing'];
+            $allowed = ['new_order', 'Pending', 'needs_modification', 'Completed', 'preparing'];
         } elseif ($user->isSupervisor()) {
             $allowed = ['needs_modification', 'Completed', 'Printed', 'Received', 'out_for_delivery', 'returned', 'Canceled'];
         } elseif ($user->isPrinter()) {
@@ -623,35 +623,8 @@ class OrderWebController extends Controller
                 $order->designer_done_at = now();
             }
 
-            // نحسب العمولة فقط إذا ما كانت محسوبة من قبل وتأكدنا إنه الطلب مربوط بمصمم فعلاً
-            if (is_null($order->designer_commission) && $order->designer) {
-
-                $designer = $order->designer;
-                $commission = (float) ($designer->base_order_price ?? 0);
-
-                // 1. فحص الزخرفة (استخدمنا الاسم الصحيح بالـ s)
-                if (!empty($order->book_decorations_id)) {
-                    $commission += (float) ($designer->decoration_price ?? 0);
-                }
-
-                // 2. فحص الإهداء المخصص
-                if ($order->gift_type === 'custom') {
-                    $commission += (float) ($designer->custom_gift_price ?? 0);
-                }
-
-                // 3. فحص الصورة الداخلية (فحصنا حقل الـ JSON الجديد)
-                $additionalIds = $order->additional_image_id;
-                // احتياطاً لو الداتا رجعت كنص (String) بدل مصفوفة (Array)
-                if (is_string($additionalIds)) {
-                    $additionalIds = json_decode($additionalIds, true);
-                }
-                if (is_array($additionalIds) && !empty($additionalIds)) {
-                    $commission += (float) ($designer->internal_image_price ?? 0);
-                }
-
-                // حفظ العمولة النهائية في الطلب
-                $order->designer_commission = $commission;
-            }
+            // نحسب العمولة دائماً لأي حالة منجزة لضمان التحديث المستمر
+            $order->designer_commission = $this->calculateDesignerCommission($order);
         }
 
         $order->save();
@@ -674,6 +647,37 @@ class OrderWebController extends Controller
 
 
 
+
+    private function calculateDesignerCommission(Order $order): float
+    {
+        if (!$order->designer) {
+            return 0;
+        }
+
+        $designer = $order->designer;
+        $commission = (float) ($designer->base_order_price ?? 0);
+
+        // 1. فحص الزخرفة
+        if (!empty($order->book_decorations_id)) {
+            $commission += (float) ($designer->decoration_price ?? 0);
+        }
+
+        // 2. فحص الإهداء المخصص
+        if ($order->gift_type === 'custom') {
+            $commission += (float) ($designer->custom_gift_price ?? 0);
+        }
+
+        // 3. فحص الصورة الداخلية
+        $additionalIds = $order->additional_image_id;
+        if (is_string($additionalIds)) {
+            $additionalIds = json_decode($additionalIds, true);
+        }
+        if (is_array($additionalIds) && !empty($additionalIds)) {
+            $commission += (float) ($designer->internal_image_price ?? 0);
+        }
+
+        return $commission;
+    }
 
     /**
      * Delete a single order and all related data.
@@ -1813,9 +1817,53 @@ class OrderWebController extends Controller
             'gift_type' => 'nullable|string',
             'gift_title' => 'nullable|string',
             'notebook_followup_note' => 'nullable|string',
+            'internal_images.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'transparent_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'decoration_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
         ]);
 
-        $order->update($validated);
+        $order->fill([
+            'gift_type' => $validated['gift_type'] ?? $order->gift_type,
+            'gift_title' => $validated['gift_title'] ?? $order->gift_title,
+            'notebook_followup_note' => $validated['notebook_followup_note'] ?? $order->notebook_followup_note,
+        ]);
+
+        if ($request->hasFile('transparent_image')) {
+            $path = $request->file('transparent_image')->store('user_images', 'public');
+            $userImage = \App\Models\UserImage::create(['image_path' => $path]);
+            $order->transparent_printing_id = $userImage->id;
+        }
+
+        if ($request->hasFile('internal_images')) {
+            $existingIds = $order->additional_image_id;
+            if (is_string($existingIds)) {
+                $existingIds = json_decode($existingIds, true);
+            }
+            if (!is_array($existingIds)) {
+                $existingIds = [];
+            }
+
+            $newIds = [];
+            foreach ($request->file('internal_images') as $file) {
+                $path = $file->store('user_images', 'public');
+                $userImage = \App\Models\UserImage::create(['image_path' => $path]);
+                $newIds[] = $userImage->id;
+            }
+
+            $order->additional_image_id = array_merge($existingIds, $newIds);
+        }
+
+        if ($request->hasFile('decoration_image')) {
+            $path = $request->file('decoration_image')->store('user_images', 'public');
+            $decoration = \App\Models\BookDecoration::create([
+                'name' => '',
+                'image' => asset('storage/' . $path)
+            ]);
+            $order->book_decorations_id = $decoration->id;
+        }
+
+        $order->designer_commission = $this->calculateDesignerCommission($order);
+        $order->save();
 
         return back()->with('success', 'تم تحديث الدفتر من الداخل بنجاح.');
     }
@@ -1873,6 +1921,7 @@ class OrderWebController extends Controller
             $order->designer_internal_files = $internalPaths; // Overwrite
         }
 
+        $order->designer_commission = $this->calculateDesignerCommission($order);
         $order->save();
 
         return back()->with('success', 'تم تحديث معلومات التجليد وحفظ ملفات المصمم بنجاح.');

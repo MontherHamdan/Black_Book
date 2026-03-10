@@ -121,7 +121,7 @@
         </div>
         <div>
           <div class="card-title mb-0">مرتجع</div>
-          <div class="card-count">{{ $outForDeliveryCount ?? 0 }}</div>
+          <div class="card-count">{{ $returnedCount ?? 0 }}</div>
         </div>
       </div>
     </div>

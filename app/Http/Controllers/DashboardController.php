@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+
 class DashboardController extends Controller
 {
     public function index()
@@ -14,11 +15,16 @@ class DashboardController extends Controller
         /** @var \App\Models\User $authUser */
         $authUser = auth()->user();
 
-        // 👈 الاستعلام الأساسي للإحصائيات العلوية
         $ordersQuery = Order::query();
 
         if (!$authUser->isAdmin() && $authUser->isDesigner()) {
-            $ordersQuery->where('designer_id', $authUser->id);
+            $ordersQuery->where(function ($query) use ($authUser) {
+                $query->where('designer_id', $authUser->id)
+                    ->orWhere(function ($subQuery) {
+                        $subQuery->where('status', 'new_order')
+                            ->whereNull('designer_id');
+                    });
+            });
         }
 
         $statusList = [
@@ -102,8 +108,10 @@ class DashboardController extends Controller
             ])
             ->orderByDesc('total_orders')
             ->get();
+
         $designerNotes = collect();
         $totalCommission = 0;
+        $historyOrders = collect(); // 👈 ضفنا المتغير هون عشان ما يضرب إيرور للآدمن
 
         // 🟢 1. إذا كان المستخدم مصمم: يرى فقط ملاحظاته وعمولاته
         if (!$authUser->isAdmin() && $authUser->isDesigner()) {
@@ -130,6 +138,12 @@ class DashboardController extends Controller
                 ->sum(function ($order) {
                     return $order->designer_commission - $order->paid_commission;
                 });
+
+            // 👈 نقلنا استعلام سجل العمولات من الـ Blade للـ Controller
+            $historyOrders = $authUser->designerOrders()
+                ->whereIn('status', $doneStatuses)
+                ->orderBy('updated_at', 'desc')
+                ->paginate(5);
         }
         // 🟢 2. إذا كان المستخدم آدمن أو مشرف: يرى كل الملاحظات (لكل الطلبات)
         elseif ($authUser->isAdmin() || (method_exists($authUser, 'isSupervisor') && $authUser->isSupervisor())) {
@@ -167,7 +181,8 @@ class DashboardController extends Controller
             'recentUsers',
             'designersScoreboard',
             'designerNotes',
-            'totalCommission'
+            'totalCommission',
+            'historyOrders' // 👈 مررناه للـ View
         ));
     }
 
@@ -175,7 +190,6 @@ class DashboardController extends Controller
     {
         $order = Order::findOrFail($id);
 
-        // التحقق إن المصمم هو صاحب الطلب أو المستخدم أدمن
         if (auth()->user()->isAdmin() || $order->designer_id == auth()->id()) {
             $order->update(['designer_read_notes' => true]);
 

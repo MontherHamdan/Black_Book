@@ -93,5 +93,5 @@ Route::prefix('v1')->group(function () {
 
     Route::get('/locations/governorates', [LocationController::class, 'getGovernorates']);
     Route::get('/locations/cities/{governorate_id}', [LocationController::class, 'getCities']);
-    Route::get('/locations/areas/{city_id}', [LocationController::class, 'getAreas']);
+    Route::get('/locations/areas/{city_id}', [LocationController::class, 'getAreas']); 
 });

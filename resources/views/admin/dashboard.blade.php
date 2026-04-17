@@ -108,8 +108,8 @@
         }
 
         /* ==================================================
-                                               💎 تصميم الـ Pagination المبهر (Fintech Style)
-                                               ================================================== */
+                                                                                                               💎 تصميم الـ Pagination المبهر (Fintech Style)
+                                                                                                               ================================================== */
         .custom-pagination-wrapper nav {
             width: 100%;
             display: flex;
@@ -176,6 +176,92 @@
             box-shadow: none;
             transform: none;
             opacity: 0.7;
+        }
+
+        .penalty-dashboard {
+            font-family: 'Cairo', sans-serif;
+            direction: rtl;
+            text-align: right;
+        }
+
+        /* كرت الإعدادات - تصميم داكن وفخم */
+        .card-dark-control {
+            background: linear-gradient(145deg, #1e1e2f 0%, #2a2a40 100%);
+            color: #fff;
+            border-left: 4px solid #ff416c;
+        }
+
+        /* تأثير النبض للباجات الحمراء (للدلالة على الخطر/العقوبة) */
+        .pulse-danger {
+            box-shadow: 0 0 0 0 rgba(255, 65, 108, 0.7);
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+            }
+
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+            }
+
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+            }
+        }
+
+        /* تصميم جدول المراقبة (صفوف تطفو عند التمرير) */
+        .live-monitor-table {
+            border-collapse: separate;
+            border-spacing: 0 10px;
+            margin-top: -10px;
+        }
+
+        .live-monitor-table tbody tr {
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border-radius: 12px;
+        }
+
+        .live-monitor-table tbody tr:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            position: relative;
+        }
+
+        .live-monitor-table td {
+            border: none;
+            padding: 15px;
+            vertical-align: middle;
+        }
+
+        .live-monitor-table td:first-child {
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        .live-monitor-table td:last-child {
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+        }
+
+        /* تحسين شكل الإدخال السريع */
+        .input-action-group .form-control {
+            border: 2px solid #f1f1f1;
+            background: #fafafa;
+            transition: 0.3s;
+        }
+
+        .input-action-group .form-control:focus {
+            border-color: #dc3545;
+            box-shadow: none;
+            background: #fff;
         }
     </style>
     {{-- order cards --}}
@@ -384,7 +470,7 @@
             </div>
         @endforeach
 
-{{-- 🔹 سجل العمولات (🔴 يظهر للمصمم فقط 🔴) --}}
+        {{-- 🔹 سجل العمولات (🔴 يظهر للمصمم فقط 🔴) --}}
         @if(auth()->user()->isDesigner())
             <div class="row mt-4" style="direction: rtl; text-align: right;">
                 <div class="col-12">
@@ -412,11 +498,13 @@
                                             <tr>
                                                 <td class="fw-bold">#{{ $history->id }}</td>
                                                 <td class="fw-semibold text-dark">{{ $history->username_ar }}</td>
-                                                
-                                                <td>{!! $history->book_decorations_id ? '<span class="text-success fw-bold">نعم</span>' : '<span class="text-muted">لا</span>' !!}</td>
-                                                
-                                                <td>{!! $history->gift_type === 'custom' ? '<span class="text-warning fw-bold">نعم</span>' : '<span class="text-muted">لا</span>' !!}</td>
-                                                
+
+                                                <td>{!! $history->book_decorations_id ? '<span class="text-success fw-bold">نعم</span>' : '<span class="text-muted">لا</span>' !!}
+                                                </td>
+
+                                                <td>{!! $history->gift_type === 'custom' ? '<span class="text-warning fw-bold">نعم</span>' : '<span class="text-muted">لا</span>' !!}
+                                                </td>
+
                                                 {{-- فحص الصور الداخلية --}}
                                                 @php
                                                     $hasInternalImages = false;
@@ -428,7 +516,8 @@
                                                         $hasInternalImages = true;
                                                     }
                                                 @endphp
-                                                <td>{!! $hasInternalImages ? '<span class="text-primary fw-bold">نعم</span>' : '<span class="text-muted">لا</span>' !!}</td>
+                                                <td>{!! $hasInternalImages ? '<span class="text-primary fw-bold">نعم</span>' : '<span class="text-muted">لا</span>' !!}
+                                                </td>
 
                                                 <td class="text-success fw-bolder fs-5">
                                                     @if($history->is_commission_paid)
@@ -438,9 +527,9 @@
                                                     @endif
                                                     <small class="fs-6">د.أ</small>
                                                 </td>
-                                                
+
                                                 <td class="text-muted small">{{ $history->updated_at->format('Y-m-d') }}</td>
-                                                
+
                                                 <td>
                                                     @if($history->is_commission_paid)
                                                         <span class="badge bg-soft-success text-success rounded-pill px-3 py-2">
@@ -473,6 +562,154 @@
             </div>
         @endif
 
+    @endif
+
+    {{-- 🔹 إعدادات نظام العقوبات (للمدراء فقط) --}}
+    @if(auth()->user()->isAdmin() || (method_exists(auth()->user(), 'isSupervisor') && auth()->user()->isSupervisor()))
+
+        {{-- إضافة بعض الستايلات العصرية الخاصة بلوحة العقوبات --}}
+        <style>
+
+        </style>
+
+        <div class="row mt-5 penalty-dashboard">
+            <div class="col-12 mb-4 d-flex align-items-center justify-content-between">
+                <h4 class="fw-bolder text-dark mb-0 d-flex align-items-center">
+                    <div class="bg-danger text-white rounded-circle d-flex justify-content-center align-items-center me-6 shadow-sm"
+                        style="width: 45px; height: 45px;">
+                        <i class="fas fa-satellite-dish fs-5"></i>
+                    </div>
+                    نظام الجودة والعقوبات
+                </h4>
+
+            </div>
+
+            {{-- 1️⃣ إعدادات الحد الأقصى (Control Panel) --}}
+            <div class="col-xl-4 col-lg-5 mb-4">
+                <div class="card border-0 shadow-lg rounded-4 h-100 card-dark-control position-relative overflow-hidden">
+                    {{-- أيقونة خلفية باهتة --}}
+                    <i class="fas fa-cogs position-absolute opacity-10"
+                        style="font-size: 8rem; bottom: -20px; left: -20px;"></i>
+
+                    <div class="card-body p-4 position-relative z-1">
+                        <h6 class="fw-bold text-white text-opacity-75 mb-4">
+                            <i class="fas fa-sliders-h me-2 text-danger"></i> إعدادات الإيقاف التلقائي
+                        </h6>
+
+                        <label class="form-label text-white small mb-2">الحد الأقصى لطلبات "يوجد تعديل"</label>
+                        <div class="input-group input-group-lg shadow-sm mb-3">
+                            <input type="number" id="penaltyThresholdInput"
+                                class="form-control text-center fw-bolder fs-4 border-0"
+                                style="background: rgba(255,255,255,0.1); color: #fff;" value="{{ $currentPenaltyThreshold }}"
+                                min="1" max="100">
+                            <button class="btn btn-danger fw-bold px-4" type="button" onclick="updatePenaltyThreshold()">
+                                <i class="fas fa-bolt me-1"></i> تحديث
+                            </button>
+                        </div>
+
+                        <div class="d-flex align-items-start mt-4 bg-dark bg-opacity-25 p-3 rounded-3">
+                            <i class="fas fa-shield-alt text-warning fs-4 me-3 mt-1"></i>
+                            <small class="text-white text-opacity-75 lh-lg">
+                                يتم سحب صلاحية استلام طلبات جديدة من المصمم تلقائياً بمجرد تجاوزه هذا الرقم، حتى يقوم بتصويب
+                                الأوضاع.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- 2️⃣ جدول المراقبة المباشرة (Live Surveillance) --}}
+            <div class="col-xl-8 col-lg-7 mb-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                            <h6 class="fw-bold text-dark mb-0">
+                                <i class="fas fa-users-viewfinder text-primary me-2"></i> حالة المصممين المباشرة
+                            </h6>
+
+                        </div>
+
+                        <div class="table-responsive" style="max-height: 350px; overflow-y: auto; padding-right: 5px;">
+                            <table class="table live-monitor-table w-100">
+                                <thead class="text-muted small fw-bold"
+                                    style="position: sticky; top: 0; background: #fff; z-index: 2;">
+                                    <tr>
+                                        <th class="ps-3">المصمم</th>
+                                        <th class="text-center">التراكم (يوجد تعديل)</th>
+                                        <th class="text-center">حالة النظام</th>
+                                        <th class="text-end pe-3">الإجراء</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($designersPenaltyStats ?? [] as $stat)
+                                        <tr>
+                                            <td class="ps-3">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-light rounded-circle d-flex justify-content-center align-items-center me-3 text-primary fw-bold"
+                                                        style="width: 40px; height: 40px;">
+                                                        {{ mb_substr($stat->name, 0, 1, 'UTF-8') }}
+                                                    </div>
+                                                    <span class="fw-bold text-dark">{{ $stat->name }}</span>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <span
+                                                    class="badge {{ $stat->mod_count >= $currentPenaltyThreshold ? 'bg-danger pulse-danger' : 'bg-light text-dark border' }} rounded-pill px-3 py-2 fs-6"
+                                                    id="mod-count-{{ $stat->id }}">
+                                                    {{ $stat->mod_count }} / {{ $currentPenaltyThreshold }}
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                @if($stat->is_penalized)
+                                                    <span class="badge bg-danger rounded-pill px-3 py-2"
+                                                        id="penalty-badge-{{ $stat->id }}">
+                                                        <i class="fas fa-lock me-1"></i> محظور مؤقتاً
+                                                    </span>
+                                                @else
+                                                    <span class="badge bg-success rounded-pill px-3 py-2"
+                                                        id="penalty-badge-{{ $stat->id }}">
+                                                        <i class="fas fa-check-circle me-1"></i> يعمل بشكل طبيعي
+                                                    </span>
+                                                @endif
+
+                                                <div id="penalty-time-container-{{ $stat->id }}" class="mt-2"
+                                                    style="display: {{ $stat->is_manual_penalized ? 'block' : 'none' }}">
+                                                    <span class="text-danger fw-bolder" style="font-size: 0.75rem;">
+                                                        <i class="fas fa-hourglass-half me-1"></i> يفك الحظر:
+                                                        <span id="penalty-time-{{ $stat->id }}"
+                                                            style="direction: ltr; display: inline-block;">{{ $stat->is_manual_penalized ? \Carbon\Carbon::parse($stat->penalized_until)->timezone('Asia/Amman')->locale('en')->format('h:i A') : '' }}</span>
+                                                </div>
+                                            </td>
+                                            <td class="text-end pe-3">
+                                                <div class="input-group input-group-sm input-action-group justify-content-end"
+                                                    style="min-width: 220px; float: left; direction: ltr;">
+                                                    <button class="btn btn-outline-danger fw-bold shadow-sm" type="button"
+                                                        onclick="applyManualPenalty({{ $stat->id }})" title="تطبيق الإيقاف">
+                                                        <i class="fas fa-gavel"></i>
+                                                    </button>
+                                                    <input type="number" class="form-control text-center fw-bold px-1"
+                                                        id="manual-penalty-hours-{{ $stat->id }}" placeholder="ساعة" min="0">
+                                                    <input type="number" class="form-control text-center fw-bold px-1"
+                                                        id="manual-penalty-mins-{{ $stat->id }}" placeholder="دقيقة" min="0"
+                                                        max="59">
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="4" class="text-center py-5 text-muted">
+                                                <i class="fas fa-users-slash fs-2 mb-3 opacity-50"></i>
+                                                <h6 class="fw-bold">لا يوجد مصممين لعرضهم حالياً</h6>
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     @endif
 
     {{-- 🔹 Designers Scoreboard --}}
@@ -777,6 +1014,100 @@
             });
         });
     </script>
+
+    {{-- سكربتات نظام العقوبات --}}
+    @if(auth()->check() && (auth()->user()->isAdmin() || (method_exists(auth()->user(), 'isSupervisor') && auth()->user()->isSupervisor())))
+        <script>
+            function updatePenaltyThreshold() {
+                let val = document.getElementById('penaltyThresholdInput').value;
+                fetch('{{ route("admin.settings.update-penalty-threshold") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ threshold: val })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'تم الحفظ',
+                                text: data.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                            // إعادة تحميل الصفحة لتحديث الجدول تلقائياً بالأرقام الجديدة
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            Swal.fire('خطأ', data.message || 'حدث خطأ غير متوقع', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        Swal.fire('خطأ', 'فشل الاتصال بالخادم', 'error');
+                    });
+            }
+
+            function applyManualPenalty(userId) {
+                let hours = document.getElementById('manual-penalty-hours-' + userId).value;
+                let mins = document.getElementById('manual-penalty-mins-' + userId).value;
+
+                if (hours === '') hours = 0;
+                if (mins === '') mins = 0;
+
+                fetch(`/admin/designers/${userId}/penalty`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ penalty_hours: hours, penalty_minutes: mins })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'تم التنفيذ',
+                                text: data.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+
+                            // تحديث الـ DOM محلياً عشان ما نسوي Refresh كامل
+                            let badge = document.getElementById('penalty-badge-' + userId);
+                            let timeCont = document.getElementById('penalty-time-container-' + userId);
+                            let timeSpan = document.getElementById('penalty-time-' + userId);
+
+                            if (data.penalized_until) {
+                                badge.className = 'badge bg-danger rounded-pill px-3 py-2 shadow-sm';
+                                badge.innerHTML = '<i class="fas fa-ban me-1"></i> موقوف';
+                                timeCont.style.display = 'block';
+                                let d = new Date(data.penalized_until.replace(' ', 'T'));
+                                timeSpan.innerText = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                            } else {
+                                badge.className = 'badge bg-success rounded-pill px-3 py-2 shadow-sm';
+                                badge.innerHTML = '<i class="fas fa-check-circle me-1"></i> نشط';
+                                timeCont.style.display = 'none';
+                                timeSpan.innerText = '';
+                            }
+
+                            // تفريغ الحقول بعد التنفيذ
+                            document.getElementById('manual-penalty-hours-' + userId).value = '';
+                            document.getElementById('manual-penalty-mins-' + userId).value = '';
+                        } else {
+                            Swal.fire('خطأ', data.message || 'حدث خطأ غير معروف', 'error');
+                        }
+                    })
+                    .catch(error => console.error(error));
+            }
+
+        </script>
+    @endif
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // مراقبة تغيير التبويبات داخل مودال الملاحظات

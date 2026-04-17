@@ -4,6 +4,17 @@
 
 <body>
 
+    @if(auth()->check() && auth()->user()->isDesigner())
+    <!-- Global Warning Banner for Penalized Designers -->
+    <div id="global-penalty-banner" class="alert alert-danger text-center fw-bold mb-0 rounded-0 shadow-sm" style="display: {{ auth()->user()->isPenalized() ? 'block' : 'none' }}; position: sticky; top: 0; z-index: 99999; font-family: 'Cairo', sans-serif;">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <span>عذراً، لقد تجاوزت الحد الأقصى للتعديلات المسموحة أو تم إيقافك مؤقتاً. لا يمكنك استلام طلبات جديدة حالياً.</span>
+        <span id="global-penalty-until" class="ms-2">
+            {{ (auth()->user()->penalized_until && auth()->user()->penalized_until->isFuture()) ? '(موقوف حتى ' . auth()->user()->penalized_until->timezone('Asia/Amman')->format('h:i A') . ')' : '' }}
+        </span>
+    </div>
+    @endif
+    
     <!-- Begin page -->
     <div id="wrapper">
 
@@ -146,6 +157,40 @@
             });
         @endif
     </script>
+
+    @if(auth()->check() && auth()->user()->isDesigner())
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof window.Echo !== 'undefined') {
+                window.Echo.private('App.Models.User.{{ auth()->id() }}')
+                    .listen('DesignerPenaltyStatusChanged', (e) => {
+                        const banner = document.getElementById('global-penalty-banner');
+                        const untilSpan = document.getElementById('global-penalty-until');
+                        
+                        if (e.isPenalized) {
+                            // Show banner
+                            banner.style.display = 'block';
+                            if (e.penalizedUntil) {
+                                let d = new Date(e.penalizedUntil);
+                                untilSpan.innerText = '(موقوف حتى ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ')';
+                            } else {
+                                untilSpan.innerText = '';
+                            }
+                        } else {
+                            // Hide banner
+                            banner.style.display = 'none';
+                            untilSpan.innerText = '';
+                        }
+
+                        // Refresh DataTables if it exists on the page
+                        if (typeof table !== 'undefined' && table.ajax) {
+                            table.ajax.reload(null, false);
+                        }
+                    });
+            }
+        });
+    </script>
+    @endif
 
 </body>
 

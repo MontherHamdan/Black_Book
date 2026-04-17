@@ -133,7 +133,7 @@
                                 <td>{{ $order->bookType->name_ar ?? '—' }}</td>
                                 <td>{{ $order->designer->name ?? '—' }}</td>
                                 <td><span class="ao-status {{ $stClass }}">{{ $stLabel }}</span></td>
-                                <td>{{ $order->governorate ?? '—' }}</td>
+                                <td>{{ $order->governorate->name_ar ?? '—' }}</td>
                                 <td class="fw-bold text-success">{{ $order->final_price_with_discount ?? $order->final_price ?? 0 }} د.أ</td>
                                 <td class="text-muted small">{{ $order->created_at ? $order->created_at->format('Y-m-d') : '' }}</td>
                                 <td>

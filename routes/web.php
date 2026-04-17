@@ -1,31 +1,33 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\SvgController;
-use App\Http\Controllers\DiplomaController;
-use App\Http\Controllers\BookTypeController;
-use App\Http\Controllers\OrderWebController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\BookDesignController;
-use App\Http\Controllers\UniversityController;
-use App\Http\Controllers\GovernorateController;
-use App\Http\Controllers\PhoneNumberController;
-use App\Http\Controllers\DiscountCodeController;
-use App\Http\Controllers\BookDecorationController;
-use App\Http\Controllers\BookTypeSubMediaController;
-use App\Http\Controllers\BookDesignCategoryController;
-use App\Http\Controllers\BookDesignSubCategoryController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\AllOrdersController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\SvgNameController;
-use App\Http\Controllers\PlanWebController;
-use App\Http\Controllers\SpecializedDepartmentWebController;
-use App\Http\Controllers\VideoWebController;
-use App\Http\Controllers\DesignerAccountingController;
+use App\Http\Controllers\BookDecorationController;
+use App\Http\Controllers\BookDesignCategoryController;
+use App\Http\Controllers\BookDesignController;
+use App\Http\Controllers\BookDesignSubCategoryController;
+use App\Http\Controllers\BookTypeController;
+use App\Http\Controllers\BookTypeSubMediaController;
 use App\Http\Controllers\CountryController;
-use App\Http\Controllers\NotebookBindingController;
-use App\Http\Controllers\PrintQueueController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryDispatchController;
+use App\Http\Controllers\DesignerAccountingController;
+use App\Http\Controllers\DiplomaController;
+use App\Http\Controllers\DiscountCodeController;
+use App\Http\Controllers\GovernorateController;
+use App\Http\Controllers\NotebookBindingController;
+use App\Http\Controllers\OrderWebController;
+use App\Http\Controllers\PhoneNumberController;
+use App\Http\Controllers\PlanWebController;
+use App\Http\Controllers\PrintQueueController;
+use App\Http\Controllers\SpecializedDepartmentWebController;
+use App\Http\Controllers\SvgController;
+use App\Http\Controllers\SvgNameController;
+use App\Http\Controllers\UniversityController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\VideoWebController;
+use Illuminate\Support\Facades\Route;
+
 /* |-------------------------------------------------------------------------- | Web Routes |-------------------------------------------------------------------------- */
 
 // Login routes
@@ -33,7 +35,6 @@ Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('a
 Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('auth.store');
 // Logout route
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('auth.logout');
-
 
 // Routes متاحة لأي يوزر مسجّل (Admin أو Designer)
 Route::middleware(['auth'])->group(function () {
@@ -45,13 +46,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders', [OrderWebController::class, 'index'])->name('orders.index');
     Route::get('/orders/fetch', [OrderWebController::class, 'fetchOrders'])->name('orders.fetch');
     Route::post('/orders/update-status', [OrderWebController::class, 'updateStatus'])->name('orders.updateStatus');
-    Route::delete('/orders/{id}', [OrderWebController::class, 'destroy'])->name('orders.destroy');
-    Route::post('/orders/bulk-delete', [OrderWebController::class, 'bulkDelete'])->name('orders.bulkDelete');
     Route::post('/orders/bulk-update-status', [OrderWebController::class, 'bulkUpdateStatus'])->name('orders.bulkUpdateStatus');
     Route::post('orders/add-note', [OrderWebController::class, 'addNote'])->name('orders.addNote');
     Route::get('/orders/{order}/notes', [OrderWebController::class, 'getNotes'])->name('orders.getNotes');
     Route::put('/orders/{order}/update-notebook-followup', [OrderWebController::class, 'updateNotebookFollowup'])->name('orders.updateNotebookFollowup');
     Route::get('/orders/{id}', [OrderWebController::class, 'show'])->name('orders.show');
+    Route::delete('/orders/{order}/delete-image', [OrderWebController::class, 'deleteImage'])->name('orders.deleteImage');
     Route::get('/orders/{order}/back-images/download', [OrderWebController::class, 'downloadAllBackImages'])->name('orders.backImages.download');
     Route::get('/orders-export/excel', [OrderWebController::class, 'exportExcel'])->name('orders.exportExcel');
     Route::get('/admin/orders/{order}/additional-images/download', [OrderWebController::class, 'downloadAllAdditionalImages'])
@@ -79,7 +79,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Print Queues, All Orders, Delivery Dispatch
     Route::get('/print-queues', [PrintQueueController::class, 'index'])->name('print-queues.index');
-    Route::get('/all-orders', [\App\Http\Controllers\AllOrdersController::class, 'index'])->name('all-orders.index');
+    Route::get('/all-orders', [AllOrdersController::class, 'index'])->name('all-orders.index');
     Route::get('/delivery-dispatch', [DeliveryDispatchController::class, 'index'])->name('delivery-dispatch.index');
 
     // Notebook Binding (Printer workspace)
@@ -96,6 +96,14 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::resource('users', UserController::class);
+
+    // Order deletion (Admin strictly)
+    Route::delete('/orders/{id}', [OrderWebController::class, 'destroy'])->name('orders.destroy');
+    Route::post('/orders/bulk-delete', [OrderWebController::class, 'bulkDelete'])->name('orders.bulkDelete');
+    Route::post('/orders/print-awbs', [OrderWebController::class, 'printAWBs'])->name('orders.printAWBs');
+    // Penalty System (Admin / Supervisor strictly via Controller gates, placed in admin for extra measure or explicitly handled)
+    Route::post('/admin/settings/update-penalty-threshold', [DashboardController::class, 'updatePenaltyThreshold'])->name('admin.settings.update-penalty-threshold');
+    Route::post('/admin/designers/{user}/penalty', [DashboardController::class, 'applyDesignerPenalty'])->name('admin.designers.penalty');
 
     // book design
     Route::resource('book-designs', BookDesignController::class);
@@ -122,10 +130,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::delete('addresses/{address}', [GovernorateController::class, 'deleteAddress'])->name('addresses.delete');
     Route::get('/governorates/{id}/addresses', [GovernorateController::class, 'getAddresses'])->name('governorates.addresses');
 
-    // Discount Code 
+    // Discount Code
     Route::resource('discount-codes', DiscountCodeController::class);
 
-    // Svg 
+    // Svg
     Route::resource('svgs', SvgController::class);
 
     // Svg Names
@@ -148,16 +156,16 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::delete('/svg-categories/{svgCategory}', [SvgController::class, 'destroyCategory'])->name('svg-categories.destroy');
 
-    // univeristies majors  
+    // univeristies majors
     Route::resource('universities', UniversityController::class);
     Route::get('/universities/{university}/majors', [UniversityController::class, 'fetchMajors']);
     Route::post('/universities/{university}/add-major', [UniversityController::class, 'storeMajor']);
     Route::delete('/universities/{university}/delete-major/{major}', [UniversityController::class, 'deleteMajor'])->name('majors.delete');
 
-    // phone numbers 
+    // phone numbers
     Route::resource('phone-numbers', PhoneNumberController::class)->only(['index', 'destroy']);
 
-    // diploma and majors 
+    // diploma and majors
     Route::resource('diplomas', DiplomaController::class);
     Route::post('diplomas/{diplomaId}/majors', [DiplomaController::class, 'storeMajor'])->name('diplomas.storeMajor');
     Route::delete('diplomas/{diplomaId}/majors/{majorId}', [DiplomaController::class, 'deleteMajor'])->name('diplomas.deleteMajor');

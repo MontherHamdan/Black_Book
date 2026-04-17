@@ -27,8 +27,7 @@
                         <div class="form-group mb-3">
                             <label for="image" class="form-label fw-bold">Book Design Image</label>
                             <input type="file" data-plugins="dropify" data-height="200"
-                                class="form-control @error('image') is-invalid @enderror" name="image" id="image"
-                                required>
+                                class="form-control @error('image') is-invalid @enderror" name="image" id="image" required>
                             @error('image')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -64,7 +63,15 @@
                                 @enderror
                             </div>
                         </div>
-
+                        <div class="form-check form-switch mb-4 mt-2">
+                            <input class="form-check-input" type="checkbox" role="switch" id="is_image_required"
+                                name="is_image_required" value="1" style="transform: scale(1.3); margin-right: 10px;">
+                            <label class="form-check-label fw-bold ms-2" for="is_image_required" style="cursor: pointer;">
+                                هل تحميل الصور (الأمامية/الخلفية) إجباري لهذا التصميم؟
+                            </label>
+                            <small class="d-block text-muted ms-4">إذا قمت بتفعيل هذا الخيار، لن يتمكن الطالب من تجاوز خطوة
+                                رفع الصور.</small>
+                        </div>
                         <!-- Submit Button -->
                         <div class="text-end">
                             <button type="submit" class="btn btn-success px-4">Create Design</button>
@@ -78,11 +85,11 @@
 
     <!-- Script for dynamic subcategory population -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const categorySelect = document.getElementById('category_id');
             const subCategorySelect = document.getElementById('sub_category_id');
 
-            categorySelect.addEventListener('change', function() {
+            categorySelect.addEventListener('change', function () {
                 const categoryId = this.value;
 
                 // Clear the subcategory options

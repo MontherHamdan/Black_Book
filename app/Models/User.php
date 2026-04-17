@@ -32,6 +32,7 @@ class User extends Authenticatable
         'decoration_price',
         'custom_gift_price',
         'internal_image_price',
+        'penalized_until',
     ];
 
     /**
@@ -52,6 +53,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'is_admin' => 'boolean',
+        'penalized_until' => 'datetime',
     ];
 
     /*
@@ -79,6 +81,17 @@ class User extends Authenticatable
     {
         return $this->role === self::ROLE_PRINTER;
     }
+
+    public function isPenalized(): bool
+    {
+        if ($this->penalized_until && $this->penalized_until->isFuture()) return true;
+        
+        $threshold = \App\Models\Setting::where('key', 'max_modification_orders')->value('value') ?? 5;
+        $modCount = \App\Models\Order::where('designer_id', $this->id)->where('status', 'needs_modification')->count();
+        
+        return $modCount >= (int) $threshold;
+    }
+
     /*
      |--------------------------------------------------------------------------
      | Relations

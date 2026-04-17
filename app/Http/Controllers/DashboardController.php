@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Models\Setting;
+
 
 class DashboardController extends Controller
 {
@@ -112,6 +114,8 @@ class DashboardController extends Controller
         $designerNotes = collect();
         $totalCommission = 0;
         $historyOrders = collect(); // 👈 ضفنا المتغير هون عشان ما يضرب إيرور للآدمن
+        $currentPenaltyThreshold = Setting::where('key', 'max_modification_orders')->value('value') ?? 5;
+        $designersPenaltyStats = collect();
 
         // 🟢 1. إذا كان المستخدم مصمم: يرى فقط ملاحظاته وعمولاته
         if (!$authUser->isAdmin() && $authUser->isDesigner()) {
@@ -160,6 +164,24 @@ class DashboardController extends Controller
                 ->orderBy('updated_at', 'desc')
                 ->get(['id', 'username_ar', 'username_en', 'design_followup_note', 'binding_followup_note', 'notebook_followup_note']);
 
+            $designersPenaltyStats = User::where('role', User::ROLE_DESIGNER)
+                ->get()
+                ->map(function ($designer) use ($currentPenaltyThreshold) {
+                    $modCount = Order::where('designer_id', $designer->id)->where('status', 'needs_modification')->count();
+                    $isAutoPenalized = $modCount >= (int) $currentPenaltyThreshold;
+                    $isManualPenalized = $designer->penalized_until && $designer->penalized_until->isFuture();
+
+                    return (object) [
+                        'id' => $designer->id,
+                        'name' => $designer->name,
+                        'mod_count' => $modCount,
+                        'is_auto_penalized' => $isAutoPenalized,
+                        'is_manual_penalized' => $isManualPenalized,
+                        'penalized_until' => $designer->penalized_until,
+                        'is_penalized' => $isAutoPenalized || $isManualPenalized
+                    ];
+                });
+
         }
 
         return view('admin.dashboard', compact(
@@ -182,7 +204,9 @@ class DashboardController extends Controller
             'designersScoreboard',
             'designerNotes',
             'totalCommission',
-            'historyOrders' // 👈 مررناه للـ View
+            'historyOrders', // 👈 مررناه للـ View
+            'currentPenaltyThreshold',
+            'designersPenaltyStats'
         ));
     }
 
@@ -200,5 +224,65 @@ class DashboardController extends Controller
         }
 
         return response()->json(['success' => false, 'message' => 'غير مصرح لك'], 403);
+    }
+
+    public function updatePenaltyThreshold(Request $request)
+    {
+        abort_if(!auth()->user()->isAdmin() && !(method_exists(auth()->user(), 'isSupervisor') && auth()->user()->isSupervisor()), 403);
+
+        $request->validate([
+            'threshold' => 'required|integer|min:1|max:100',
+        ]);
+
+        $newThreshold = (int) $request->threshold;
+
+        Setting::updateOrCreate(
+            ['key' => 'max_modification_orders'],
+            ['value' => $newThreshold]
+        );
+
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم تحديث الحد الأقصى للتعديلات بنجاح',
+            'threshold' => $newThreshold
+        ]);
+    }
+
+    public function applyDesignerPenalty(Request $request, User $user)
+    {
+        abort_if(!auth()->user()->isAdmin() && !(method_exists(auth()->user(), 'isSupervisor') && auth()->user()->isSupervisor()), 403);
+
+        if (!$user->isDesigner()) {
+            return response()->json(['success' => false, 'message' => 'هذا المستخدم ليس مصمماً'], 400);
+        }
+
+        $request->validate([
+            'penalty_hours' => 'nullable|integer|min:0',
+            'penalty_minutes' => 'nullable|integer|min:0|max:59',
+        ]);
+
+        $hours = (int) $request->penalty_hours;
+        $minutes = (int) $request->penalty_minutes;
+
+        // حساب إجمالي الدقائق
+        $totalMinutes = ($hours * 60) + $minutes;
+
+        $penalizedUntil = null;
+        if ($totalMinutes > 0) {
+            $penalizedUntil = now()->addMinutes($totalMinutes);
+        }
+
+        $user->update(['penalized_until' => $penalizedUntil]);
+
+        $msg = $totalMinutes > 0
+            ? "تم تطبيق إيقاف يدوي للمصمم لمدة {$hours} ساعة و {$minutes} دقيقة"
+            : "تم رفع الإيقاف اليدوي عن المصمم";
+
+        return response()->json([
+            'success' => true,
+            'message' => $msg,
+            'penalized_until' => $penalizedUntil ? $penalizedUntil->format('Y-m-d H:i:s') : null
+        ]);
     }
 }

@@ -50,8 +50,12 @@ class Order extends Model
         'transparent_printing_id',
         'delivery_number_one',
         'delivery_number_two',
-        'governorate',
         'address',
+
+        'logestechs_order_id',
+        'area_id',
+        'city_id',
+        'governorate_id',
 
         'delivery_followup_note',
         'design_followup_note',
@@ -326,4 +330,8 @@ class Order extends Model
 
         return UserImage::whereIn('id', $ids)->get();
     }
+
+    public function governorate() { return $this->belongsTo(Governorate::class); }
+    public function city() { return $this->belongsTo(City::class); }
+    public function area() { return $this->belongsTo(Area::class); }
 }

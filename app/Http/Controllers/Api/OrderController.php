@@ -67,7 +67,9 @@ class OrderController extends Controller
 
             'delivery_number_one' => 'required|string|max:20',
             'delivery_number_two' => 'nullable|string|max:20',
-            'governorate' => 'required|string',
+            'governorate_id' => 'required|exists:governorates,id',
+            'city_id' => 'required|exists:cities,id',
+            'area_id' => 'required|exists:areas,id',
             'address' => 'required|string',
 
             'final_price' => 'nullable|numeric|min:0',

@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\VideoController;
 use App\Http\Controllers\Api\SpecializedDepartmentController;
 use App\Http\Controllers\Api\PlanController;
 use App\Http\Controllers\Api\CountryApiController;
+use App\Http\Controllers\Api\LocationController;
 /* |-------------------------------------------------------------------------- | API Routes |-------------------------------------------------------------------------- | | Here is where you can register API routes for your application. These | routes are loaded by the RouteServiceProvider and all of them will | be assigned to the "api" middleware group. Make something great! | */
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -89,4 +90,8 @@ Route::prefix('v1')->group(function () {
 
     // Countries
     Route::get('countries', [CountryApiController::class, 'index']);
+
+    Route::get('/locations/governorates', [LocationController::class, 'getGovernorates']);
+    Route::get('/locations/cities/{governorate_id}', [LocationController::class, 'getCities']);
+    Route::get('/locations/areas/{city_id}', [LocationController::class, 'getAreas']);
 });

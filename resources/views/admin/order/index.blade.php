@@ -312,6 +312,7 @@
                 <button id="bulkDeleteBtn" class="btn btn-pill-action btn-pill-danger" disabled style="display: none;">
                     <i class="fas fa-trash"></i> حذف المحدد (<span id="selectedCount">0</span>)
                 </button>
+
             @endif
             <button id="openAdvancedSearch" class="btn btn-pill-action btn-pill-primary" data-bs-toggle="modal"
                 data-bs-target="#advancedSearchModal">
@@ -483,14 +484,14 @@
 
                         notes.forEach(function (note) {
                             const itemHtml = `
-                                                                                                    <li class="chat-message">
-                                                                                                        <div class="chat-header">
-                                                                                                            <span class="chat-author"><i class="fas fa-user-circle me-1"></i>${note.user_name}</span>
-                                                                                                            <span class="chat-time"><i class="far fa-clock me-1"></i>${note.created_at}</span>
-                                                                                                        </div>
-                                                                                                        <p class="chat-content">${note.content}</p>
-                                                                                                    </li>
-                                                                                                `;
+                                                                                                            <li class="chat-message">
+                                                                                                                <div class="chat-header">
+                                                                                                                    <span class="chat-author"><i class="fas fa-user-circle me-1"></i>${note.user_name}</span>
+                                                                                                                    <span class="chat-time"><i class="far fa-clock me-1"></i>${note.created_at}</span>
+                                                                                                                </div>
+                                                                                                                <p class="chat-content">${note.content}</p>
+                                                                                                            </li>
+                                                                                                        `;
                             $list.append(itemHtml);
                         });
                     },
@@ -532,7 +533,7 @@
                 pageLength: 10,
                 columns: [
                     @if(auth()->user()->isAdmin())
-                                                                                                                                                        {
+                                                                                                                                                                        {
                             data: null,
                             name: 'checkbox',
                             orderable: false,
@@ -626,12 +627,12 @@
                             // لو ما عنده صلاحية → Badge كبير + المدة فقط
                             if (!canChangeStatus) {
                                 return `
-                                                                                        <div class="text-center">
-                                                                                            <span class="status-badge-soft shadow-sm ${currentStatus.class}">
-                                                                                                ${currentStatus.label}
-                                                                                            </span>
-                                                                                        </div>
-                                                                                    `;
+                                                                                                <div class="text-center">
+                                                                                                    <span class="status-badge-soft shadow-sm ${currentStatus.class}">
+                                                                                                        ${currentStatus.label}
+                                                                                                    </span>
+                                                                                                </div>
+                                                                                            `;
                             }
 
                             // لو عنده صلاحية → Dropdown + المدة تحت
@@ -642,35 +643,35 @@
                                 .map(function (status) {
                                     const cfg = statusConfig[status] || defaultConfig;
                                     return `
-                                                                                            <li>
-                                                                                                <a class="dropdown-item change-status-item py-2"
-                                                                                                   href="#"
-                                                                                                   data-order-id="${row.id}"
-                                                                                                   data-new-status="${status}">
-                                                                                                    <span class="status-badge-soft w-100 ${cfg.class}">${cfg.label}</span>
-                                                                                                </a>
-                                                                                            </li>
-                                                                                        `;
+                                                                                                    <li>
+                                                                                                        <a class="dropdown-item change-status-item py-2"
+                                                                                                           href="#"
+                                                                                                           data-order-id="${row.id}"
+                                                                                                           data-new-status="${status}">
+                                                                                                            <span class="status-badge-soft w-100 ${cfg.class}">${cfg.label}</span>
+                                                                                                        </a>
+                                                                                                    </li>
+                                                                                                `;
                                 })
                                 .join('');
 
                             return `
-                                                                                    <div class="text-center">
-                                                                                        <div class="dropdown d-inline">
-                                                                                            <span
-                                                                                                class="status-badge-soft shadow-sm dropdown-toggle ${currentStatus.class}"
-                                                                                                id="statusDropdown${row.id}"
-                                                                                                data-bs-toggle="dropdown"
-                                                                                                aria-expanded="false"
-                                                                                                style="cursor: pointer;">
-                                                                                                ${currentStatus.label}
-                                                                                            </span>
-                                                                                            <ul class="dropdown-menu shadow-sm border-0 rounded-4 p-2" aria-labelledby="statusDropdown${row.id}">
-                                                                                                ${dropdownItems}
-                                                                                            </ul>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                `;
+                                                                                            <div class="text-center">
+                                                                                                <div class="dropdown d-inline">
+                                                                                                    <span
+                                                                                                        class="status-badge-soft shadow-sm dropdown-toggle ${currentStatus.class}"
+                                                                                                        id="statusDropdown${row.id}"
+                                                                                                        data-bs-toggle="dropdown"
+                                                                                                        aria-expanded="false"
+                                                                                                        style="cursor: pointer;">
+                                                                                                        ${currentStatus.label}
+                                                                                                    </span>
+                                                                                                    <ul class="dropdown-menu shadow-sm border-0 rounded-4 p-2" aria-labelledby="statusDropdown${row.id}">
+                                                                                                        ${dropdownItems}
+                                                                                                    </ul>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        `;
                         }
                     },
 
@@ -703,14 +704,14 @@
                             }
 
                             return `
-                                                                                                    <select class="form-select form-select-sm order-designer-select"
-                                                                                                            data-order-id="${row.id}"
-                                                                                                            data-current-designer-id="${currentDesignerId || ''}"
-                                                                                                            ${disabledAttr}>
-                                                                                                        ${notAssignedOption}
-                                                                                                        ${optionsHtml}
-                                                                                                    </select>
-                                                                                                `;
+                                                                                                            <select class="form-select form-select-sm order-designer-select"
+                                                                                                                    data-order-id="${row.id}"
+                                                                                                                    data-current-designer-id="${currentDesignerId || ''}"
+                                                                                                                    ${disabledAttr}>
+                                                                                                                ${notAssignedOption}
+                                                                                                                ${optionsHtml}
+                                                                                                            </select>
+                                                                                                        `;
                         }
                     },
                     {
@@ -726,7 +727,15 @@
                     {
                         data: 'governorate',
                         name: 'governorate',
-                        orderable: false
+                        orderable: false,
+                        render: function (data, type, row) {
+                            if (data && data.name_ar) {
+                                return data.name_ar;
+                            } else if (typeof data === 'string') {
+                                return data;
+                            }
+                            return '<span class="text-muted small">غير محدد</span>';
+                        }
                     },
                     {
                         data: 'address',
@@ -757,12 +766,12 @@
                             }
 
                             return `
-                                                                                                    <span>${data}</span>
-                                                                                                    <a href="https://wa.me/${waNumber}" target="_blank"
-                                                                                                       class="ms-2 text-success" title="WhatsApp">
-                                                                                                        <i class="fab fa-whatsapp"></i>
-                                                                                                    </a>
-                                                                                                `;
+                                                                                                            <span>${data}</span>
+                                                                                                            <a href="https://wa.me/${waNumber}" target="_blank"
+                                                                                                               class="ms-2 text-success" title="WhatsApp">
+                                                                                                                <i class="fab fa-whatsapp"></i>
+                                                                                                            </a>
+                                                                                                        `;
                         }
                     },
                     {
@@ -807,29 +816,29 @@
                 initComplete: function () {
                     // 1. فلتر الحالة
                     const statusDropdown = $(`
-                                                                                    <select id="statusFilter" class="form-select" style="width: 230px;height:34px; margin-left: 15px;">
-                                                                                        <option value="">تصفية حسب الحالة</option>
-                                                                                        <option value="new_order">طلب جديد</option>
-                                                                                        <option value="needs_modification">يوجد تعديل</option>
-                                                                                        <option value="Pending">تم التصميم</option>
-                                                                                        <option value="Completed">تم الاعتماد</option>
-                                                                                        <option value="preparing">قيد التجهيز</option>
-                                                                                        <option value="Printed">تم الطباعة</option>
-                                                                                        <option value="Received">تم التسليم</option>
-                                                                                        <option value="out_for_delivery">خرج مع التوصيل</option>
-                                                                                        <option value="returned">مرتجع</option>
-                                                                                        <option value="Canceled">رفض الإستلام</option>
-                                                                                    </select>
-                                                                                `);
+                                                                                            <select id="statusFilter" class="form-select" style="width: 230px;height:34px; margin-left: 15px;">
+                                                                                                <option value="">تصفية حسب الحالة</option>
+                                                                                                <option value="new_order">طلب جديد</option>
+                                                                                                <option value="needs_modification">يوجد تعديل</option>
+                                                                                                <option value="Pending">تم التصميم</option>
+                                                                                                <option value="Completed">تم الاعتماد</option>
+                                                                                                <option value="preparing">قيد التجهيز</option>
+                                                                                                <option value="Printed">تم الطباعة</option>
+                                                                                                <option value="Received">تم التسليم</option>
+                                                                                                <option value="out_for_delivery">خرج مع التوصيل</option>
+                                                                                                <option value="returned">مرتجع</option>
+                                                                                                <option value="Canceled">رفض الإستلام</option>
+                                                                                            </select>
+                                                                                        `);
 
                     // 2. فلتر الإضافات
                     const additivesDropdown = $(`
-                                                                                    <select id="additivesFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
-                                                                                        <option value="">تصفية حسب الإضافات</option>
-                                                                                        <option value="with_additives">مع إضافات</option>
-                                                                                        <option value="with_out_additives">بدون إضافات</option>
-                                                                                    </select>
-                                                                                `);
+                                                                                            <select id="additivesFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
+                                                                                                <option value="">تصفية حسب الإضافات</option>
+                                                                                                <option value="with_additives">مع إضافات</option>
+                                                                                                <option value="with_out_additives">بدون إضافات</option>
+                                                                                            </select>
+                                                                                        `);
 
                     // 3. فلتر المصمم (هاد اللي كان ناقص عندك)
                     let designerOptions = '<option value="">تصفية حسب المصمم</option>';
@@ -843,10 +852,10 @@
                     }
 
                     const designerDropdown = $(`
-                                                                                    <select id="designerFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
-                                                                                        ${designerOptions}
-                                                                                    </select>
-                                                                                `);
+                                                                                            <select id="designerFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
+                                                                                                ${designerOptions}
+                                                                                            </select>
+                                                                                        `);
 
                     // 4. تنسيق الحاوية وإضافة الفلاتر
                     $('.dataTables_filter').css({
@@ -989,14 +998,14 @@
                             $('#noteContent').val('');
                             const note = response.note;
                             const newItem = `
-                                                                                            <li class="chat-message">
-                                                                                                <div class="chat-header">
-                                                                                                    <span class="chat-author"><i class="fas fa-user-circle me-1"></i>${note.user_name}</span>
-                                                                                                    <span class="chat-time"><i class="far fa-clock me-1"></i>${note.created_at}</span>
-                                                                                                </div>
-                                                                                                <p class="chat-content">${note.content}</p>
-                                                                                            </li>
-                                                                                        `;
+                                                                                                    <li class="chat-message">
+                                                                                                        <div class="chat-header">
+                                                                                                            <span class="chat-author"><i class="fas fa-user-circle me-1"></i>${note.user_name}</span>
+                                                                                                            <span class="chat-time"><i class="far fa-clock me-1"></i>${note.created_at}</span>
+                                                                                                        </div>
+                                                                                                        <p class="chat-content">${note.content}</p>
+                                                                                                    </li>
+                                                                                                `;
                             $('#notesList').prepend(newItem);
                             // Remove empty indicator if exists
                             $('#notesList').find('.text-muted.text-center').remove();
@@ -1184,7 +1193,7 @@
                     $('#selectAllOrders').prop('checked', false);
                 });
             @endif
-                                                                    }); // ← نهاية $(document).ready()
+                                                                            }); // ← نهاية $(document).ready()
     </script>
 
 @endsection

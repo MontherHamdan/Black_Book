@@ -18,6 +18,7 @@ class BookDesignResource extends JsonResource
             'subcategory_ar' => $this->subcategory->arabic_name ?? 'غير متوفر',
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
+            'is_image_required' => (bool) $this->is_image_required,
         ];
     }
 }

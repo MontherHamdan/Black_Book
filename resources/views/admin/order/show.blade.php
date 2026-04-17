@@ -48,6 +48,36 @@
             right: -15px !important;
         }
 
+        .image-wrapper-relative {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            max-width: 350px;
+        }
+
+        .delete-image-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+            background-color: rgba(220, 53, 69, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .delete-image-btn:hover {
+            background-color: #c82333;
+            transform: scale(1.1);
+        }
+
         @media (max-width: 768px) {
             #orderTabsContent .carousel-item img.unified-image {
                 height: 250px !important;
@@ -403,9 +433,20 @@
 
                                                 @if ($src)
                                                     <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
-                                                        <img src="{{ $src }}" class="unified-image mb-2"
-                                                            style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
-                                                            alt="الصورة الداخلية {{ $index + 1 }}">
+                                                        <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
+                                                            <div class="image-wrapper-relative mx-auto">
+                                                                @if($isAdmin || $isDesigner)
+                                                                    <button type="button" class="delete-image-btn"
+                                                                        onclick="deleteOrderImage('additional_image_id', {{ $img->id }})"
+                                                                        title="حذف الصورة">
+                                                                        <i class="fas fa-trash-alt"></i>
+                                                                    </button>
+                                                                @endif
+                                                                <img src="{{ $src }}" class="unified-image mb-2"
+                                                                    style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
+                                                                    alt="الصورة الداخلية {{ $index + 1 }}">
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 @endif
                                             @endforeach
@@ -448,17 +489,25 @@
                                 <strong class="d-block mb-2">الصورة الشفافة</strong>
 
                                 @if ($transparentImage)
-                                    <img src="{{ $transparentImage }}" class="unified-image mb-2"
-                                        style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
-                                        alt="الطباعة الشفافة">
+                                    <div class="image-wrapper-relative mx-auto">
+                                        @if($isAdmin || $isDesigner)
+                                            <button type="button" class="delete-image-btn"
+                                                onclick="deleteOrderImage('transparent_printing_id')" title="حذف الصورة">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        @endif
+                                        <img src="{{ $transparentImage ?? $transparentImagePath }}" class="unified-image mb-2"
+                                            style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
+                                            alt="الطباعة الشفافة">
+                                    </div>
 
                                     <div class="download-buttons-wrapper">
                                         <!-- <button type="button"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    class="btn-download btn-download-all"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    id="downloadAllTransparentImages">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <i class="fas fa-cloud-download-alt"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    تحميل جميع الصور
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </button> -->
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            class="btn-download btn-download-all"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            id="downloadAllTransparentImages">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="fas fa-cloud-download-alt"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            تحميل جميع الصور
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </button> -->
 
                                         <button type="button" class="btn-download btn-download-current"
                                             id="downloadCurrentTransparentImage">
@@ -481,17 +530,26 @@
                                     </p>
 
                                     @if ($decorationImage)
-                                        <img src="{{ $decorationImage }}" class="unified-image mb-2"
-                                            style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
-                                            alt="صورة الزخرفة">
+                                        <div class="image-wrapper-relative mx-auto">
+                                            @if($isAdmin || $isDesigner)
+                                                <button type="button" class="delete-image-btn"
+                                                    onclick="deleteOrderImage('book_decorations_id')" title="حذف الصورة">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            @endif
+                                            <img src="{{ $decorationImage ?? $order->bookDecoration->image }}"
+                                                class="unified-image mb-2"
+                                                style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
+                                                alt="صورة الزخرفة">
+                                        </div>
 
                                         <div class="download-buttons-wrapper">
                                             <!-- <button type="button"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            class="btn-download btn-download-all"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            id="downloadAllDecorationImages">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="fas fa-cloud-download-alt"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            تحميل جميع الصور
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </button> -->
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            class="btn-download btn-download-all"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            id="downloadAllDecorationImages">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="fas fa-cloud-download-alt"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            تحميل جميع الصور
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </button> -->
 
                                             <button type="button" class="btn-download btn-download-current"
                                                 id="downloadCurrentDecorationImage">
@@ -707,21 +765,21 @@
                                                     style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
                                                     alt="الطباعة الشفافة">
                                                 <!-- 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <div class="download-buttons-wrapper">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <button type="button"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                class="btn-download btn-download-all"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                id="downloadAllBindingTransparentImages">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <i class="fas fa-cloud-download-alt"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                تحميل جميع الصور
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </button>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <div class="download-buttons-wrapper">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <button type="button"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    class="btn-download btn-download-all"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    id="downloadAllBindingTransparentImages">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <i class="fas fa-cloud-download-alt"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    تحميل جميع الصور
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </button>
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <button type="button"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                class="btn-download btn-download-current"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                id="downloadCurrentBindingTransparentImage">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <i class="fas fa-download"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                تحميل الصورة الحالية
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </button>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </div> -->
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <button type="button"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    class="btn-download btn-download-current"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    id="downloadCurrentBindingTransparentImage">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <i class="fas fa-download"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    تحميل الصورة الحالية
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </button>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </div> -->
                                             @else
                                                 <p class="text-muted mb-0">لا توجد صورة للطباعة الشفافة.</p>
                                             @endif
@@ -808,19 +866,31 @@
                                             <div class="final-file-card-label">التصميم النهائي</div>
                                             @if($order->designer_design_file)
                                                 <div class="final-file-img-wrap">
-                                                    <img src="{{ asset('storage/' . $order->designer_design_file) }}"
-                                                        alt="التصميم النهائي">
-                                                    <div class="final-file-img-overlay">
+                                                    <div class="final-file-img-wrap image-wrapper-relative">
+                                                        <img src="{{ asset('storage/' . $order->designer_design_file) }}"
+                                                            alt="التصميم النهائي">
+                                                    </div>
+                                                    <div class="final-file-img-overlay d-flex gap-2 justify-content-center">
                                                         <a href="{{ asset('storage/' . $order->designer_design_file) }}"
-                                                            download class="final-file-dl-btn">
+                                                            download class="final-file-dl-btn" title="تحميل">
                                                             <i class="fas fa-cloud-download-alt"></i> تحميل
                                                         </a>
+                                                        @if($isAdmin || $isDesigner)
+                                                        <button type="button" class="final-file-dl-btn" style="border:none; cursor:pointer;" data-bs-toggle="modal" data-bs-target="#editBindingModal" title="تعديل">
+                                                            <i class="fas fa-upload"></i>
+                                                        </button>
+                                                        @endif
                                                     </div>
                                                 </div>
                                             @else
                                                 <div class="final-file-empty">
                                                     <i class="fas fa-image"></i>
                                                     <span>لم يتم الرفع بعد</span>
+                                                    @if($isAdmin || $isDesigner)
+                                                    <button type="button" class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#editBindingModal">
+                                                        <i class="fas fa-plus"></i> إضافة
+                                                    </button>
+                                                    @endif
                                                 </div>
                                             @endif
                                         </div>
@@ -835,17 +905,27 @@
                                                 <div class="final-file-img-wrap">
                                                     <img src="{{ asset('storage/' . $order->designer_decoration_file) }}"
                                                         alt="الزخرفة">
-                                                    <div class="final-file-img-overlay">
+                                                    <div class="final-file-img-overlay d-flex gap-2 justify-content-center">
                                                         <a href="{{ asset('storage/' . $order->designer_decoration_file) }}"
-                                                            download class="final-file-dl-btn">
+                                                            download class="final-file-dl-btn" title="تحميل">
                                                             <i class="fas fa-cloud-download-alt"></i> تحميل
                                                         </a>
+                                                        @if($isAdmin || $isDesigner)
+                                                        <button type="button" class="final-file-dl-btn" style="border:none; cursor:pointer;" data-bs-toggle="modal" data-bs-target="#editBindingModal" title="تعديل">
+                                                            <i class="fas fa-upload"></i>
+                                                        </button>
+                                                        @endif
                                                     </div>
                                                 </div>
                                             @else
                                                 <div class="final-file-empty">
                                                     <i class="fas fa-image"></i>
                                                     <span>لم يتم الرفع بعد</span>
+                                                    @if($isAdmin || $isDesigner)
+                                                    <button type="button" class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#editBindingModal">
+                                                        <i class="fas fa-plus"></i> إضافة
+                                                    </button>
+                                                    @endif
                                                 </div>
                                             @endif
                                         </div>
@@ -861,17 +941,27 @@
                                                     <div class="final-file-img-wrap">
                                                         <img src="{{ asset('storage/' . $order->designer_gift_file) }}"
                                                             alt="الإهداء المخصص">
-                                                        <div class="final-file-img-overlay">
+                                                        <div class="final-file-img-overlay d-flex gap-2 justify-content-center">
                                                             <a href="{{ asset('storage/' . $order->designer_gift_file) }}" download
-                                                                class="final-file-dl-btn">
+                                                                class="final-file-dl-btn" title="تحميل">
                                                                 <i class="fas fa-cloud-download-alt"></i> تحميل
                                                             </a>
+                                                            @if($isAdmin || $isDesigner)
+                                                            <button type="button" class="final-file-dl-btn" style="border:none; cursor:pointer;" data-bs-toggle="modal" data-bs-target="#editBindingModal" title="تعديل">
+                                                                <i class="fas fa-upload"></i>
+                                                            </button>
+                                                            @endif
                                                         </div>
                                                     </div>
                                                 @else
                                                     <div class="final-file-empty">
                                                         <i class="fas fa-image"></i>
                                                         <span>لم يتم الرفع بعد</span>
+                                                        @if($isAdmin || $isDesigner)
+                                                        <button type="button" class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#editBindingModal">
+                                                            <i class="fas fa-plus"></i> إضافة
+                                                        </button>
+                                                        @endif
                                                     </div>
                                                 @endif
                                             </div>
@@ -902,11 +992,21 @@
                                                             </div>
                                                         </div>
                                                     @endforeach
+                                                    @if($isAdmin || $isDesigner)
+                                                        <div class="final-file-thumb-wrap d-flex justify-content-center align-items-center" style="background: #eef2f5; cursor: pointer; border: 2px dashed #b5c4d1; border-radius: 8px;" data-bs-toggle="modal" data-bs-target="#editBindingModal" title="إضافة مجلد">
+                                                            <i class="fas fa-plus text-primary fs-3"></i>
+                                                        </div>
+                                                    @endif
                                                 </div>
                                             @else
                                                 <div class="final-file-empty">
                                                     <i class="fas fa-images"></i>
                                                     <span>لم يتم الرفع بعد</span>
+                                                    @if($isAdmin || $isDesigner)
+                                                    <button type="button" class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#editBindingModal">
+                                                        <i class="fas fa-plus"></i> إضافة
+                                                    </button>
+                                                    @endif
                                                 </div>
                                             @endif
                                         </div>
@@ -1025,11 +1125,21 @@
 
                             <div class="info-row">
                                 <strong>المحافظة:</strong>
-                                <span>{{ $order->governorate ?? 'غير متوفر' }}</span>
+                                <span>{{ optional($order->governorate)->name_ar ?? 'غير متوفر' }}</span>
                             </div>
 
                             <div class="info-row">
-                                <strong>المنطقة:</strong>
+                                <strong>المدينة:</strong>
+                                <span>{{ optional($order->city)->name_ar ?? 'غير متوفر' }}</span>
+                            </div>
+
+                            <div class="info-row">
+                                <strong>المنطقة (القرية):</strong>
+                                <span>{{ optional($order->area)->name_ar ?? 'غير متوفر' }}</span>
+                            </div>
+
+                            <div class="info-row">
+                                <strong>تفاصيل العنوان:</strong>
                                 <span>{{ $order->address ?? 'غير متوفر' }}</span>
                             </div>
 
@@ -1261,20 +1371,20 @@
 
 
                                     <!-- <div class="download-buttons-wrapper">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <button type="button"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                class="btn-download btn-download-all"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                id="downloadAllDesignImages">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <i class="fas fa-cloud-download-alt"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                تحميل جميع الصور
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </button>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <button type="button"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            class="btn-download btn-download-all"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            id="downloadAllDesignImages">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="fas fa-cloud-download-alt"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            تحميل جميع الصور
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </button>
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <button type="button"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                class="btn-download btn-download-current"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                id="downloadCurrentDesignImage">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <i class="fas fa-download"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                تحميل الصورة الحالية
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </button>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </div> -->
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <button type="button"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            class="btn-download btn-download-current"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            id="downloadCurrentDesignImage">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="fas fa-download"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            تحميل الصورة الحالية
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </button>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div> -->
                                 @else
                                     <p class="text-muted mb-0">لا يوجد تصميم محدّد لهذا الطلب.</p>
                                 @endif
@@ -1298,9 +1408,20 @@
                                         <div class="carousel-inner text-center">
                                             @foreach ($customDesignImages as $index => $img)
                                                 <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
-                                                    <img src="{{ $img->resolved_url }}" class="unified-image mb-2"
-                                                        style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
-                                                        alt="تصميم آخر {{ $index + 1 }}">
+                                                    <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
+                                                        <div class="image-wrapper-relative mx-auto">
+                                                            @if($isAdmin || $isDesigner)
+                                                                <button type="button" class="delete-image-btn"
+                                                                    onclick="deleteOrderImage('custom_design_image_id', {{ $img->id }})"
+                                                                    title="حذف الصورة">
+                                                                    <i class="fas fa-trash-alt"></i>
+                                                                </button>
+                                                            @endif
+                                                            <img src="{{ $img->resolved_url }}" class="unified-image mb-2"
+                                                                style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
+                                                                alt="تصميم آخر {{ $index + 1 }}">
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             @endforeach
                                         </div>
@@ -1342,17 +1463,20 @@
                                 <strong class="d-block mb-2">الصورة الأمامية</strong>
 
                                 @if ($frontSrc)
-                                    <img src="{{ $frontSrc }}" class="unified-image mb-2"
-                                        style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
-                                        alt="الصورة الأمامية">
+                                    <div class="image-wrapper-relative mx-auto">
+                                        @if($isAdmin || $isDesigner)
+                                            <button type="button" class="delete-image-btn"
+                                                onclick="deleteOrderImage('front_image_id')" title="حذف الصورة">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        @endif
+                                        <img src="{{ $frontSrc }}" class="unified-image mb-2"
+                                            style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
+                                            alt="الصورة الأمامية">
+                                    </div>
 
                                     <div class="download-buttons-wrapper">
-                                        <!-- <button type="button"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            class="btn-download btn-download-all"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            id="downloadAllFrontImages">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="fas fa-cloud-download-alt"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            تحميل جميع الصور
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </button> -->
+
 
                                         <button type="button" class="btn-download btn-download-current"
                                             id="downloadCurrentFrontImage">
@@ -1384,9 +1508,20 @@
 
                                                 @if ($backSrc)
                                                     <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
-                                                        <img src="{{ $backSrc }}" class="unified-image mb-2"
-                                                            style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
-                                                            alt="الصورة الخلفية {{ $index + 1 }}">
+                                                        <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
+                                                            <div class="image-wrapper-relative mx-auto">
+                                                                @if($isAdmin || $isDesigner)
+                                                                    <button type="button" class="delete-image-btn"
+                                                                        onclick="deleteOrderImage('back_image_ids', {{ $backImage->id }})"
+                                                                        title="حذف الصورة">
+                                                                        <i class="fas fa-trash-alt"></i>
+                                                                    </button>
+                                                                @endif
+                                                                <img src="{{ $backSrc }}" class="unified-image mb-2"
+                                                                    style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
+                                                                    alt="الصورة الخلفية {{ $index + 1 }}">
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 @endif
                                             @endforeach
@@ -1647,295 +1782,446 @@
             style="direction: rtl; text-align: right;">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <form action="{{ route('orders.updateInternalBook', $order->id) }}" method="POST"enctype="multipart/form-data">
-                                @csrf
-                                @method('PUT')
-                                <div class="modal-header">
-                                    <h5 class="modal-title">تعديل الدفتر من الداخل</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-                                        style="margin: 0 auto 0 0;"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="mb-3">
-                                        <label class="form-label">نوع الإهداء</label>
-                                        <select name="gift_type" class="form-select">
-                                            <option value="none" {{ $order->gift_type == 'none' ? 'selected' : '' }}>بدون إهداء</option>
-                                            <option value="default" {{ $order->gift_type == 'default' ? 'selected' : '' }}>إهداء موحّد
-                                            </option>
-                                            <option value="custom" {{ $order->gift_type == 'custom' ? 'selected' : '' }}>إهداء مخصّص
-                                            </option>
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">نص العبارة / الإهداء المخصص</label>
-                                        <textarea name="gift_title" class="form-control" rows="3">{{ $order->gift_title }}</textarea>
-                                    </div>
-                                    <hr>
-                                    <div class="mb-3">
-                                        <label class="form-label">الصور الداخلية</label>
-                                        <input type="file" name="internal_images[]" class="form-control" accept="image/*" multiple>
-                                        <small class="text-muted">يمكنك اختيار أكثر من صورة. الصور الجديدة ستضاف للصور الحالية.</small>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">الطباعة الشفافة</label>
-                                        <input type="file" name="transparent_image" class="form-control" accept="image/*">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">صورة الزخرفة</label>
-                                        <input type="file" name="decoration_image" class="form-control" accept="image/*">
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                                    <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
-                                </div>
-                            </form>
+                    <form action="{{ route('orders.updateInternalBook', $order->id) }}" method="POST"
+                        enctype="multipart/form-data">
+                        @csrf
+                        @method('PUT')
+                        <div class="modal-header">
+                            <h5 class="modal-title">تعديل الدفتر من الداخل</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                                style="margin: 0 auto 0 0;"></button>
                         </div>
-                    </div>
-                </div>
-
-                {{-- Modal 4: تجليد الدفتر --}}
-                <div class="modal fade" id="editBindingModal" tabindex="-1" aria-hidden="true"
-                    style="direction: rtl; text-align: right;">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <form action="{{ route('orders.updateBindingTab', $order->id) }}" method="POST"
-                                enctype="multipart/form-data">
-                                @csrf
-                                @method('PUT')
-                                <div class="modal-header">
-                                    <h5 class="modal-title">تعديل التجليد</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-                                        style="margin: 0 auto 0 0;"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="mb-3">
-                                        <label class="form-label">زخرفة الكتاب</label>
-                                        <select name="book_decorations_id" class="form-select">
-                                            <option value="">بدون زخرفة</option>
-                                            @foreach($decorations as $dec)
-                                                <option value="{{ $dec->id }}" {{ $order->book_decorations_id == $dec->id ? 'selected' : '' }}>{{ $dec->name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">عدد الورق</label>
-                                        <input type="number" name="pages_number" class="form-control"
-                                            value="{{ $order->pages_number }}">
-                                    </div>
-                                    <div class="mb-3 form-check">
-                                        <input type="checkbox" class="form-check-input" name="is_sponge" id="modal_is_sponge" value="1"
-                                            {{ $order->is_sponge ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="modal_is_sponge">إسفنج</label>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">تحميل ملف SVG للطالب</label>
-                                        <input type="file" name="new_svg" class="form-control" accept=".svg,.txt">
-                                        <small class="text-muted">لرفع كود SVG للاسم.</small>
-                                    </div>
-                                </div>
-                                <hr>
-                                <h6 class="fw-bold text-primary mb-3">مرفقات التجليد النهائية (مطلوبة لتغيير الحالة)</h6>
-
-                                <div class="mb-3">
-                                    <label class="form-label">صورة التصميم النهائي <span class="text-danger">*</span></label>
-                                    <input type="file" name="designer_design_file" class="form-control" accept="image/*">
-                                    @if($order->designer_design_file) <small class="text-success">✓ تم الرفع مسبقاً (الرفع مجدداً
-                                    سيستبدل القديم)</small> @endif
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label">صورة الزخرفة <span class="text-danger">*</span></label>
-                                    <input type="file" name="designer_decoration_file" class="form-control" accept="image/*">
-                                    @if($order->designer_decoration_file) <small class="text-success">✓ تم الرفع مسبقاً</small> @endif
-                                </div>
-
-                                @if($order->gift_type === 'custom')
-                                    <div class="mb-3">
-                                        <label class="form-label">صورة الإهداء المخصص <span class="text-danger">*</span></label>
-                                        <input type="file" name="designer_gift_file" class="form-control" accept="image/*">
-                                        @if($order->designer_gift_file) <small class="text-success">✓ تم الرفع مسبقاً</small> @endif
-                                    </div>
-                                @endif
-
-                                <div class="mb-3">
-                                    <label class="form-label">الصور الداخلية <span class="text-danger">(مطلوب {{ $internalImagesCount }}
-                                            صور)</span></label>
-                                    <input type="file" name="designer_internal_files[]" class="form-control" accept="image/*" multiple>
-                                    <small class="text-muted">الرجاء تحديد {{ $internalImagesCount }} صور معاً.</small>
-                                    @if(is_array($order->designer_internal_files) && count($order->designer_internal_files) > 0)
-                                        <br><small class="text-success">✓ تم رفع {{ count($order->designer_internal_files) }} صور
-                                            مسبقاً</small>
-                                    @endif
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                                    <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
-                                </div>
-                            </form>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">نوع الإهداء</label>
+                                <select name="gift_type" class="form-select">
+                                    <option value="none" {{ $order->gift_type == 'none' ? 'selected' : '' }}>بدون إهداء</option>
+                                    <option value="default" {{ $order->gift_type == 'default' ? 'selected' : '' }}>إهداء موحّد
+                                    </option>
+                                    <option value="custom" {{ $order->gift_type == 'custom' ? 'selected' : '' }}>إهداء مخصّص
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">نص العبارة / الإهداء المخصص</label>
+                                <textarea name="gift_title" class="form-control" rows="3">{{ $order->gift_title }}</textarea>
+                            </div>
+                            <hr>
+                            <div class="mb-3">
+                                <label class="form-label">الصور الداخلية</label>
+                                <input type="file" name="internal_images[]" class="form-control" accept="image/*" multiple>
+                                <small class="text-muted">يمكنك اختيار أكثر من صورة. الصور الجديدة ستضاف للصور الحالية.</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">الطباعة الشفافة</label>
+                                <input type="file" name="transparent_image" class="form-control" accept="image/*">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">صورة الزخرفة</label>
+                                <input type="file" name="decoration_image" class="form-control" accept="image/*">
+                            </div>
                         </div>
-                    </div>
-                </div>
-
-                {{-- Modal 5: معلومات التوصيل --}}
-                <div class="modal fade" id="editDeliveryModal" tabindex="-1" aria-hidden="true"
-                    style="direction: rtl; text-align: right;">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <form action="{{ route('orders.updateDeliveryInfo', $order->id) }}" method="POST">
-                                @csrf
-                                @method('PUT')
-                                <div class="modal-header">
-                                    <h5 class="modal-title">تعديل معلومات التوصيل</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-                                        style="margin: 0 auto 0 0;"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="mb-3">
-                                        <label class="form-label">رقم 1</label>
-                                        <input type="text" name="delivery_number_one" class="form-control"
-                                            value="{{ $order->delivery_number_one }}">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">رقم 2</label>
-                                        <input type="text" name="delivery_number_two" class="form-control"
-                                            value="{{ $order->delivery_number_two }}">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">المحافظة</label>
-                                        <input type="text" name="governorate" class="form-control" value="{{ $order->governorate }}">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">المنطقة / العنوان</label>
-                                        <input type="text" name="address" class="form-control" value="{{ $order->address }}">
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                                    <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
-                                </div>
-                            </form>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                            <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
                         </div>
-                    </div>
+                    </form>
                 </div>
+            </div>
+        </div>
+
+        {{-- Modal 4: تجليد الدفتر --}}
+        <div class="modal fade" id="editBindingModal" tabindex="-1" aria-hidden="true"
+            style="direction: rtl; text-align: right;">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="{{ route('orders.updateBindingTab', $order->id) }}" method="POST"
+                        enctype="multipart/form-data">
+                        @csrf
+                        @method('PUT')
+                        <div class="modal-header">
+                            <h5 class="modal-title">تعديل التجليد</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                                style="margin: 0 auto 0 0;"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">زخرفة الكتاب</label>
+                                <select name="book_decorations_id" class="form-select">
+                                    <option value="">بدون زخرفة</option>
+                                    @foreach($decorations as $dec)
+                                        <option value="{{ $dec->id }}" {{ $order->book_decorations_id == $dec->id ? 'selected' : '' }}>{{ $dec->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">عدد الورق</label>
+                                <input type="number" name="pages_number" class="form-control"
+                                    value="{{ $order->pages_number }}">
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" name="is_sponge" id="modal_is_sponge" value="1"
+                                    {{ $order->is_sponge ? 'checked' : '' }}>
+                                <label class="form-check-label" for="modal_is_sponge">إسفنج</label>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">تحميل ملف SVG للطالب</label>
+                                <input type="file" name="new_svg" class="form-control" accept=".svg,.txt">
+                                <small class="text-muted">لرفع كود SVG للاسم.</small>
+                            </div>
+                        </div>
+                        <hr>
+                        <h6 class="fw-bold text-primary mb-3">مرفقات التجليد النهائية (مطلوبة لتغيير الحالة)</h6>
+
+                        <div class="mb-3">
+                            <label class="form-label">صورة التصميم النهائي <span class="text-danger">*</span></label>
+                            <input type="file" name="designer_design_file" class="form-control" accept="image/*">
+                            @if($order->designer_design_file) <small class="text-success">✓ تم الرفع مسبقاً (الرفع مجدداً
+                            سيستبدل القديم)</small> @endif
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">صورة الزخرفة <span class="text-danger">*</span></label>
+                            <input type="file" name="designer_decoration_file" class="form-control" accept="image/*">
+                            @if($order->designer_decoration_file) <small class="text-success">✓ تم الرفع مسبقاً</small> @endif
+                        </div>
+
+                        @if($order->gift_type === 'custom')
+                            <div class="mb-3">
+                                <label class="form-label">صورة الإهداء المخصص <span class="text-danger">*</span></label>
+                                <input type="file" name="designer_gift_file" class="form-control" accept="image/*">
+                                @if($order->designer_gift_file) <small class="text-success">✓ تم الرفع مسبقاً</small> @endif
+                            </div>
+                        @endif
+
+                        <div class="mb-3">
+                            <label class="form-label">الصور الداخلية <span class="text-danger">(مطلوب {{ $internalImagesCount }}
+                                    صور)</span></label>
+                            <input type="file" name="designer_internal_files[]" class="form-control" accept="image/*" multiple>
+                            <small class="text-muted">الرجاء تحديد {{ $internalImagesCount }} صور معاً.</small>
+                            @if(is_array($order->designer_internal_files) && count($order->designer_internal_files) > 0)
+                                <br><small class="text-success">✓ تم رفع {{ count($order->designer_internal_files) }} صور
+                                    مسبقاً</small>
+                            @endif
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                            <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {{-- Modal 5: معلومات التوصيل --}}
+        <div class="modal fade" id="editDeliveryModal" tabindex="-1" aria-hidden="true"
+            style="direction: rtl; text-align: right;">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="{{ route('orders.updateDeliveryInfo', $order->id) }}" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <div class="modal-header">
+                            <h5 class="modal-title">تعديل معلومات التوصيل</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                                style="margin: 0 auto 0 0;"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">رقم 1</label>
+                                <input type="text" name="delivery_number_one" class="form-control"
+                                    value="{{ $order->delivery_number_one }}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">رقم 2</label>
+                                <input type="text" name="delivery_number_two" class="form-control"
+                                    value="{{ $order->delivery_number_two }}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">المحافظة <span class="text-danger">*</span></label>
+                                <select name="governorate_id" id="admin_gov_select" class="form-select" required>
+                                    <option value="">اختر المحافظة...</option>
+                                    @foreach($governorates as $gov)
+                                        <option value="{{ $gov->id }}" {{ $order->governorate_id == $gov->id ? 'selected' : '' }}>
+                                            {{ $gov->name_ar ?: $gov->name_en }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">المدينة <span class="text-danger">*</span></label>
+                                <select name="city_id" id="admin_city_select" class="form-select" required>
+                                    <option value="">اختر المدينة...</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">المنطقة (القرية) <span class="text-danger">*</span></label>
+                                <select name="area_id" id="admin_area_select" class="form-select" required>
+                                    <option value="">اختر المنطقة...</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">تفاصيل العنوان (الشارع، البناية، إلخ) <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" name="address" class="form-control" value="{{ $order->address }}" required>
+                            </div>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                            <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     @endif
 
-        <script>
-            window.orderShowConfig = {
-                csrfToken: '{{ csrf_token() }}',
-                updateStatusUrl: '{{ route('orders.updateStatus') }}',
-                updateDesignerUrl: '{{ route('orders.updateDesigner') }}',
-                currentUniversityMajorId: {{ $order->university_major_id ?? 'null' }},
-                currentDiplomaMajorId: {{ $order->diploma_major_id ?? 'null' }},
-            };
+    <script>
+        window.orderShowConfig = {
+            csrfToken: '{{ csrf_token() }}',
+            updateStatusUrl: '{{ route('orders.updateStatus') }}',
+            updateDesignerUrl: '{{ route('orders.updateDesigner') }}',
+            currentUniversityMajorId: {{ $order->university_major_id ?? 'null' }},
+            currentDiplomaMajorId: {{ $order->diploma_major_id ?? 'null' }},
+        };
 
-        </script>
-        <script src="{{ asset('js/order-show.js') }}"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
+    </script>
+    <script src="{{ asset('js/order-show.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
 
-                // 1. قراءة الـ Hash من الرابط لفتح التبويب مباشرة
-                var hash = window.location.hash;
-                if (hash) {
-                    var targetTabButton = document.querySelector('.order-tabs button[data-bs-target="' + hash + '"]');
-                    if (targetTabButton) {
-                        var tab = new bootstrap.Tab(targetTabButton);
-                        tab.show();
-                        setTimeout(() => {
-                            document.querySelector('.order-tabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }, 300);
-                    }
+            // 1. قراءة الـ Hash من الرابط لفتح التبويب مباشرة
+            var hash = window.location.hash;
+            if (hash) {
+                var targetTabButton = document.querySelector('.order-tabs button[data-bs-target="' + hash + '"]');
+                if (targetTabButton) {
+                    var tab = new bootstrap.Tab(targetTabButton);
+                    tab.show();
+                    setTimeout(() => {
+                        document.querySelector('.order-tabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 300);
                 }
+            }
 
-                // 2. تحسين السحب (Drag) لبرامج مثل الـ Word التي تقبل كود الـ HTML المدمج
-                document.addEventListener('dragstart', async function (e) {
-                    if (e.target && e.target.classList.contains('drag-to-ps')) {
-                        const imgUrl = e.target.src;
-                        e.dataTransfer.setData('text/plain', imgUrl);
+            // 2. تحسين السحب (Drag) لبرامج مثل الـ Word التي تقبل كود الـ HTML المدمج
+            document.addEventListener('dragstart', async function (e) {
+                if (e.target && e.target.classList.contains('drag-to-ps')) {
+                    const imgUrl = e.target.src;
+                    e.dataTransfer.setData('text/plain', imgUrl);
 
-                        try {
-                            // سحب كود الـ SVG ووضعه كـ HTML في الحافظة أثناء السحب ليفهمه Word
-                            fetch(imgUrl).then(res => res.text()).then(svgText => {
-                                e.dataTransfer.setData('text/html', svgText);
-                            });
-                        } catch (err) { }
-                    }
-                });
-
-                // 3. السر الأعظم: كود "نسخ للفوتوشوب"
-                const copyBtns = document.querySelectorAll('.copy-for-ps-btn');
-                copyBtns.forEach(btn => {
-                    btn.addEventListener('click', async function () {
-                        const originalHtml = this.innerHTML;
-                        this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري النسخ...';
-                        this.classList.add('disabled');
-
-                        const svgUrl = this.getAttribute('data-url');
-
-                        try {
-                            // جلب محتوى الـ SVG
-                            const response = await fetch(svgUrl);
-                            const svgText = await response.text();
-
-                            // تحويله لـ Blob
-                            const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
-                            const DOMURL = window.URL || window.webkitURL || window;
-                            const url = DOMURL.createObjectURL(svgBlob);
-
-                            // رسمه على Canvas بدقة 2000x2000 بكسل عشان الفوتوشوب
-                            const img = new Image();
-                            img.onload = function () {
-                                const canvas = document.createElement('canvas');
-                                canvas.width = 2000;
-                                canvas.height = 2000;
-                                const ctx = canvas.getContext('2d');
-
-                                // رسم الصورة
-                                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                                DOMURL.revokeObjectURL(url);
-
-                                // تحويل الـ Canvas لـ PNG ونسخه لـ Clipboard
-                                canvas.toBlob(async function (blob) {
-                                    try {
-                                        const item = new ClipboardItem({ 'image/png': blob });
-                                        await navigator.clipboard.write([item]);
-
-                                        // نجاح
-                                        btn.innerHTML = '<i class="fas fa-check me-2"></i> تم النسخ بنجاح!';
-                                        btn.classList.replace('btn-dark', 'btn-success');
-                                    } catch (clipboardErr) {
-                                        console.error('Clipboard error:', clipboardErr);
-                                        btn.innerHTML = '<i class="fas fa-times me-2"></i> فشل (راجع صلاحيات المتصفح)';
-                                        btn.classList.replace('btn-dark', 'btn-danger');
-                                    }
-
-                                    // إرجاع الزر لشكله الطبيعي
-                                    btn.classList.remove('disabled');
-                                    setTimeout(() => {
-                                        btn.innerHTML = originalHtml;
-                                        btn.classList.remove('btn-success', 'btn-danger');
-                                        btn.classList.add('btn-dark');
-                                    }, 3000);
-
-                                }, 'image/png');
-                            };
-                            img.src = url;
-
-                        } catch (err) {
-                            console.error('Fetch error:', err);
-                            this.innerHTML = '<i class="fas fa-times me-2"></i> خطأ بالنسخ';
-                            this.classList.replace('btn-dark', 'btn-danger');
-                            this.classList.remove('disabled');
-                            setTimeout(() => {
-                                this.innerHTML = originalHtml;
-                                this.classList.replace('btn-danger', 'btn-dark');
-                            }, 3000);
-                        }
-                    });
-                });
-
+                    try {
+                        // سحب كود الـ SVG ووضعه كـ HTML في الحافظة أثناء السحب ليفهمه Word
+                        fetch(imgUrl).then(res => res.text()).then(svgText => {
+                            e.dataTransfer.setData('text/html', svgText);
+                        });
+                    } catch (err) { }
+                }
             });
 
-        </script>
+            // 3. السر الأعظم: كود "نسخ للفوتوشوب"
+            const copyBtns = document.querySelectorAll('.copy-for-ps-btn');
+            copyBtns.forEach(btn => {
+                btn.addEventListener('click', async function () {
+                    const originalHtml = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري النسخ...';
+                    this.classList.add('disabled');
 
+                    const svgUrl = this.getAttribute('data-url');
+
+                    try {
+                        // جلب محتوى الـ SVG
+                        const response = await fetch(svgUrl);
+                        const svgText = await response.text();
+
+                        // تحويله لـ Blob
+                        const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+                        const DOMURL = window.URL || window.webkitURL || window;
+                        const url = DOMURL.createObjectURL(svgBlob);
+
+                        // رسمه على Canvas بدقة 2000x2000 بكسل عشان الفوتوشوب
+                        const img = new Image();
+                        img.onload = function () {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = 2000;
+                            canvas.height = 2000;
+                            const ctx = canvas.getContext('2d');
+
+                            // رسم الصورة
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            DOMURL.revokeObjectURL(url);
+
+                            // تحويل الـ Canvas لـ PNG ونسخه لـ Clipboard
+                            canvas.toBlob(async function (blob) {
+                                try {
+                                    const item = new ClipboardItem({ 'image/png': blob });
+                                    await navigator.clipboard.write([item]);
+
+                                    // نجاح
+                                    btn.innerHTML = '<i class="fas fa-check me-2"></i> تم النسخ بنجاح!';
+                                    btn.classList.replace('btn-dark', 'btn-success');
+                                } catch (clipboardErr) {
+                                    console.error('Clipboard error:', clipboardErr);
+                                    btn.innerHTML = '<i class="fas fa-times me-2"></i> فشل (راجع صلاحيات المتصفح)';
+                                    btn.classList.replace('btn-dark', 'btn-danger');
+                                }
+
+                                // إرجاع الزر لشكله الطبيعي
+                                btn.classList.remove('disabled');
+                                setTimeout(() => {
+                                    btn.innerHTML = originalHtml;
+                                    btn.classList.remove('btn-success', 'btn-danger');
+                                    btn.classList.add('btn-dark');
+                                }, 3000);
+
+                            }, 'image/png');
+                        };
+                        img.src = url;
+
+                    } catch (err) {
+                        console.error('Fetch error:', err);
+                        this.innerHTML = '<i class="fas fa-times me-2"></i> خطأ بالنسخ';
+                        this.classList.replace('btn-dark', 'btn-danger');
+                        this.classList.remove('disabled');
+                        setTimeout(() => {
+                            this.innerHTML = originalHtml;
+                            this.classList.replace('btn-danger', 'btn-dark');
+                        }, 3000);
+                    }
+                });
+            });
+
+        });
+
+    </script>
+    <script>
+        function deleteOrderImage(fieldName, imageId = null, filePath = null) {
+            Swal.fire({
+                title: 'هل أنت متأكد؟',
+                text: "سيتم حذف هذه الصورة نهائياً ولن تتمكن من التراجع!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'نعم، احذفها!',
+                cancelButtonText: 'إلغاء'
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                    Swal.fire({
+                        title: 'جاري الحذف...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
+                    fetch(`/orders/{{ $order->id }}/delete-image`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            field_name: fieldName,
+                            image_id: imageId,
+                            file_path: filePath
+                        })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success', title: 'تم الحذف!', text: data.message, timer: 1500, showConfirmButton: false
+                                }).then(() => window.location.reload());
+                            } else {
+                                Swal.fire('خطأ!', data.message, 'error');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire('خطأ!', 'حدث مشكلة في الاتصال بالسيرفر.', 'error');
+                        });
+                }
+            });
+        }
+
+    </script>
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const govSelect = document.getElementById('admin_gov_select');
+            const citySelect = document.getElementById('admin_city_select');
+            const areaSelect = document.getElementById('admin_area_select');
+
+            // 🔴 الحل هون: عرفنا الرابط الأساسي بشكل آمن جداً
+            const baseUrl = "{{ url('/') }}";
+
+            if (govSelect && citySelect && areaSelect) {
+                const currentCityId = '{{ $order->city_id }}';
+                const currentAreaId = '{{ $order->area_id }}';
+
+                function fetchCities(govId, selectedCityId = null) {
+                    if (!govId) {
+                        citySelect.innerHTML = '<option value="">اختر المدينة...</option>';
+                        areaSelect.innerHTML = '<option value="">اختر المنطقة...</option>';
+                        return;
+                    }
+
+                    // استخدمنا الـ baseUrl مع مسار الـ API
+                    fetch(`${baseUrl}/api/v1/locations/cities/${govId}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            let options = '<option value="">اختر المدينة...</option>';
+                            data.data.forEach(city => {
+                                let selected = (selectedCityId == city.id) ? 'selected' : '';
+                                options += `<option value="${city.id}" ${selected}>${city.name_ar || city.name_en}</option>`;
+                            });
+                            citySelect.innerHTML = options;
+
+                            if (selectedCityId) {
+                                fetchAreas(selectedCityId, currentAreaId);
+                            } else {
+                                areaSelect.innerHTML = '<option value="">اختر المنطقة...</option>';
+                            }
+                        })
+                        .catch(error => console.error('Error fetching cities:', error));
+                }
+
+                function fetchAreas(cityId, selectedAreaId = null) {
+                    if (!cityId) {
+                        areaSelect.innerHTML = '<option value="">اختر المنطقة...</option>';
+                        return;
+                    }
+
+                    // استخدمنا الـ baseUrl مع مسار الـ API
+                    fetch(`${baseUrl}/api/v1/locations/areas/${cityId}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            let options = '<option value="">اختر المنطقة...</option>';
+                            data.data.forEach(area => {
+                                let selected = (selectedAreaId == area.id) ? 'selected' : '';
+                                options += `<option value="${area.id}" ${selected}>${area.name_ar || area.name_en}</option>`;
+                            });
+                            areaSelect.innerHTML = options;
+                        })
+                        .catch(error => console.error('Error fetching areas:', error));
+                }
+
+                govSelect.addEventListener('change', function () {
+                    fetchCities(this.value);
+                });
+
+                citySelect.addEventListener('change', function () {
+                    fetchAreas(this.value);
+                });
+
+                if (govSelect.value) {
+                    fetchCities(govSelect.value, currentCityId);
+                }
+            }
+        });
+    </script>
 @endsection

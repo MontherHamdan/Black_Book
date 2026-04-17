@@ -45,8 +45,7 @@
                                     class="form-select @error('category_id') is-invalid @enderror">
                                     <option value="" disabled>Select Category</option>
                                     @foreach ($categories as $category)
-                                        <option value="{{ $category->id }}"
-                                            {{ $category->id == $bookDesign->category_id ? 'selected' : '' }}>
+                                        <option value="{{ $category->id }}" {{ $category->id == $bookDesign->category_id ? 'selected' : '' }}>
                                             {{ $category->arabic_name }}
                                         </option>
                                     @endforeach
@@ -63,8 +62,7 @@
                                     class="form-select @error('sub_category_id') is-invalid @enderror">
                                     <option value="">Select Subcategory</option>
                                     @foreach ($subCategories as $subCategory)
-                                        <option value="{{ $subCategory->id }}"
-                                            {{ $subCategory->id == $bookDesign->sub_category_id ? 'selected' : '' }}>
+                                        <option value="{{ $subCategory->id }}" {{ $subCategory->id == $bookDesign->sub_category_id ? 'selected' : '' }}>
                                             {{ $subCategory->arabic_name }}
                                         </option>
                                     @endforeach
@@ -74,7 +72,16 @@
                                 @enderror
                             </div>
                         </div>
-
+                        <div class="form-check form-switch mb-4 mt-2">
+                            <input class="form-check-input" type="checkbox" role="switch" id="is_image_required"
+                                name="is_image_required" value="1" {{ $bookDesign->is_image_required ? 'checked' : '' }}
+                                style="transform: scale(1.3); margin-right: 10px;">
+                            <label class="form-check-label fw-bold ms-2" for="is_image_required" style="cursor: pointer;">
+                                هل تحميل الصور (الأمامية/الخلفية) إجباري لهذا التصميم؟
+                            </label>
+                            <small class="d-block text-muted ms-4">إذا قمت بتفعيل هذا الخيار، لن يتمكن الطالب من تجاوز خطوة
+                                رفع الصور.</small>
+                        </div>
                         <!-- Submit Button -->
                         <div class="text-end">
                             <button type="submit" class="btn btn-primary px-4">Update Design</button>
@@ -87,7 +94,7 @@
 
     <!-- Script for dynamic subcategory population -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const categorySelect = document.getElementById('category_id');
             const subCategorySelect = document.getElementById('sub_category_id');
             const selectedCategoryId = '{{ $bookDesign->category_id }}'; // Get the currently selected category ID
@@ -128,7 +135,7 @@
             populateSubCategories(selectedCategoryId);
 
             // Update subcategories when a new category is selected
-            categorySelect.addEventListener('change', function() {
+            categorySelect.addEventListener('change', function () {
                 populateSubCategories(this.value);
             });
         });

@@ -50,11 +50,19 @@
                 </div>
 
                 {{-- 📦 Delivery Grid - Ultra Modern Floating UI 📦 --}}
+                <div class="d-flex justify-content-between align-items-center mb-3 px-2 mt-4">
+                    <h5 class="fw-bold text-slate-700 m-0"><i class="fas fa-list-ul me-2 text-primary"></i> قائمة الشحنات</h5>
+                    <button id="bulkPrintBtn" class="btn btn-info text-white fw-bold shadow-sm px-4 rounded-pill" disabled style="background-color: #0dcaf0; border-color: #0dcaf0;">
+                        <i class="fas fa-print me-1"></i> طباعة المحدد (<span id="printCount">0</span>)
+                    </button>
+                </div>
                 <div class="table-responsive" style="min-height: 500px; padding: 5px;">
                     <table class="table custom-ui-table align-middle w-100 mb-0">
                         <thead>
                             <tr>
-                                <th width="4%" class="text-center text-muted fw-bold py-3 border-0"></th>
+                                <th width="5%" class="text-center py-3 border-0">
+                                    <input class="form-check-input shadow-sm" type="checkbox" id="selectAllDeliveries" style="transform: scale(1.2); cursor: pointer;" title="تحديد الكل للطباعة">
+                                </th>
                                 <th class="text-muted fw-bold py-3 border-0 fs-6" width="30%">المجموعة / الطلبات التابعة
                                 </th>
                                 <th class="text-center text-muted fw-bold py-3 border-0 fs-6">الكمية</th>
@@ -74,7 +82,7 @@
                                     $totalBooks = $ordersGroup->count();
                                     $masterPhoneOne = $ordersGroup->first()->delivery_number_one;
                                     $masterPhoneTwo = $ordersGroup->first()->delivery_number_two;
-                                    $masterAddress = current(array_filter([$ordersGroup->first()->governorate, $ordersGroup->first()->address]));
+                                    $masterAddress = current(array_filter([$ordersGroup->first()->governorate->name_ar, $ordersGroup->first()->address]));
                                     $aggregatePrice = $ordersGroup->sum('final_price_with_discount');
                                     $hasMultiple = $totalBooks > 1;
                                     $currentStatus = $ordersGroup->first()->status;
@@ -92,12 +100,20 @@
 
                                 {{-- 💳 Parent Row 💳 --}}
                                 <tr class="ui-row bg-white">
-                                    <td class="text-center py-4 position-relative">
+                                 <td class="text-center py-4 position-relative">
                                         <div class="position-absolute top-0 bottom-0 end-0"
                                             style="width: 4px; background: {{ $isGroup ? '#3b82f6' : '#94a3b8' }}; border-radius: 0 12px 12px 0;">
                                         </div>
+                                        
+                                        <div class="d-flex align-items-center justify-content-center gap-2">
+                                            {{-- حماية: نظهر مربع التحديد فقط للشحنات المترحلة --}}
+                                            @if(in_array($currentStatus, ['out_for_delivery', 'Received', 'returned', 'Canceled']))
+                                                <input class="form-check-input delivery-checkbox shadow-sm" type="checkbox" value="{{ json_encode($orderIds) }}" style="transform: scale(1.2); cursor: pointer;">
+                                            @else
+                                                <span title="يجب تحويل الحالة لـ 'خرج مع التوصيل' أولاً"><i class="fas fa-lock text-muted opacity-25"></i></span>
+                                            @endif
 
-                                        @if($hasMultiple)
+                                            @if($hasMultiple)
                                             <button class="btn btn-sm text-secondary expand-btn" data-bs-toggle="collapse"
                                                 data-bs-target="#collapse-{{ $groupKey }}" aria-expanded="false"
                                                 title="عرض التفاصيل">
@@ -197,6 +213,12 @@
                                                     </option>
                                                 @endforeach
                                             </select>
+                                            {{-- زر الطباعة الفردي --}}
+                                            @if(in_array($currentStatus, ['out_for_delivery', 'Received', 'returned', 'Canceled']))
+                                                <button class="btn btn-info text-white shadow-sm ms-2 print-single-btn" data-ids="{{ json_encode($orderIds) }}" title="طباعة بوليصة الشحن" style="border-radius: 8px;">
+                                                    <i class="fas fa-print"></i>
+                                                </button>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -320,22 +342,31 @@
     </div>
 
     <script>
-        function updateGroupStatus(selectElement, groupIdsArray) {
+function updateGroupStatus(selectElement, groupIdsArray) {
             const newStatus = selectElement.value;
             const originalValue = selectElement.getAttribute('data-original-value');
 
             if (!newStatus) return;
 
             const selectedText = selectElement.options[selectElement.selectedIndex].text;
+            
+            // 🔴 تعديل رسالة التحذير بناءً على الحالة
+            let alertHtml = `سيتم تغيير حالة <strong>${groupIdsArray.length}</strong> طلب إلى <span class="fw-bold text-primary">"${selectedText}"</span>. هل أنت متأكد؟`;
+            let confirmBtnColor = '#0f172a';
+
+            if (newStatus === 'Canceled') {
+                alertHtml = `سيتم تغيير الحالة إلى <span class="fw-bold text-danger">"${selectedText}"</span>.<br><br><span class="text-danger fw-bold"><i class="fas fa-exclamation-triangle"></i> تنبيه: سيتم إلغاء بوليصة الشحن من نظام شركة التوصيل نهائياً!</span><br>هل أنت متأكد؟`;
+                confirmBtnColor = '#dc2626'; // أحمر للخطورة
+            }
 
             Swal.fire({
                 title: 'تأكيد التحديث',
-                html: `سيتم تغيير حالة <strong>${groupIdsArray.length}</strong> طلب إلى <span class="fw-bold text-primary">"${selectedText}"</span>. هل أنت متأكد؟`,
-                icon: 'question',
+                html: alertHtml,
+                icon: newStatus === 'Canceled' ? 'warning' : 'question',
                 showCancelButton: true,
                 confirmButtonText: 'تأكيد التحديث',
                 cancelButtonText: 'إلغاء',
-                confirmButtonColor: '#0f172a',
+                confirmButtonColor: confirmBtnColor,
                 cancelButtonColor: '#94a3b8',
                 reverseButtons: true,
                 customClass: {
@@ -413,7 +444,99 @@
                 });
             });
         });
-    </script>
+   document.addEventListener('DOMContentLoaded', function () {
+            // --- Logic 1: Checkboxes & Bulk Print Button UI ---
+            const selectAll = document.getElementById('selectAllDeliveries');
+            const checkboxes = document.querySelectorAll('.delivery-checkbox');
+            const bulkPrintBtn = document.getElementById('bulkPrintBtn');
+            const printCountSpan = document.getElementById('printCount');
+
+            function updateBulkButton() {
+                const checked = document.querySelectorAll('.delivery-checkbox:checked');
+                printCountSpan.textContent = checked.length;
+                bulkPrintBtn.disabled = checked.length === 0;
+                
+                if (checked.length > 0 && checked.length === checkboxes.length) {
+                    selectAll.checked = true;
+                } else {
+                    selectAll.checked = false;
+                }
+            }
+
+            if (selectAll) {
+                selectAll.addEventListener('change', function() {
+                    checkboxes.forEach(cb => cb.checked = this.checked);
+                    updateBulkButton();
+                });
+            }
+
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', updateBulkButton);
+            });
+
+            // --- Logic 2: Execute Print (AJAX) ---
+            function executePrint(orderIdsArray, btnElement) {
+                const originalHtml = btnElement.innerHTML;
+                btnElement.disabled = true;
+                btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                fetch('{{ route("orders.printAWBs") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ order_ids: orderIdsArray })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    btnElement.disabled = false;
+                    btnElement.innerHTML = originalHtml;
+
+                    if (data.success && data.url) {
+                        window.open(data.url, '_blank'); // فتح الـ PDF بتاب جديد
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'تم تجهيز بوليصة الشحن', showConfirmButton: false, timer: 3000 });
+                    } else {
+                        Swal.fire('تنبيه', data.message || 'حدث خطأ أثناء الطباعة.', 'warning');
+                    }
+                })
+                .catch(error => {
+                    btnElement.disabled = false;
+                    btnElement.innerHTML = originalHtml;
+                    Swal.fire('خطأ اتصال', 'تأكد أن الطلبات تم ترحيلها بنجاح لشركة التوصيل.', 'error');
+                });
+            }
+
+            // A) Individual Print Click
+            document.querySelectorAll('.print-single-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Extract the array of IDs stored in data-ids
+                    const ids = JSON.parse(this.getAttribute('data-ids'));
+                    executePrint(ids, this);
+                });
+            });
+
+            // B) Bulk Print Click
+            if (bulkPrintBtn) {
+                bulkPrintBtn.addEventListener('click', function() {
+                    const checked = document.querySelectorAll('.delivery-checkbox:checked');
+                    let allIds = [];
+                    checked.forEach(cb => {
+                        const ids = JSON.parse(cb.value);
+                        allIds = allIds.concat(ids); // Flatten arrays
+                    });
+
+                    // Remove duplicates just in case
+                    const uniqueIds = [...new Set(allIds)];
+                    
+                    if (uniqueIds.length > 0) {
+                        executePrint(uniqueIds, this);
+                    }
+                });
+            }
+        });
+   </script>
 
     <style>
         /* 🌟 Minimalist Premium UI Styles 🌟 */

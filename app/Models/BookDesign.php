@@ -10,8 +10,10 @@ class BookDesign extends Model
 {
     use HasFactory;
     use SoftDeletes;
+
     protected $table = 'book_designs';
-    protected $fillable = ['image', 'category_id', 'sub_category_id', 'is_uploaded_by_user'];
+
+    protected $fillable = ['image', 'category_id', 'sub_category_id', 'is_uploaded_by_user', 'is_image_required'];
 
     public function category()
     {

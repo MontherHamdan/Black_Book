@@ -11,6 +11,7 @@ class CountryController extends Controller
     public function index()
     {
         $countries = Country::orderBy('name')->get();
+
         return view('admin.countries.index', compact('countries'));
     }
 
@@ -27,8 +28,8 @@ class CountryController extends Controller
     public function update(Request $request, Country $country)
     {
         $request->validate([
-            'name' => 'required|string|max:255|unique:countries,name,' . $country->id,
-            'code' => 'required|string|max:10|unique:countries,code,' . $country->id,
+            'name' => 'required|string|max:255|unique:countries,name,'.$country->id,
+            'code' => 'required|string|max:10|unique:countries,code,'.$country->id,
             'dial_code' => 'required|string|max:10',
             // استبدلنا image|mimes بـ file لتقبل أي شيء، مع الإبقاء على حجم 2 ميجابايت كحد أقصى
             'flag_image' => 'nullable|file|max:2048',
@@ -42,9 +43,9 @@ class CountryController extends Controller
             }
 
             $file = $request->file('flag_image');
-            $filename = time() . '_' . $file->getClientOriginalName();
+            $filename = time().'_'.$file->getClientOriginalName();
             $file->move(public_path('uploads/flags'), $filename);
-            $data['flag_image'] = 'uploads/flags/' . $filename;
+            $data['flag_image'] = 'uploads/flags/'.$filename;
         }
 
         $country->update($data);
@@ -65,9 +66,9 @@ class CountryController extends Controller
 
         if ($request->hasFile('flag_image')) {
             $file = $request->file('flag_image');
-            $filename = time() . '_' . $file->getClientOriginalName();
+            $filename = time().'_'.$file->getClientOriginalName();
             $file->move(public_path('uploads/flags'), $filename);
-            $data['flag_image'] = 'uploads/flags/' . $filename;
+            $data['flag_image'] = 'uploads/flags/'.$filename;
         }
 
         Country::create($data);
@@ -82,6 +83,7 @@ class CountryController extends Controller
         }
 
         $country->delete();
+
         return redirect()->route('countries.index')->with('success', 'The country has been successfully deleted.');
     }
 }

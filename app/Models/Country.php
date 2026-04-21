@@ -15,4 +15,9 @@ class Country extends Model
         'dial_code',
         'flag_image',
     ];
+
+    public function governorates()
+    {
+        return $this->hasMany(Governorate::class);
+    }
 }

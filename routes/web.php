@@ -129,7 +129,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('governorates/{governorate}/add-address', [GovernorateController::class, 'addAddress'])->name('governorates.addAddress');
     Route::delete('addresses/{address}', [GovernorateController::class, 'deleteAddress'])->name('addresses.delete');
     Route::get('/governorates/{id}/addresses', [GovernorateController::class, 'getAddresses'])->name('governorates.addresses');
-
+    Route::post('/governorates/{governorate}/toggle-active', [GovernorateController::class, 'toggleActive'])->name('governorates.toggleActive');
     // Discount Code
     Route::resource('discount-codes', DiscountCodeController::class);
 
@@ -191,5 +191,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // Countries
     Route::resource('countries', CountryController::class);
+    Route::post('/locations/sync', function () {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('logestechs:sync-api');
 
+            return back()->with('success', 'تم مزامنة المناطق مع شركة التوصيل بنجاح!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'حدث خطأ أثناء المزامنة: '.$e->getMessage());
+        }
+    })->name('locations.sync');
 });

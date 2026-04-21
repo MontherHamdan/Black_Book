@@ -2,98 +2,107 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Country;
 use App\Models\Governorate;
-use App\Models\Address;
 use Illuminate\Http\Request;
 
 class GovernorateController extends Controller
 {
+    /**
+     * عرض جميع المحافظات مع اسم الدولة التابعة لها
+     */
     public function index()
     {
-        $governorates = Governorate::with(['addresses' => function ($query) {
-            $query->paginate(10); // Adjust the per-page limit as needed
-        }])->get();
+        // جلب المحافظات مع الدولة التابعة لها، وترتيبها حسب الدولة ثم الاسم
+        $governorates = Governorate::with('country')->orderBy('country_id')->orderBy('name_ar')->get();
 
         return view('admin.governorates.index', compact('governorates'));
     }
 
-
+    /**
+     * صفحة إضافة محافظة يدوياً (إن لزم الأمر)
+     */
     public function create()
     {
-        return view('admin.governorates.create');
+        $countries = Country::where('is_active', true)->get();
+
+        return view('admin.governorates.create', compact('countries'));
     }
 
+    /**
+     * حفظ المحافظة الجديدة
+     */
     public function store(Request $request)
     {
         $request->validate([
+            'country_id' => 'required|exists:countries,id',
             'name_en' => 'required|string|unique:governorates,name_en',
             'name_ar' => 'required|string|unique:governorates,name_ar',
         ]);
 
-        Governorate::create($request->only('name_en', 'name_ar'));
+        $data = $request->only('country_id', 'name_en', 'name_ar');
+        $data['is_active'] = $request->has('is_active'); // التقاط حالة التفعيل
 
-        return redirect()->route('governorates.index')->with('success', 'Governorate created successfully.');
+        Governorate::create($data);
+
+        return redirect()->route('governorates.index')->with('success', 'تم إضافة المحافظة بنجاح.');
     }
 
+    /**
+     * صفحة تعديل المحافظة
+     */
     public function edit(Governorate $governorate)
     {
-        return view('admin.governorates.edit', compact('governorate'));
+        $countries = Country::all();
+
+        return view('admin.governorates.edit', compact('governorate', 'countries'));
     }
 
+    /**
+     * تحديث بيانات المحافظة
+     */
     public function update(Request $request, Governorate $governorate)
     {
         $request->validate([
-            'name_en' => 'required|string|unique:governorates,name_en,' . $governorate->id,
-            'name_ar' => 'required|string|unique:governorates,name_ar,' . $governorate->id,
+            'country_id' => 'required|exists:countries,id',
+            'name_en' => 'required|string|unique:governorates,name_en,'.$governorate->id,
+            'name_ar' => 'required|string|unique:governorates,name_ar,'.$governorate->id,
         ]);
 
-        $governorate->update($request->only('name_en', 'name_ar'));
+        $data = $request->only('country_id', 'name_en', 'name_ar');
+        $data['is_active'] = $request->has('is_active');
 
-        return redirect()->route('governorates.index')->with('success', 'Governorate updated successfully.');
+        $governorate->update($data);
+
+        return redirect()->route('governorates.index')->with('success', 'تم تحديث المحافظة بنجاح.');
     }
 
-    public function destroy(Governorate $governorate)
+    /**
+     * 🚀 دالة تفعيل وتعطيل المحافظة عبر الـ AJAX
+     */
+    public function toggleActive(Governorate $governorate)
     {
-        // Delete all addresses related to this governorate first
-        $governorate->addresses()->delete();
-
-        $governorate->delete();
-
-        return redirect()->route('governorates.index')->with('success', 'Governorate and related addresses deleted successfully.');
-    }
-
-    public function addAddress(Request $request, Governorate $governorate)
-    {
-        $request->validate([
-            'name_en' => 'required|string',
-            'name_ar' => 'required|string',
+        $governorate->update([
+            'is_active' => ! $governorate->is_active,
         ]);
-
-        $address = new Address();
-        $address->name_en = $request->name_en;
-        $address->name_ar = $request->name_ar;
-        $address->governorate_id = $governorate->id;
-        $address->save();
 
         return response()->json([
             'success' => true,
-            'message' => 'Address added successfully.',
-            'address' => $address,
+            'message' => 'تم تغيير حالة المحافظة بنجاح.',
+            'is_active' => $governorate->is_active,
         ]);
     }
 
-
-    public function getAddresses($governorateId)
+    /**
+     * حذف المحافظة
+     */
+    public function destroy(Governorate $governorate)
     {
-        $addresses = Address::where('governorate_id', $governorateId)->paginate(10);
+        // إذا كان هناك مدن مرتبطة بهذه المحافظة، يفضل حذفها أو منع الحذف
+        // $governorate->cities()->delete(); // في حال أردت تفعيل الحذف المتسلسل مستقبلاً
 
-        return view('admin.governorates.partials.addresses', compact('addresses'))->render();
-    }
+        $governorate->delete();
 
-    public function deleteAddress(Address $address)
-    {
-        $address->delete();
-
-        return redirect()->route('governorates.index')->with('success', 'Address deleted successfully.');
+        return redirect()->route('governorates.index')->with('success', 'تم حذف المحافظة بنجاح.');
     }
 }

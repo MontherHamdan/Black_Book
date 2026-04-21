@@ -8,12 +8,20 @@ use Illuminate\Database\Eloquent\Model;
 class Governorate extends Model
 {
     use HasFactory;
-    protected $fillable = ['name_en', 'name_ar', 'logestechs_id'];
 
-    public function addresses()
+    protected $fillable = [
+        'country_id',
+        'name_en',
+        'name_ar',
+        'logestechs_id',
+        'is_active',
+    ];
+
+    public function country()
     {
-        return $this->hasMany(Address::class);
+        return $this->belongsTo(Country::class);
     }
+
     public function cities()
     {
         return $this->hasMany(City::class);

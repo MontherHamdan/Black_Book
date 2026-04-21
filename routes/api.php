@@ -1,28 +1,29 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\SvgController;
-use App\Http\Controllers\Api\MajorController;
-use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\AddressController;
-use App\Http\Controllers\Api\DiplomaController;
-use App\Http\Controllers\Api\BookTypeController;
-use App\Http\Controllers\Api\UserImageController;
-use App\Http\Controllers\Api\BookDesignController;
-use App\Http\Controllers\Api\UniversityController;
-use App\Http\Controllers\Api\GovernorateController;
-use App\Http\Controllers\Api\PhoneNumbersConroller;
-use App\Http\Controllers\Api\DiplomaMajorController;
-use App\Http\Controllers\Api\DiscountCodeController;
 use App\Http\Controllers\Api\BookDecorationController;
 use App\Http\Controllers\Api\BookDesginCategoryController;
 use App\Http\Controllers\Api\BookDesginSubCategoryController;
-use App\Http\Controllers\Api\VideoController;
-use App\Http\Controllers\Api\SpecializedDepartmentController;
-use App\Http\Controllers\Api\PlanController;
+use App\Http\Controllers\Api\BookDesignController;
+use App\Http\Controllers\Api\BookTypeController;
 use App\Http\Controllers\Api\CountryApiController;
+use App\Http\Controllers\Api\DiplomaController;
+use App\Http\Controllers\Api\DiplomaMajorController;
+use App\Http\Controllers\Api\DiscountCodeController;
+use App\Http\Controllers\Api\GovernorateController;
 use App\Http\Controllers\Api\LocationController;
+use App\Http\Controllers\Api\MajorController;
+use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\PhoneNumbersConroller;
+use App\Http\Controllers\Api\PlanController;
+use App\Http\Controllers\Api\SpecializedDepartmentController;
+use App\Http\Controllers\Api\SvgController;
+use App\Http\Controllers\Api\UniversityController;
+use App\Http\Controllers\Api\UserImageController;
+use App\Http\Controllers\Api\VideoController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
 /* |-------------------------------------------------------------------------- | API Routes |-------------------------------------------------------------------------- | | Here is where you can register API routes for your application. These | routes are loaded by the RouteServiceProvider and all of them will | be assigned to the "api" middleware group. Make something great! | */
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -80,7 +81,7 @@ Route::prefix('v1')->group(function () {
 
     Route::resource('orders', OrderController::class)->only(['store']);
 
-    // Videos 
+    // Videos
     Route::apiResource('videos', VideoController::class)->only(['index', 'show']);
 
     // Specialized Departments
@@ -91,7 +92,8 @@ Route::prefix('v1')->group(function () {
     // Countries
     Route::get('countries', [CountryApiController::class, 'index']);
 
+    Route::get('/locations/countries', [LocationController::class, 'getCountries']);
     Route::get('/locations/governorates', [LocationController::class, 'getGovernorates']);
     Route::get('/locations/cities/{governorate_id}', [LocationController::class, 'getCities']);
-    Route::get('/locations/areas/{city_id}', [LocationController::class, 'getAreas']); 
+    Route::get('/locations/areas/{city_id}', [LocationController::class, 'getAreas']);
 });

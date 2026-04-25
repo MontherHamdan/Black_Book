@@ -92,6 +92,7 @@
                                         'Received' => 'تم التسليم',
                                         'returned' => 'مرتجع',
                                         'Canceled' => 'رفض الاستلام',
+                                        'Printed' => 'تمت الطباعة',
                                     ];
 
                                     // استخراج جميع أرقام الطلبات في هذه المجموعة
@@ -280,10 +281,11 @@
                 </td>
 
                 <td class="text-center py-3">
-                    @php
+                   @php
                         $statusClass = 'bg-slate-100 text-slate-600';
                         $statusLabel = $order->status;
                         $statuses = [
+                            'Printed' => ['class' => 'bg-indigo-100 text-indigo-700', 'label' => 'تمت الطباعة'], // 👈 الحالة الجديدة
                             'out_for_delivery' => ['class' => 'bg-amber-100 text-amber-700', 'label' => 'خرج مع التوصيل'],
                             'Received' => ['class' => 'bg-emerald-100 text-emerald-700', 'label' => 'تم التسليم'],
                             'returned' => ['class' => 'bg-slate-200 text-slate-700', 'label' => 'مرتجع'],
@@ -677,6 +679,22 @@ function updateGroupStatus(selectElement, groupIdsArray) {
             box-shadow: 0 0 0 0.25rem rgba(15, 23, 42, 0.1) !important;
             border-color: #0f172a !important;
             background-color: #fff;
+        }
+        .bg-rose-100 {
+            background-color: #ffe4e6;
+        }
+
+        .text-rose-700 {
+            color: #be123c;
+        }
+
+        /* 👇 ضيف هدول الكلاسين الجداد لحالة تمت الطباعة 👇 */
+        .bg-indigo-100 {
+            background-color: #e0e7ff;
+        }
+
+        .text-indigo-700 {
+            color: #4338ca;
         }
     </style>
 @endsection

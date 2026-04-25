@@ -2,18 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
+use App\Http\Resources\BookDesignResource;
 use App\Models\BookDesign;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Storage;
-use App\Http\Resources\BookDesignResource;
 
 class BookDesignController extends Controller
 {
     /**
      * Build a query for fetching book designs.
      *
-     * @param  Request  $request
      * @return \Illuminate\Database\Eloquent\Builder
      */
     protected function buildQuery(Request $request)
@@ -37,7 +35,6 @@ class BookDesignController extends Controller
     /**
      * Fetch paginated book designs with filters and relationships.
      *
-     * @param  Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function index(Request $request)
@@ -66,7 +63,6 @@ class BookDesignController extends Controller
     /**
      * Fetch all book designs with filters and relationships.
      *
-     * @param  Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function all(Request $request)
@@ -86,15 +82,15 @@ class BookDesignController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'image' => 'required|image|mimes:jpg,png,jpeg,gif,webp|max:20480',
+            'image' => 'required|image|max:20480',
         ]);
 
         // Store the image
         $imageFile = $request->file('image');
-        $imageName = time() . '_' . $imageFile->getClientOriginalName();
+        $imageName = time().'_'.$imageFile->getClientOriginalName();
         $imagePath = $imageFile->storeAs('book_designs', $imageName, 'public');
-        $imageUrl = url('storage/' . $imagePath);
-        
+        $imageUrl = url('storage/'.$imagePath);
+
         // Save to database
         $bookDesign = BookDesign::create([
             'image' => $imageUrl,
@@ -107,5 +103,4 @@ class BookDesignController extends Controller
             'data' => $bookDesign,
         ]);
     }
-
 }

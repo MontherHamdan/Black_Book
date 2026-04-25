@@ -13,7 +13,7 @@ class BookDesign extends Model
 
     protected $table = 'book_designs';
 
-    protected $fillable = ['image', 'category_id', 'sub_category_id', 'is_uploaded_by_user', 'is_image_required'];
+    protected $fillable = ['design_name', 'image', 'category_id', 'sub_category_id', 'is_uploaded_by_user', 'is_image_required'];
 
     public function category()
     {

@@ -26,7 +26,18 @@
                         <h4 class="mb-4 text-primary">Edit Book Design</h4>
 
                         <!-- Book Design Image -->
-                        <div class="form-group mb-3">
+                        <div class="form-group mb-4">
+                            <label for="design_name" class="form-label fw-bold">Design Name (Optional)</label>
+                            <input type="text" name="design_name" id="design_name"
+                                class="form-control @error('design_name') is-invalid @enderror"
+                                value="{{ old('design_name', $bookDesign->design_name ?? '') }}"
+                                placeholder="Enter a distinctive name for this design...">
+                            @error('design_name')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="form-group mb-4">
                             <label for="image" class="form-label fw-bold">Book Design Image</label>
                             <input type="file" data-plugins="dropify" data-height="200"
                                 class="form-control @error('image') is-invalid @enderror" name="image" id="image"

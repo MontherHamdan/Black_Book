@@ -37,7 +37,8 @@ class BookDesignController extends Controller
     {
         // Validate incoming request
         $validated = $request->validate([
-            'image' => 'required|image|mimes:jpg,png,jpeg,gif,webp|max:2048',
+            'design_name' => 'nullable|string|max:255',
+            'image' => 'required|file|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:2048',
             'category_id' => 'required|exists:book_design_categories,id',
             'sub_category_id' => 'nullable|exists:book_design_sub_categories,id',
             'is_image_required' => 'boolean',
@@ -57,6 +58,7 @@ class BookDesignController extends Controller
 
         // Save the image URL and other data in the database
         BookDesign::create([
+            'design_name' => $validated['design_name'] ?? null,
             'image' => $imageUrl, // Store the full URL instead of just the path
             'category_id' => $validated['category_id'],
             'sub_category_id' => $subCategoryId,
@@ -97,7 +99,8 @@ class BookDesignController extends Controller
     {
         // Validate the input
         $validated = $request->validate([
-            'image' => 'nullable|image|mimes:jpg,png,jpeg,gif,webp|max:2048',
+            'design_name' => 'nullable|string|max:255',
+            'image' => 'nullable|image|max:2048',
             'category_id' => 'required|exists:book_design_categories,id',
             'sub_category_id' => 'nullable|exists:book_design_sub_categories,id',
             'is_image_required' => 'boolean',
@@ -122,6 +125,7 @@ class BookDesignController extends Controller
 
         // Update the BookDesign record
         $bookDesign->update([
+            'design_name' => $validated['design_name'] ?? $bookDesign->design_name,
             'image' => $validated['image'] ?? $bookDesign->image,
             'category_id' => $validated['category_id'],
             'sub_category_id' => $validated['sub_category_id'] ?? null,

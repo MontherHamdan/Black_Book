@@ -88,52 +88,83 @@
         /* Table Styling */
         #orders-table {
             border-collapse: separate;
-            border-spacing: 0;
+            border-spacing: 0 12px;
+            /* 👈 هنا السحر: مسافة 12 بكسل بين كل صف وصف */
             margin-bottom: 0;
             border: none;
         }
 
         #orders-table thead th {
-            background-color: #f8fafc;
+            background-color: transparent;
+            /* شلنا الخلفية عشان يبين أرتب مع الفواصل */
             color: #64748b;
             text-transform: uppercase;
             font-size: 0.75rem;
             font-weight: 700;
             letter-spacing: 0.5px;
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid #e2e8f0;
-            border-top: none;
+            padding: 0.5rem 1.5rem;
+            /* صغرنا البادينج للهيدر شوي */
+            border: none;
+        }
+
+        /* تنسيق الصف كأنه بطاقة (Card) */
+        #orders-table tbody tr {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            transition: box-shadow 0.2s ease;
+        }
+
+        /* حركة خفيفة لما تمرر الماوس فوق الصف */
+        #orders-table tbody tr:hover {
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.06);
         }
 
         #orders-table tbody td {
             padding: 1rem 1.5rem;
             vertical-align: middle;
-            border-bottom: 1px solid #f1f5f9;
+            background-color: #ffffff;
+            /* لون أبيض افتراضي لكل خلية */
             color: #334155;
             font-weight: 500;
+            border-top: 1px solid #000000ff;
+            border-bottom: 1px solid #f1f5f9;
         }
 
-        #orders-table tbody tr {
-            transition: background-color 0.2s ease;
+        /* تدوير الزاوية اليمنى (لأننا باللغة العربية RTL) */
+        #orders-table tbody td:first-child {
+            border-right: 1px solid #f1f5f9;
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
         }
 
-        #orders-table tbody tr:hover {
-            background-color: #f8fafc !important;
+        /* تدوير الزاوية اليسرى */
+        #orders-table tbody td:last-child {
+            border-left: 1px solid #f1f5f9;
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
         }
 
-        /* Row Highlighting (RTL borders use border-right) */
-        .order-has-notes {
+        /* Row Highlighting (تلوين الخلايا الداخلية وتطبيق الحد على أول خلية يمين) */
+        .order-has-notes td {
             background-color: #fffbeb !important;
+        }
+
+        .order-has-notes td:first-child {
             border-right: 4px solid #f59e0b !important;
         }
 
-        .order-duplicate-phone {
+        .order-duplicate td {
             background-color: #fef2f2 !important;
+        }
+
+        .order-duplicate td:first-child {
             border-right: 4px solid #ef4444 !important;
         }
 
-        .order-with-additives {
+        .order-with-additives td {
             background-color: #eef2ff !important;
+        }
+
+        .order-with-additives td:first-child {
             border-right: 4px solid #6366f1 !important;
         }
 
@@ -293,6 +324,54 @@
             border-color: #6366f1;
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
+
+        /* Discount badges */
+        .badge-discount {
+            font-size: 0.7rem;
+            padding: 0.3rem 0.65rem;
+            border-radius: 50rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            white-space: nowrap;
+        }
+
+        .badge-individual {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+
+        .badge-group-ok {
+            background: rgba(99, 102, 241, 0.1);
+            color: #4f46e5;
+            border: 1px solid rgba(99, 102, 241, 0.25);
+        }
+
+        .badge-group-warn {
+            background: rgba(245, 158, 11, 0.12);
+            color: #b45309;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            animation: pulse-warn 1.8s ease-in-out infinite;
+        }
+
+        @keyframes pulse-warn {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 0 0 5px rgba(245, 158, 11, 0);
+            }
+        }
+
+        .no-discount {
+            font-size: 0.72rem;
+            color: #94a3b8;
+        }
     </style>
 
 
@@ -351,6 +430,7 @@
                                     <th>رقم الهاتف</th>
                                     <th>رقم الهاتف 2</th>
                                     <th>السعر</th>
+                                    <th class="text-center">حالة الخصم</th>
                                     <th class="text-center">الإجراءات</th>
                                 </tr>
                             </thead>
@@ -450,7 +530,87 @@
             </div>
         </div>
     </div>
+    {{-- Modal التنبيه الإبداعي لخصم المجموعة في صفحة الفهرس --}}
+    <div class="modal fade" id="groupWarningIndexModal" tabindex="-1" aria-hidden="true"
+        style="direction: rtl; text-align: right;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
 
+                {{-- هيدر المودال --}}
+                <div
+                    class="modal-header border-0 pb-0 pt-4 px-4 position-relative d-flex justify-content-between align-items-start">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center me-3"
+                            style="width: 50px; height: 50px; background-color: rgba(220, 53, 69, 0.1);">
+                            <i class="fas fa-exclamation-triangle fa-lg text-danger"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold text-dark mb-1">المجموعة لم تكتمل!</h5>
+                            <p class="text-muted small mb-0">يرجى الانتباه لعدد الطلبات في هذه الخطة</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close m-0" data-bs-dismiss="modal" aria-label="Close"
+                        style="opacity: 0.5;"></button>
+                </div>
+
+                <div class="modal-body px-4 py-4">
+                    {{-- معلومات الخطة --}}
+                    <div class="p-3 mb-4 rounded-3" style="background: #f8f9fa; border: 1px solid #e9ecef;">
+                        <div class="d-flex align-items-center mb-1">
+                            <i class="fas fa-gem text-primary me-2"></i>
+                            <span class="text-secondary fw-semibold">الخطة المُطبَّقة:</span>
+                        </div>
+                        <div class="fs-5 fw-bold text-dark ms-4 pl-2" id="modalAppliedPlan"></div>
+                    </div>
+
+                    {{-- شريط التقدم والأرقام --}}
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-end mb-2">
+                            <div>
+                                <span class="text-muted fw-bold d-block" style="font-size: 0.85rem;">التقدم الحالي</span>
+                                <strong class="fs-4 text-danger" id="modalCurrentCount"></strong>
+                                <span class="text-muted mx-1">من</span>
+                                <strong class="fs-5 text-dark" id="modalRequiredCount"></strong>
+                                <span class="text-muted small">شخص</span>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge rounded-pill bg-danger-subtle text-danger fw-bold px-3 py-2"
+                                    id="modalMissingCount">
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="progress" style="height: 10px; border-radius: 10px; background-color: #ffe6e6;">
+                            <div id="modalProgressBar"
+                                class="progress-bar bg-danger progress-bar-striped progress-bar-animated"
+                                role="progressbar"></div>
+                        </div>
+                    </div>
+
+                    {{-- قسم السعر --}}
+                    <div class="d-flex align-items-center justify-content-between p-3 rounded-4"
+                        style="background: linear-gradient(135deg, #fff3cd 0%, #ffecb3 100%); border: 1px solid rgba(255, 193, 7, 0.3);">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center me-2"
+                                style="width: 35px; height: 35px; background-color: rgba(255, 255, 255, 0.5);">
+                                <i class="fas fa-money-bill-wave text-warning"
+                                    style="filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.1));"></i>
+                            </div>
+                            <span class="fw-bold text-dark">السعر المُطبَّق</span>
+                        </div>
+                        <h4 class="mb-0 fw-black text-dark" style="letter-spacing: -0.5px;">
+                            <span id="modalAppliedPrice"></span> <span class="fs-6 text-muted">JOD</span>
+                        </h4>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0 px-4 pb-4 pt-0 text-start w-100 d-block">
+                    <button type="button" class="btn btn-light w-100 fw-bold py-2 rounded-3 text-secondary"
+                        data-bs-dismiss="modal" style="background-color: #f1f3f5;">إغلاق التنبيه</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <link href="https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
@@ -461,6 +621,7 @@
 
             // مصفوفة المصممين + صلاحيات المستخدم الحالي
             const DESIGNERS = @json($designers);
+            const DISCOUNT_CODES = @json($discountCodes);
             const IS_ADMIN = @json(auth()->user()->isAdmin());
             const IS_SUPERVISOR = @json(method_exists(auth()->user(), 'isSupervisor') ? auth()->user()->isSupervisor() : false);
             const IS_PRINTER = @json(method_exists(auth()->user(), 'isPrinter') ? auth()->user()->isPrinter() : false);
@@ -484,14 +645,14 @@
 
                         notes.forEach(function (note) {
                             const itemHtml = `
-                                                                                                            <li class="chat-message">
-                                                                                                                <div class="chat-header">
-                                                                                                                    <span class="chat-author"><i class="fas fa-user-circle me-1"></i>${note.user_name}</span>
-                                                                                                                    <span class="chat-time"><i class="far fa-clock me-1"></i>${note.created_at}</span>
-                                                                                                                </div>
-                                                                                                                <p class="chat-content">${note.content}</p>
-                                                                                                            </li>
-                                                                                                        `;
+                                                                                                                                                                                                        <li class="chat-message">
+                                                                                                                                                                                                            <div class="chat-header">
+                                                                                                                                                                                                                <span class="chat-author"><i class="fas fa-user-circle me-1"></i>${note.user_name}</span>
+                                                                                                                                                                                                                <span class="chat-time"><i class="far fa-clock me-1"></i>${note.created_at}</span>
+                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                            <p class="chat-content">${note.content}</p>
+                                                                                                                                                                                                        </li>
+                                                                                                                                                                                                    `;
                             $list.append(itemHtml);
                         });
                     },
@@ -516,6 +677,7 @@
                         d.date_from = $('#dateFrom').val();
                         d.date_to = $('#dateTo').val();
                         d.designer_id = $('#designerFilter').val();
+                        d.code_name = $('#codeNameFilter').val();
                     },
                     error: function (xhr) {
                         console.error('DataTables AJAX error:', xhr);
@@ -533,7 +695,7 @@
                 pageLength: 10,
                 columns: [
                     @if(auth()->user()->isAdmin())
-                                                                                                                                                                        {
+                                                                                                                                                                                                                                                                                                                                                                {
                             data: null,
                             name: 'checkbox',
                             orderable: false,
@@ -627,12 +789,12 @@
                             // لو ما عنده صلاحية → Badge كبير + المدة فقط
                             if (!canChangeStatus) {
                                 return `
-                                                                                                <div class="text-center">
-                                                                                                    <span class="status-badge-soft shadow-sm ${currentStatus.class}">
-                                                                                                        ${currentStatus.label}
-                                                                                                    </span>
-                                                                                                </div>
-                                                                                            `;
+                                                                                                                                                                                            <div class="text-center">
+                                                                                                                                                                                                <span class="status-badge-soft shadow-sm ${currentStatus.class}">
+                                                                                                                                                                                                    ${currentStatus.label}
+                                                                                                                                                                                                </span>
+                                                                                                                                                                                            </div>
+                                                                                                                                                                                        `;
                             }
 
                             // لو عنده صلاحية → Dropdown + المدة تحت
@@ -643,35 +805,34 @@
                                 .map(function (status) {
                                     const cfg = statusConfig[status] || defaultConfig;
                                     return `
-                                                                                                    <li>
-                                                                                                        <a class="dropdown-item change-status-item py-2"
-                                                                                                           href="#"
-                                                                                                           data-order-id="${row.id}"
-                                                                                                           data-new-status="${status}">
-                                                                                                            <span class="status-badge-soft w-100 ${cfg.class}">${cfg.label}</span>
-                                                                                                        </a>
-                                                                                                    </li>
-                                                                                                `;
+                                                                                                                                                                                                <li>
+                                                                                                                                                                                                    <a class="dropdown-item change-status-item py-2"
+                                                                                                                                                                                                       href="#"
+                                                                                                                                                                                                       data-order-id="${row.id}"
+                                                                                                                                                                                                       data-new-status="${status}">
+                                                                                                                                                                                                        <span class="status-badge-soft w-100 ${cfg.class}">${cfg.label}</span>
+                                                                                                                                                                                                    </a>
+                                                                                                                                                                                                </li>
+                                                                                                                                                                                            `;
                                 })
                                 .join('');
-
                             return `
-                                                                                            <div class="text-center">
-                                                                                                <div class="dropdown d-inline">
-                                                                                                    <span
-                                                                                                        class="status-badge-soft shadow-sm dropdown-toggle ${currentStatus.class}"
-                                                                                                        id="statusDropdown${row.id}"
-                                                                                                        data-bs-toggle="dropdown"
-                                                                                                        aria-expanded="false"
-                                                                                                        style="cursor: pointer;">
-                                                                                                        ${currentStatus.label}
-                                                                                                    </span>
-                                                                                                    <ul class="dropdown-menu shadow-sm border-0 rounded-4 p-2" aria-labelledby="statusDropdown${row.id}">
-                                                                                                        ${dropdownItems}
-                                                                                                    </ul>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        `;
+                                                                                <div class="text-center">
+                                                                                    <div class="dropdown d-inline">
+                                                                                        <span
+                                                                                            class="status-badge-soft shadow-sm dropdown-toggle ${currentStatus.class}"
+                                                                                            id="statusDropdown${row.id}"
+                                                                                            data-bs-toggle="dropdown"
+                                                                                            aria-expanded="false"
+                                                                                            style="cursor: pointer;">
+                                                                                            ${currentStatus.label}
+                                                                                        </span>
+                                                                                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 py-2" style="z-index: 1050; min-width: 140px;" aria-labelledby="statusDropdown${row.id}">
+                                                                                            ${dropdownItems}
+                                                                                        </ul>
+                                                                                    </div>
+                                                                                </div>
+                                                                            `;
                         }
                     },
 
@@ -692,26 +853,23 @@
 
                             const notAssignedOption = '<option value="">غير معيّن</option>';
 
-                            // هل الـ select يكون Disabled؟
                             let disabledAttr = '';
 
                             if (!IS_ADMIN) {
-                                // Designer user
                                 if (currentDesignerId && currentDesignerId !== CURRENT_USER_ID) {
-                                    // الطلب معيّن لمصمم آخر → ممنوع يلمسه
                                     disabledAttr = 'disabled';
                                 }
                             }
 
                             return `
-                                                                                                            <select class="form-select form-select-sm order-designer-select"
-                                                                                                                    data-order-id="${row.id}"
-                                                                                                                    data-current-designer-id="${currentDesignerId || ''}"
-                                                                                                                    ${disabledAttr}>
-                                                                                                                ${notAssignedOption}
-                                                                                                                ${optionsHtml}
-                                                                                                            </select>
-                                                                                                        `;
+                                                <select class="form-select form-select-sm order-designer-select"
+                                                    data-order-id="${row.id}"
+                                                    data-current-designer-id="${currentDesignerId || ''}"
+                                                    ${disabledAttr}>
+                                                    ${notAssignedOption}
+                                                    ${optionsHtml}
+                                                </select>
+                                            `;
                         }
                     },
                     {
@@ -766,12 +924,12 @@
                             }
 
                             return `
-                                                                                                            <span>${data}</span>
-                                                                                                            <a href="https://wa.me/${waNumber}" target="_blank"
-                                                                                                               class="ms-2 text-success" title="WhatsApp">
-                                                                                                                <i class="fab fa-whatsapp"></i>
-                                                                                                            </a>
-                                                                                                        `;
+                                                                                                                                                                                                        <span>${data}</span>
+                                                                                                                                                                                                        <a href="https://wa.me/${waNumber}" target="_blank"
+                                                                                                                                                                                                           class="ms-2 text-success" title="WhatsApp">
+                                                                                                                                                                                                            <i class="fab fa-whatsapp"></i>
+                                                                                                                                                                                                        </a>
+                                                                                                                                                                                                    `;
                         }
                     },
                     {
@@ -791,6 +949,41 @@
                         orderable: false
                     },
                     {
+                        data: 'discount_info',
+                        name: 'discount_info',
+                        className: 'text-center',
+                        orderable: false,
+                        searchable: false,
+                        render: function (data, type, row) {
+                            if (!data) {
+                                return '<span class="no-discount">—</span>';
+                            }
+                            const label = data.name || data.code;
+                            if (!data.is_group) {
+                                return `<span class="badge-discount badge-individual" title="${label}">
+                                                        <i class="fas fa-user"></i> فردي
+                                                    </span>`;
+                            }
+                            // مجموعة
+                            if (data.incomplete) {
+                                return `<span class="badge-discount badge-group-warn js-show-group-warning" 
+                                                      data-plan="${label}" 
+                                                      data-current="${data.group_count}" 
+                                                      data-required="${data.required_count}" 
+                                                      data-price="${row.price}"
+                                                      style="cursor: pointer;" title="اضغط لعرض التفاصيل">
+                                                    <i class="fas fa-users"></i> مجموعة
+                                                    <span style="font-size:0.65rem;opacity:0.85;">(${data.group_count}/${data.required_count})</span>
+                                                    <i class="fas fa-exclamation-triangle" style="font-size:0.6rem;"></i>
+                                                </span>`;
+                            }
+                            return `<span class="badge-discount badge-group-ok" title="${label}">
+                                                    <i class="fas fa-users"></i> مجموعة
+                                                    <i class="fas fa-check" style="font-size:0.6rem;"></i>
+                                                </span>`;
+                        }
+                    },
+                    {
                         data: 'actions',
                         name: 'actions',
                         className: 'text-center',
@@ -802,43 +995,40 @@
                     search: "Search Orders:"
                 },
                 rowCallback: function (row, data) {
-                    $(row).removeClass('order-has-notes order-duplicate-phone order-with-additives');
+                    $(row).removeClass('order-has-notes order-duplicate order-with-additives');
 
-                    if (data.is_duplicate_phone) {
-                        $(row).addClass('order-duplicate-phone');
-                    }
-
-                    if (data.is_with_additives) {
-                        $(row).addClass('order-with-additives');
+                    // 🔴 تلوين السطر بالأحمر إذا كان الاسم أو الرقم مكرر فقط
+                    if (data.is_duplicate) {
+                        $(row).addClass('order-duplicate');
                     }
                 },
 
                 initComplete: function () {
                     // 1. فلتر الحالة
                     const statusDropdown = $(`
-                                                                                            <select id="statusFilter" class="form-select" style="width: 230px;height:34px; margin-left: 15px;">
-                                                                                                <option value="">تصفية حسب الحالة</option>
-                                                                                                <option value="new_order">طلب جديد</option>
-                                                                                                <option value="needs_modification">يوجد تعديل</option>
-                                                                                                <option value="Pending">تم التصميم</option>
-                                                                                                <option value="Completed">تم الاعتماد</option>
-                                                                                                <option value="preparing">قيد التجهيز</option>
-                                                                                                <option value="Printed">تم الطباعة</option>
-                                                                                                <option value="Received">تم التسليم</option>
-                                                                                                <option value="out_for_delivery">خرج مع التوصيل</option>
-                                                                                                <option value="returned">مرتجع</option>
-                                                                                                <option value="Canceled">رفض الإستلام</option>
-                                                                                            </select>
-                                                                                        `);
+                                                                                                                                                                                        <select id="statusFilter" class="form-select" style="width: 230px;height:34px; margin-left: 15px;">
+                                                                                                                                                                                            <option value="">تصفية حسب الحالة</option>
+                                                                                                                                                                                            <option value="new_order">طلب جديد</option>
+                                                                                                                                                                                            <option value="needs_modification">يوجد تعديل</option>
+                                                                                                                                                                                            <option value="Pending">تم التصميم</option>
+                                                                                                                                                                                            <option value="Completed">تم الاعتماد</option>
+                                                                                                                                                                                            <option value="preparing">قيد التجهيز</option>
+                                                                                                                                                                                            <option value="Printed">تم الطباعة</option>
+                                                                                                                                                                                            <option value="Received">تم التسليم</option>
+                                                                                                                                                                                            <option value="out_for_delivery">خرج مع التوصيل</option>
+                                                                                                                                                                                            <option value="returned">مرتجع</option>
+                                                                                                                                                                                            <option value="Canceled">رفض الإستلام</option>
+                                                                                                                                                                                        </select>
+                                                                                                                                                                                    `);
 
                     // 2. فلتر الإضافات
                     const additivesDropdown = $(`
-                                                                                            <select id="additivesFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
-                                                                                                <option value="">تصفية حسب الإضافات</option>
-                                                                                                <option value="with_additives">مع إضافات</option>
-                                                                                                <option value="with_out_additives">بدون إضافات</option>
-                                                                                            </select>
-                                                                                        `);
+                                                                                                                                                                                        <select id="additivesFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
+                                                                                                                                                                                            <option value="">تصفية حسب الإضافات</option>
+                                                                                                                                                                                            <option value="with_additives">مع إضافات</option>
+                                                                                                                                                                                            <option value="with_out_additives">بدون إضافات</option>
+                                                                                                                                                                                        </select>
+                                                                                                                                                                                    `);
 
                     // 3. فلتر المصمم (هاد اللي كان ناقص عندك)
                     let designerOptions = '<option value="">تصفية حسب المصمم</option>';
@@ -852,11 +1042,22 @@
                     }
 
                     const designerDropdown = $(`
-                                                                                            <select id="designerFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
-                                                                                                ${designerOptions}
-                                                                                            </select>
-                                                                                        `);
-
+                                                                                                                                                                                        <select id="designerFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
+                                                                                                                                                                                            ${designerOptions}
+                                                                                                                                                                                        </select>
+                                                                                                                                                                                    `);
+                    let codeNameOptions = '<option value="">تصفية حسب المجموعة</option>';
+                    if (typeof DISCOUNT_CODES !== 'undefined') {
+                        DISCOUNT_CODES.forEach(function (code) {
+                            let displayName = code.code_name ? code.code_name : code.discount_code;
+                            codeNameOptions += `<option value="${displayName}">${displayName}</option>`;
+                        });
+                    }
+                    const codeNameDropdown = $(`
+                                        <select id="codeNameFilter" class="form-select shadow-sm" style="width: 175px;height:34px; margin-left: 15px; border-radius: 50rem;">
+                                            ${codeNameOptions}
+                                        </select>
+                                    `);
                     // 4. تنسيق الحاوية وإضافة الفلاتر
                     $('.dataTables_filter').css({
                         display: 'flex',
@@ -867,10 +1068,17 @@
                     $('.dataTables_filter').append(designerDropdown);
                     $('.dataTables_filter').append(statusDropdown);
                     $('.dataTables_filter').append(additivesDropdown);
-
+                    $('.dataTables_filter').append(codeNameDropdown);
                     // 5. تفعيل التحديث التلقائي عند تغيير أي فلتر
-                    $('#statusFilter, #additivesFilter, #designerFilter').on('change', function () {
+                    $('#statusFilter, #additivesFilter, #designerFilter, #codeNameFilter').on('change', function () {
                         table.ajax.reload();
+                    });
+                    let typingTimer;
+                    $('#codeNameFilter').on('keyup', function () {
+                        clearTimeout(typingTimer);
+                        typingTimer = setTimeout(function () {
+                            table.ajax.reload();
+                        }, 500); // ينتظر نص ثانية بعد آخر ضغطة زر
                     });
                 }
             }); // ← نهاية DataTable config
@@ -998,14 +1206,14 @@
                             $('#noteContent').val('');
                             const note = response.note;
                             const newItem = `
-                                                                                                    <li class="chat-message">
-                                                                                                        <div class="chat-header">
-                                                                                                            <span class="chat-author"><i class="fas fa-user-circle me-1"></i>${note.user_name}</span>
-                                                                                                            <span class="chat-time"><i class="far fa-clock me-1"></i>${note.created_at}</span>
-                                                                                                        </div>
-                                                                                                        <p class="chat-content">${note.content}</p>
-                                                                                                    </li>
-                                                                                                `;
+                                                                                                                                                                                                <li class="chat-message">
+                                                                                                                                                                                                    <div class="chat-header">
+                                                                                                                                                                                                        <span class="chat-author"><i class="fas fa-user-circle me-1"></i>${note.user_name}</span>
+                                                                                                                                                                                                        <span class="chat-time"><i class="far fa-clock me-1"></i>${note.created_at}</span>
+                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                    <p class="chat-content">${note.content}</p>
+                                                                                                                                                                                                </li>
+                                                                                                                                                                                            `;
                             $('#notesList').prepend(newItem);
                             // Remove empty indicator if exists
                             $('#notesList').find('.text-muted.text-center').remove();
@@ -1193,7 +1401,26 @@
                     $('#selectAllOrders').prop('checked', false);
                 });
             @endif
-                                                                            }); // ← نهاية $(document).ready()
-    </script>
+                // فتح مودال تنبيه المجموعة وتعبئة بياناته
+                $(document).on('click', '.js-show-group-warning', function() {
+                const plan = $(this).data('plan');
+                    const current = parseInt($(this).data('current')) || 0;
+                    const required = parseInt($(this).data('required')) || 0;
+                    const price = $(this).data('price');
+
+                    const missing = required - current;
+                    const percentage = required > 0 ? (current / required) * 100 : 0;
+
+                    $('#modalAppliedPlan').text(plan);
+                    $('#modalCurrentCount').text(current);
+                    $('#modalRequiredCount').text(required);
+                    $('#modalMissingCount').text('ناقص ' + missing + ' أشخاص');
+                    $('#modalProgressBar').css('width', percentage + '%');
+                    $('#modalAppliedPrice').text(price);
+
+                    $('#groupWarningIndexModal').modal('show');
+                });
+                                                                                                                                                                        }); // ← نهاية $(document).ready()
+        </script>
 
 @endsection

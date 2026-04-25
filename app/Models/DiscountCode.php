@@ -9,7 +9,7 @@ class DiscountCode extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['discount_code', 'discount_value', 'discount_type', 'code_name'];
+    protected $fillable = ['discount_code', 'discount_value', 'discount_type', 'code_name', 'is_group', 'plan_id'];
 
     public function tiers()
     {
@@ -19,5 +19,10 @@ class DiscountCode extends Model
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function plan()
+    {
+        return $this->belongsTo(Plan::class);
     }
 }

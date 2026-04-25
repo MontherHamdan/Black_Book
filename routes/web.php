@@ -73,6 +73,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/orders/{order}/graduate-info', [OrderWebController::class, 'updateGraduateInfo'])->name('orders.updateGraduateInfo');
     Route::put('/orders/{order}/internal-book', [OrderWebController::class, 'updateInternalBook'])->name('orders.updateInternalBook');
     Route::put('/orders/{order}/binding-tab', [OrderWebController::class, 'updateBindingTab'])->name('orders.updateBindingTab');
+    Route::put('/orders/{order}/design-image', [OrderWebController::class, 'updateDesignImage'])->name('orders.updateDesignImage');
     Route::put('/orders/{order}/delivery-info', [OrderWebController::class, 'updateDeliveryInfo'])->name('orders.updateDeliveryInfo');
 
     Route::put('/orders/{order}/dismiss-notes', [OrderWebController::class, 'dismissNotes'])->name('orders.dismissNotes');

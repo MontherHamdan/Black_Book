@@ -4,9 +4,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         /* ╔══════════════════════════════════════════════════╗
-                       ║  BINDING GALLERY — SCOPED UNDER .nb-page        ║
-                       ║  All rules use !important to override style.css  ║
-                       ╚══════════════════════════════════════════════════╝ */
+                           ║  BINDING GALLERY — SCOPED UNDER .nb-page        ║
+                           ║  All rules use !important to override style.css  ║
+                           ╚══════════════════════════════════════════════════╝ */
 
         /* ── Reset global overrides ── */
         .nb-page,
@@ -1267,7 +1267,7 @@
                         'X-CSRF-TOKEN': NB_CSRF,
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify({ id: orderId, status: 'out_for_delivery' })
+                    body: JSON.stringify({ id: orderId, status: 'Printed' })
                 })
                     .then(r => r.json())
                     .then(data => {

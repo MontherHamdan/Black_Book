@@ -31,11 +31,13 @@ class OrderWebController extends Controller
         $designers = User::where('role', User::ROLE_DESIGNER)
             ->orderBy('name')
             ->get(['id', 'name']);
-
+        $discountCodes = DiscountCode::select('id', 'discount_code', 'code_name')
+            ->orderBy('code_name')
+            ->get();
         $allowedStatuses = $this->getAllowedStatuses(auth()->user());
         unset($allowedStatuses['out_for_delivery']);
 
-        return view('admin.order.index', compact('designers', 'allowedStatuses'));
+        return view('admin.order.index', compact('designers', 'allowedStatuses', 'discountCodes'));
     }
 
     public function show($id)
@@ -220,6 +222,40 @@ class OrderWebController extends Controller
         $defaultGiftText = config('app.default_gift_text', 'نص الإهداء الموحّد يوضع هنا...');
 
         // =========================
+        // 🚨 8) نظام تنبيهات خصم المجموعات 🚨
+        // =========================
+        $groupWarning = null;
+
+        if ($order->discountCode && $order->discountCode->is_group && $order->discountCode->plan_id) {
+
+            // 1. كم عدد الطلبات الفعلي اللي استخدموا هاد الكود؟
+            $groupOrdersCount = \App\Models\Order::where('discount_code_id', $order->discountCode->id)->count();
+
+            // 2. شو الخطة المربوطة بكود الخصم؟
+            $appliedPlan = \App\Models\Plan::find($order->discountCode->plan_id);
+
+            if ($appliedPlan) {
+                // 3. 🚨 التنبيه يظهر لما العدد الحالي لسه أقل من العدد المطلوب بالخطة
+                // (يعني: الخصم طُبِّق بس المجموعة ما اكتملت بعد!)
+                if ($groupOrdersCount < $appliedPlan->person_number) {
+
+                    // السعر الأصلي للدفتر (بدون خصم)
+                    $originalPrice = 25;
+
+                    // السعر اللي طُبِّق على هاد الطلب بناءً على الخطة
+                    $appliedPrice = $originalPrice - (float) $appliedPlan->discount_price;
+
+                    $groupWarning = [
+                        'original_price'  => $originalPrice,
+                        'applied_price'   => $appliedPrice,
+                        'applied_plan'    => $appliedPlan->title ?? ('Plan ' . $appliedPlan->id),
+                        'current_count'   => $groupOrdersCount,   // العدد الحالي
+                        'required_count'  => $appliedPlan->person_number, // العدد المطلوب
+                    ];
+                }
+            }
+        }
+        // =========================
         // 🔹 7) تمرير كل شيء للـ View
         // =========================
 
@@ -293,6 +329,8 @@ class OrderWebController extends Controller
             'customDesignImages' => $customDesignImages,
 
             'governorates' => $governorates,
+
+            'groupWarning' => $groupWarning,
 
         ]);
     }
@@ -406,6 +444,7 @@ class OrderWebController extends Controller
         $dateFrom = $request->input('date_from');
         $dateTo = $request->input('date_to');
         $designerFilter = $request->input('designer_id');
+        $codeNameFilter = $request->input('code_name');
 
         $query = Order::with([
             'discountCode',
@@ -441,7 +480,10 @@ class OrderWebController extends Controller
             $query->where(function ($query) use ($searchValue) {
                 $query->where('username_ar', 'like', "%{$searchValue}%")
                     ->orWhere('username_en', 'like', "%{$searchValue}%")
-                    ->orWhere('governorate', 'like', "%{$searchValue}%")
+                    ->orWhereHas('governorate', function ($q) use ($searchValue) { // ✅ التعديل الصح
+                        $q->where('name_ar', 'like', "%{$searchValue}%")
+                            ->orWhere('name_en', 'like', "%{$searchValue}%");
+                    })
                     ->orWhere('address', 'like', "%{$searchValue}%")
                     ->orWhere('user_phone_number', 'like', "%{$searchValue}%")
                     ->orWhere('delivery_number_two', 'like', "%{$searchValue}%")
@@ -472,14 +514,26 @@ class OrderWebController extends Controller
         if (! empty($dateTo)) {
             $query->whereDate('created_at', '<=', $dateTo);
         }
-
-        // ☎️ حساب أرقام الهواتف المكررة (ضمن الفلاتر الحالية)
-        $duplicatePhones = (clone $query)
-            ->select('user_phone_number')
+        if (! empty($codeNameFilter)) {
+            $query->whereHas('discountCode', function ($q) use ($codeNameFilter) {
+                $q->where('code_name', 'like', "%{$codeNameFilter}%")
+                    ->orWhere('discount_code', 'like', "%{$codeNameFilter}%");
+            });
+        }
+        $duplicatePhones = Order::select('user_phone_number')
             ->whereNotNull('user_phone_number')
+            ->where('user_phone_number', '!=', '')
             ->groupBy('user_phone_number')
             ->havingRaw('COUNT(*) > 1')
             ->pluck('user_phone_number')
+            ->toArray();
+
+        $duplicateNames = Order::select('username_ar')
+            ->whereNotNull('username_ar')
+            ->where('username_ar', '!=', '')
+            ->groupBy('username_ar')
+            ->havingRaw('COUNT(*) > 1')
+            ->pluck('username_ar')
             ->toArray();
 
         // ⬇ ترتيب + Pagination
@@ -487,7 +541,7 @@ class OrderWebController extends Controller
             ->orderBy($sortColumn, $sortDirection)
             ->paginate($perPage, ['*'], 'page', $page);
 
-        $formattedOrders = $orders->getCollection()->map(function ($order) use ($duplicatePhones) {
+        $formattedOrders = $orders->getCollection()->map(function ($order) use ($duplicatePhones, $duplicateNames) {
             // ⏱️ معالجة التاريخ بأمان
             try {
                 $createdAt = $order->created_at
@@ -506,6 +560,34 @@ class OrderWebController extends Controller
             $statusDiff = $createdAt
                 ? $createdAt->diffForHumans()
                 : '';
+
+            // 🔸 بيانات الخصم
+            $discountInfo = null;
+            if ($order->discountCode) {
+                $dc = $order->discountCode;
+                $isGroup = (bool) $dc->is_group;
+                $groupCount = null;
+                $requiredCount = null;
+                $incomplete = false;
+
+                if ($isGroup && $dc->plan_id) {
+                    $groupCount = \App\Models\Order::where('discount_code_id', $dc->id)->count();
+                    $plan = \App\Models\Plan::find($dc->plan_id);
+                    if ($plan) {
+                        $requiredCount = (int) $plan->person_number;
+                        $incomplete = $groupCount < $requiredCount;
+                    }
+                }
+
+                $discountInfo = [
+                    'code'          => $dc->discount_code,
+                    'name'          => $dc->code_name,
+                    'is_group'      => $isGroup,
+                    'group_count'   => $groupCount,
+                    'required_count'=> $requiredCount,
+                    'incomplete'    => $incomplete,
+                ];
+            }
 
             return [
                 'id' => $order->id,
@@ -526,13 +608,15 @@ class OrderWebController extends Controller
                 'price' => $order->final_price_with_discount,
 
                 'has_notes' => Note::where('order_id', $order->id)->exists(),
-                'is_duplicate_phone' => in_array($order->user_phone_number, $duplicatePhones),
+                'is_duplicate' => in_array($order->user_phone_number, $duplicatePhones) || in_array($order->username_ar, $duplicateNames),
                 'is_with_additives' => (bool) $order->is_with_additives,
 
                 'designer' => $order->designer ? [
                     'id' => $order->designer->id,
                     'name' => $order->designer->name,
                 ] : null,
+
+                'discount_info' => $discountInfo,
 
                 'actions' => view('admin.order.partials.actions', compact('order'))->render(),
             ];
@@ -1345,8 +1429,8 @@ class OrderWebController extends Controller
                 ], 403);
             }
 
-            // المصمم العادي يسمح له فقط بتعيين نفسه على الطلب
-            if ((int) $request->designer_id !== (int) $user->id) {
+            // المصمم العادي يسمح له فقط بتعيين نفسه على الطلب أو إزالة تعيينه لنفسه (إرجاعه لـ غير معيّن)
+            if ($request->filled('designer_id') && (int) $request->designer_id !== (int) $user->id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'يمكنك فقط تعيين نفسك كمصمم لهذا الطلب.',
@@ -2156,6 +2240,33 @@ class OrderWebController extends Controller
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'حدث خطأ: '.$e->getMessage()], 500);
         }
+    }
+
+    public function updateDesignImage(Request $request, Order $order)
+    {
+        $user = $request->user();
+        if (! $user->isAdmin() && ! $user->isDesigner()) {
+            abort(403, 'غير مصرح لك بتعديل التصميم.');
+        }
+
+        $request->validate([
+            'design_image' => 'required|image|mimes:jpg,jpeg,png,webp|max:10240',
+        ]);
+
+        if ($request->hasFile('design_image')) {
+            $path = $request->file('design_image')->store('user_images', 'public');
+
+            // Create a new BookDesign for this order
+            $design = \App\Models\BookDesign::create([
+                'image' => asset('storage/'.$path),
+                'is_uploaded_by_user' => false,
+            ]);
+
+            $order->book_design_id = $design->id;
+            $order->save();
+        }
+
+        return back()->with('success', 'تم تعديل صورة التصميم المختارة بنجاح.');
     }
 
     /**

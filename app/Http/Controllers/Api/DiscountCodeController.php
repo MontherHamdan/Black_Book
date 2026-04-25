@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Models\DiscountCode;
-use App\Models\Order;
-use App\Models\Plan;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class DiscountCodeController extends Controller
 {
@@ -30,57 +28,14 @@ class DiscountCodeController extends Controller
             ], 404);
         }
 
-        // ─── خصم فردي: ارجع القيمة كما هي ───────────────────────────────
-        if (! $discount->is_group || ! $discount->plan_id) {
-            return response()->json([
-                'id' => $discount->id,
-                'success' => true,
-                'message' => 'Discount code is valid.',
-                'discount_code' => $discount->discount_code,
-                'discount_value' => (float) $discount->discount_value,
-                'discount_type' => $discount->discount_type,
-                'code_name' => $discount->code_name,
-                'is_group' => false,
-            ]);
-        }
-
-        // ─── خصم مجموعات: احسب القيمة بناءً على عدد المستخدمين الحاليين ──
-        // 1. عدد الطلبات الحالية التي تستخدم هذا الكود + 1 (هذا الطلب الجديد)
-        $currentUsageCount = Order::where('discount_code_id', $discount->id)->count() + 1;
-
-        // 2. أفضل خطة تنطبق: أعلى خطة person_number ≤ العدد الحالي
-        $matchedPlan = Plan::where('person_number', '<=', $currentUsageCount)
-            ->orderByDesc('person_number')
-            ->first();
-
-        // 3. الخطة المربوطة بالكود (الخطة المستهدفة)
-        $targetPlan = Plan::find($discount->plan_id);
-
-        if ($matchedPlan) {
-            // وصلوا لخطة → ارجع خصمها
-            $discountValue = (float) $matchedPlan->discount_price;
-            $isEligible = true;
-            $planTitle = $matchedPlan->title ?? ('Plan '.$matchedPlan->id);
-        } else {
-            // لم يصلوا لأقل خطة بعد → لا يستحقون خصمًا بعد
-            $discountValue = 0;
-            $isEligible = false;
-            $planTitle = $targetPlan?->title ?? null;
-        }
-
         return response()->json([
-            'id' => $discount->id,
-            'success' => true,
-            'message' => 'Discount code is valid.',
-            'discount_code' => $discount->discount_code,
-            'discount_value' => $discountValue,
-            'discount_type' => $discount->discount_type,
-            'code_name' => $discount->code_name,
-            'is_group' => true,
-            'is_eligible' => $isEligible,
-            'current_count' => $currentUsageCount,
-            'required_count' => (int) ($targetPlan?->person_number ?? 0),
-            'applied_plan' => $planTitle,
+            'success'        => true,
+            'message'        => 'Discount code is valid.',
+            'id'             => $discount->id,
+            'discount_code'  => $discount->discount_code,
+            'discount_value' => $discount->is_group && $discount->plan_id ? (float) $discount->plan->discount_price : $discount->discount_value,
+            'discount_type'  => $discount->is_group ? 'byJd' : $discount->discount_type,
+            'code_name'      => $discount->code_name,
         ]);
     }
 }

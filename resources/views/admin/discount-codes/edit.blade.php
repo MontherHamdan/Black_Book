@@ -83,6 +83,93 @@
                             </div>
                         </div>
 
+                        {{-- ═══ Contact & Delivery Info (Group ONLY) ═══ --}}
+                        <div class="card border rounded-4 mb-4 group-fields shadow-sm" style="display: none;">
+                            <div class="card-header bg-light rounded-top-4 border-bottom-0">
+                                <h5 class="mb-0 text-primary"><i class="fas fa-truck me-2"></i>Contact & Delivery Details
+                                </h5>
+                            </div>
+                            <div class="card-body p-4 bg-white rounded-bottom-4">
+                                <div class="row">
+                                    <!-- أرقام الهواتف -->
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Primary Phone (رقم الطالب) <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" name="user_phone_number" id="user_phone_number"
+                                            class="form-control shadow-sm"
+                                            value="{{ old('user_phone_number', $discountCode->user_phone_number) }}"
+                                            placeholder="079xxxxxxx">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Secondary Phone (رقم احتياطي)</label>
+                                        <input type="text" name="delivery_number_two" class="form-control shadow-sm"
+                                            value="{{ old('delivery_number_two', $discountCode->delivery_number_two) }}"
+                                            placeholder="078xxxxxxx (Optional)">
+                                    </div>
+
+                                    @php
+                                        // تحديد مكان التوصيل المحفوظ مسبقاً
+                                        $savedTarget = $discountCode->university_id ? 'university' : ($discountCode->governorate_id ? 'home' : 'university');
+                                    @endphp
+
+                                    <div class="col-12 mb-3 mt-2 border-top pt-3">
+                                        <label class="form-label fw-bold d-block mb-2">Delivery Target (مكان
+                                            التوصيل)</label>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="delivery_target"
+                                                id="target_university" value="university" {{ old('delivery_target', $savedTarget) == 'university' ? 'checked' : '' }}>
+                                            <label class="form-check-label fw-bold text-secondary"
+                                                for="target_university">University (للجامعة)</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="delivery_target"
+                                                id="target_home" value="home" {{ old('delivery_target', $savedTarget) == 'home' ? 'checked' : '' }}>
+                                            <label class="form-check-label fw-bold text-secondary" for="target_home">Home
+                                                (للمنزل)</label>
+                                        </div>
+                                    </div>
+
+                                    <!-- الجامعة -->
+                                    <div class="col-12 mb-3 delivery-uni-fields">
+                                        <label class="form-label fw-bold">University (الجامعة)</label>
+                                        <select name="university_id" id="university_id" class="form-select shadow-sm">
+                                            <option value="" selected disabled>Select University</option>
+                                            @foreach($universities as $uni)
+                                                <option value="{{ $uni->id }}" {{ old('university_id', $discountCode->university_id) == $uni->id ? 'selected' : '' }}>
+                                                    {{ $uni->name_ar ?? $uni->name ?? 'بدون اسم' }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <!-- المنزل -->
+                                    <div class="col-md-4 mb-3 delivery-home-fields" style="display: none;">
+                                        <label class="form-label fw-bold">Governorate (المحافظة)</label>
+                                        <select name="governorate_id" id="governorate_id" class="form-select shadow-sm">
+                                            <option value="" selected disabled>Select Governorate</option>
+                                            @foreach($governorates as $gov)
+                                                <option value="{{ $gov->id }}" {{ old('governorate_id', $discountCode->governorate_id) == $gov->id ? 'selected' : '' }}>
+                                                    {{ $gov->name_ar }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3 delivery-home-fields" style="display: none;">
+                                        <label class="form-label fw-bold">City (المدينة)</label>
+                                        <select name="city_id" id="city_id" class="form-select shadow-sm" disabled>
+                                            <option value="" selected disabled>Select City</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3 delivery-home-fields" style="display: none;">
+                                        <label class="form-label fw-bold">Area (الحي)</label>
+                                        <select name="area_id" id="area_id" class="form-select shadow-sm" disabled>
+                                            <option value="" selected disabled>Select Area</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         {{-- ═══ Tiers Section (Individual ONLY) ═══ --}}
                         <div class="card border rounded-4 mb-4 individual-fields shadow-sm" id="tiersSection">
                             <div
@@ -126,27 +213,27 @@
             const row = document.createElement('div');
             row.className = 'row g-2 mb-2 align-items-end tier-row';
             row.innerHTML = `
-                        <div class="col-md-3">
-                            <label class="form-label small fw-bold">Min Quantity</label>
-                            <input type="number" name="tiers[${tierIndex}][min_qty]" class="form-control" min="2" value="${minQty}" required placeholder="e.g. 5">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label small fw-bold">Discount Value</label>
-                            <input type="number" step="0.01" name="tiers[${tierIndex}][discount_value]" class="form-control" min="0" value="${discountValue}" required placeholder="e.g. 10">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label small fw-bold">Type</label>
-                            <select name="tiers[${tierIndex}][discount_type]" class="form-select" required>
-                                <option value="percentage" ${discountType === 'percentage' ? 'selected' : ''}>Percentage (%)</option>
-                                <option value="byJd" ${discountType === 'byJd' ? 'selected' : ''}>By JOD</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="removeTierRow(this)">
-                                <i class="fas fa-trash me-1"></i>Remove
-                            </button>
-                        </div>
-                    `;
+                                    <div class="col-md-3">
+                                        <label class="form-label small fw-bold">Min Quantity</label>
+                                        <input type="number" name="tiers[${tierIndex}][min_qty]" class="form-control" min="2" value="${minQty}" required placeholder="e.g. 5">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small fw-bold">Discount Value</label>
+                                        <input type="number" step="0.01" name="tiers[${tierIndex}][discount_value]" class="form-control" min="0" value="${discountValue}" required placeholder="e.g. 10">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small fw-bold">Type</label>
+                                        <select name="tiers[${tierIndex}][discount_type]" class="form-select" required>
+                                            <option value="percentage" ${discountType === 'percentage' ? 'selected' : ''}>Percentage (%)</option>
+                                            <option value="byJd" ${discountType === 'byJd' ? 'selected' : ''}>By JOD</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="removeTierRow(this)">
+                                            <i class="fas fa-trash me-1"></i>Remove
+                                        </button>
+                                    </div>
+                                `;
             container.appendChild(row);
             tierIndex++;
             toggleNoTiersMsg();
@@ -193,6 +280,7 @@
                     discountValueInput.removeAttribute('required');
                     discountTypeSelect.removeAttribute('required');
                     planSelect.setAttribute('required', 'required');
+                    document.getElementById('user_phone_number').setAttribute('required', 'required');
                 } else {
                     individualFields.forEach(el => el.style.display = 'block');
                     groupFields.forEach(el => el.style.display = 'none');
@@ -200,6 +288,7 @@
                     discountValueInput.setAttribute('required', 'required');
                     discountTypeSelect.setAttribute('required', 'required');
                     planSelect.removeAttribute('required');
+                    document.getElementById('user_phone_number').removeAttribute('required');
                 }
             }
 
@@ -213,6 +302,92 @@
                     toggleFields(e.target.value === '1');
                 });
             });
+            // Logic to switch between University and Home delivery
+            const deliveryRadios = document.querySelectorAll('input[name="delivery_target"]');
+            const uniFields = document.querySelectorAll('.delivery-uni-fields');
+            const homeFields = document.querySelectorAll('.delivery-home-fields');
+
+            function toggleDeliveryFields(target) {
+                if (target === 'university') {
+                    uniFields.forEach(el => el.style.display = 'block');
+                    homeFields.forEach(el => el.style.display = 'none');
+                } else {
+                    uniFields.forEach(el => el.style.display = 'none');
+                    homeFields.forEach(el => el.style.display = 'block');
+                }
+            }
+
+            const initialTarget = document.querySelector('input[name="delivery_target"]:checked').value;
+            toggleDeliveryFields(initialTarget);
+
+            deliveryRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => toggleDeliveryFields(e.target.value));
+            });
+
+            // --- Logic for Dependent Dropdowns (Governorate -> City -> Area) ---
+            const allCities = @json($cities);
+            const allAreas = @json($areas);
+
+            const govSelect = document.getElementById('governorate_id');
+            const citySelect = document.getElementById('city_id');
+            const areaSelect = document.getElementById('area_id');
+
+            // القيم القديمة (أو المحفوظة بالداتابيس)
+            const savedCityId = "{{ old('city_id', $discountCode->city_id) }}";
+            const savedAreaId = "{{ old('area_id', $discountCode->area_id) }}";
+
+            function populateCities(govId, selectedCity = null) {
+                citySelect.innerHTML = '<option value="" selected disabled>Select City</option>';
+                areaSelect.innerHTML = '<option value="" selected disabled>Select Area</option>';
+                areaSelect.disabled = true;
+
+                if (govId) {
+                    const filteredCities = allCities.filter(c => c.governorate_id == govId);
+                    filteredCities.forEach(city => {
+                        const opt = document.createElement('option');
+                        opt.value = city.id;
+                        opt.textContent = city.name_ar || city.name_en;
+                        if (selectedCity && selectedCity == city.id) opt.selected = true;
+                        citySelect.appendChild(opt);
+                    });
+                    citySelect.disabled = false;
+                } else {
+                    citySelect.disabled = true;
+                }
+            }
+
+            function populateAreas(cityId, selectedArea = null) {
+                areaSelect.innerHTML = '<option value="" selected disabled>Select Area</option>';
+
+                if (cityId) {
+                    const filteredAreas = allAreas.filter(a => a.city_id == cityId);
+                    filteredAreas.forEach(area => {
+                        const opt = document.createElement('option');
+                        opt.value = area.id;
+                        opt.textContent = area.name_ar || area.name_en;
+                        if (selectedArea && selectedArea == area.id) opt.selected = true;
+                        areaSelect.appendChild(opt);
+                    });
+                    areaSelect.disabled = false;
+                } else {
+                    areaSelect.disabled = true;
+                }
+            }
+
+            govSelect.addEventListener('change', function () {
+                populateCities(this.value);
+            });
+
+            citySelect.addEventListener('change', function () {
+                populateAreas(this.value);
+            });
+
+            if (govSelect.value) {
+                populateCities(govSelect.value, savedCityId);
+                if (savedCityId) {
+                    populateAreas(savedCityId, savedAreaId);
+                }
+            }
         });
     </script>
 @endsection

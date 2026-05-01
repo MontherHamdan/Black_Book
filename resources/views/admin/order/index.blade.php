@@ -645,14 +645,14 @@
 
                         notes.forEach(function (note) {
                             const itemHtml = `
-                                                                                                                                                                                                                    <li class="chat-message">
-                                                                                                                                                                                                                        <div class="chat-header">
-                                                                                                                                                                                                                            <span class="chat-author"><i class="fas fa-user-circle me-1"></i>${note.user_name}</span>
-                                                                                                                                                                                                                            <span class="chat-time"><i class="far fa-clock me-1"></i>${note.created_at}</span>
-                                                                                                                                                                                                                        </div>
-                                                                                                                                                                                                                        <p class="chat-content">${note.content}</p>
-                                                                                                                                                                                                                    </li>
-                                                                                                                                                                                                                `;
+                                                                                                                                                                                                                        <li class="chat-message">
+                                                                                                                                                                                                                            <div class="chat-header">
+                                                                                                                                                                                                                                <span class="chat-author"><i class="fas fa-user-circle me-1"></i>${note.user_name}</span>
+                                                                                                                                                                                                                                <span class="chat-time"><i class="far fa-clock me-1"></i>${note.created_at}</span>
+                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                            <p class="chat-content">${note.content}</p>
+                                                                                                                                                                                                                        </li>
+                                                                                                                                                                                                                    `;
                             $list.append(itemHtml);
                         });
                     },
@@ -695,7 +695,7 @@
                 pageLength: 10,
                 columns: [
                     @if(auth()->user()->isAdmin())
-                                                                                                                                                                                                                                                                                                                                                                                        {
+                                                                                                                                                                                                                                                                                                                                                                                                {
                             data: null,
                             name: 'checkbox',
                             orderable: false,
@@ -791,12 +791,12 @@
                             // لو ما عنده صلاحية → Badge كبير + المدة فقط
                             if (!canChangeStatus) {
                                 return `
-                                                                                                                                                                                                        <div class="text-center">
-                                                                                                                                                                                                            <span class="status-badge-soft shadow-sm ${currentStatus.class}">
-                                                                                                                                                                                                                ${currentStatus.label}
-                                                                                                                                                                                                            </span>
-                                                                                                                                                                                                        </div>
-                                                                                                                                                                                                    `;
+                                                                                                                                                                                                            <div class="text-center">
+                                                                                                                                                                                                                <span class="status-badge-soft shadow-sm ${currentStatus.class}">
+                                                                                                                                                                                                                    ${currentStatus.label}
+                                                                                                                                                                                                                </span>
+                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                        `;
                             }
 
                             // لو عنده صلاحية → Dropdown + المدة تحت
@@ -807,34 +807,34 @@
                                 .map(function (status) {
                                     const cfg = statusConfig[status] || defaultConfig;
                                     return `
-                                                                                                                                                                                                            <li>
-                                                                                                                                                                                                                <a class="dropdown-item change-status-item py-2"
-                                                                                                                                                                                                                   href="#"
-                                                                                                                                                                                                                   data-order-id="${row.id}"
-                                                                                                                                                                                                                   data-new-status="${status}">
-                                                                                                                                                                                                                    <span class="status-badge-soft w-100 ${cfg.class}">${cfg.label}</span>
-                                                                                                                                                                                                                </a>
-                                                                                                                                                                                                            </li>
-                                                                                                                                                                                                        `;
+                                                                                                                                                                                                                <li>
+                                                                                                                                                                                                                    <a class="dropdown-item change-status-item py-2"
+                                                                                                                                                                                                                       href="#"
+                                                                                                                                                                                                                       data-order-id="${row.id}"
+                                                                                                                                                                                                                       data-new-status="${status}">
+                                                                                                                                                                                                                        <span class="status-badge-soft w-100 ${cfg.class}">${cfg.label}</span>
+                                                                                                                                                                                                                    </a>
+                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                            `;
                                 })
                                 .join('');
                             return `
-                                                                                            <div class="text-center">
-                                                                                                <div class="dropdown d-inline">
-                                                                                                    <span
-                                                                                                        class="status-badge-soft shadow-sm dropdown-toggle ${currentStatus.class}"
-                                                                                                        id="statusDropdown${row.id}"
-                                                                                                        data-bs-toggle="dropdown"
-                                                                                                        aria-expanded="false"
-                                                                                                        style="cursor: pointer;">
-                                                                                                        ${currentStatus.label}
-                                                                                                    </span>
-                                                                                                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 py-2" style="z-index: 1050; min-width: 140px;" aria-labelledby="statusDropdown${row.id}">
-                                                                                                        ${dropdownItems}
-                                                                                                    </ul>
+                                                                                                <div class="text-center">
+                                                                                                    <div class="dropdown d-inline">
+                                                                                                        <span
+                                                                                                            class="status-badge-soft shadow-sm dropdown-toggle ${currentStatus.class}"
+                                                                                                            id="statusDropdown${row.id}"
+                                                                                                            data-bs-toggle="dropdown"
+                                                                                                            aria-expanded="false"
+                                                                                                            style="cursor: pointer;">
+                                                                                                            ${currentStatus.label}
+                                                                                                        </span>
+                                                                                                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 py-2" style="z-index: 1050; min-width: 140px;" aria-labelledby="statusDropdown${row.id}">
+                                                                                                            ${dropdownItems}
+                                                                                                        </ul>
+                                                                                                    </div>
                                                                                                 </div>
-                                                                                            </div>
-                                                                                        `;
+                                                                                            `;
                         }
                     },
 
@@ -864,14 +864,14 @@
                             }
 
                             return `
-                                                            <select class="form-select form-select-sm order-designer-select"
-                                                                data-order-id="${row.id}"
-                                                                data-current-designer-id="${currentDesignerId || ''}"
-                                                                ${disabledAttr}>
-                                                                ${notAssignedOption}
-                                                                ${optionsHtml}
-                                                            </select>
-                                                        `;
+                                                                <select class="form-select form-select-sm order-designer-select"
+                                                                    data-order-id="${row.id}"
+                                                                    data-current-designer-id="${currentDesignerId || ''}"
+                                                                    ${disabledAttr}>
+                                                                    ${notAssignedOption}
+                                                                    ${optionsHtml}
+                                                                </select>
+                                                            `;
                         }
                     },
                     {
@@ -898,8 +898,8 @@
                         }
                     },
                     {
-                        data: 'address',
-                        name: 'address',
+                        data: 'city',
+                        name: 'city',
                         orderable: false
                     },
                     {
@@ -932,12 +932,12 @@
                             }
 
                             return `
-                                                                                                                                                                                                                    <span>${data}</span>
-                                                                                                                                                                                                                    <a href="https://wa.me/${waNumber}" target="_blank"
-                                                                                                                                                                                                                       class="ms-2 text-success" title="WhatsApp">
-                                                                                                                                                                                                                        <i class="fab fa-whatsapp"></i>
-                                                                                                                                                                                                                    </a>
-                                                                                                                                                                                                                `;
+                                                                                                                                                                                                                        <span>${data}</span>
+                                                                                                                                                                                                                        <a href="https://wa.me/${waNumber}" target="_blank"
+                                                                                                                                                                                                                           class="ms-2 text-success" title="WhatsApp">
+                                                                                                                                                                                                                            <i class="fab fa-whatsapp"></i>
+                                                                                                                                                                                                                        </a>
+                                                                                                                                                                                                                    `;
                         }
                     },
                     {
@@ -969,26 +969,26 @@
                             const label = data.name || data.code;
                             if (!data.is_group) {
                                 return `<span class="badge-discount badge-individual" title="${label}">
-                                                                    <i class="fas fa-user"></i> فردي
-                                                                </span>`;
+                                                                        <i class="fas fa-user"></i> فردي
+                                                                    </span>`;
                             }
                             // مجموعة
                             if (data.incomplete) {
                                 return `<span class="badge-discount badge-group-warn js-show-group-warning" 
-                                                                  data-plan="${label}" 
-                                                                  data-current="${data.group_count}" 
-                                                                  data-required="${data.required_count}" 
-                                                                  data-price="${row.price}"
-                                                                  style="cursor: pointer;" title="اضغط لعرض التفاصيل">
-                                                                <i class="fas fa-users"></i> مجموعة
-                                                                <span style="font-size:0.65rem;opacity:0.85;">(${data.group_count}/${data.required_count})</span>
-                                                                <i class="fas fa-exclamation-triangle" style="font-size:0.6rem;"></i>
-                                                            </span>`;
+                                                                      data-plan="${label}" 
+                                                                      data-current="${data.group_count}" 
+                                                                      data-required="${data.required_count}" 
+                                                                      data-price="${row.price}"
+                                                                      style="cursor: pointer;" title="اضغط لعرض التفاصيل">
+                                                                    <i class="fas fa-users"></i> مجموعة
+                                                                    <span style="font-size:0.65rem;opacity:0.85;">(${data.group_count}/${data.required_count})</span>
+                                                                    <i class="fas fa-exclamation-triangle" style="font-size:0.6rem;"></i>
+                                                                </span>`;
                             }
                             return `<span class="badge-discount badge-group-ok" title="${label}">
-                                                                <i class="fas fa-users"></i> مجموعة
-                                                                <i class="fas fa-check" style="font-size:0.6rem;"></i>
-                                                            </span>`;
+                                                                    <i class="fas fa-users"></i> مجموعة
+                                                                    <i class="fas fa-check" style="font-size:0.6rem;"></i>
+                                                                </span>`;
                         }
                     },
                     {
@@ -1014,29 +1014,29 @@
                 initComplete: function () {
                     // 1. فلتر الحالة
                     const statusDropdown = $(`
-                                                                                                                                                                                                    <select id="statusFilter" class="form-select" style="width: 230px;height:34px; margin-left: 15px;">
-                                                                                                                                                                                                        <option value="">تصفية حسب الحالة</option>
-                                                                                                                                                                                                        <option value="new_order">طلب جديد</option>
-                                                                                                                                                                                                        <option value="needs_modification">يوجد تعديل</option>
-                                                                                                                                                                                                        <option value="Pending">تم التصميم</option>
-                                                                                                                                                                                                        <option value="Completed">تم الاعتماد</option>
-                                                                                                                                                                                                        <option value="preparing">قيد التجهيز</option>
-                                                                                                                                                                                                        <option value="Printed">تم الطباعة</option>
-                                                                                                                                                                                                        <option value="Received">تم التسليم</option>
-                                                                                                                                                                                                        <option value="out_for_delivery">خرج مع التوصيل</option>
-                                                                                                                                                                                                        <option value="returned">مرتجع</option>
-                                                                                                                                                                                                        <option value="Canceled">رفض الإستلام</option>
-                                                                                                                                                                                                    </select>
-                                                                                                                                                                                                `);
+                                                                                                                                                                                                        <select id="statusFilter" class="form-select" style="width: 230px;height:34px; margin-left: 15px;">
+                                                                                                                                                                                                            <option value="">تصفية حسب الحالة</option>
+                                                                                                                                                                                                            <option value="new_order">طلب جديد</option>
+                                                                                                                                                                                                            <option value="needs_modification">يوجد تعديل</option>
+                                                                                                                                                                                                            <option value="Pending">تم التصميم</option>
+                                                                                                                                                                                                            <option value="Completed">تم الاعتماد</option>
+                                                                                                                                                                                                            <option value="preparing">قيد التجهيز</option>
+                                                                                                                                                                                                            <option value="Printed">تم الطباعة</option>
+                                                                                                                                                                                                            <option value="Received">تم التسليم</option>
+                                                                                                                                                                                                            <option value="out_for_delivery">خرج مع التوصيل</option>
+                                                                                                                                                                                                            <option value="returned">مرتجع</option>
+                                                                                                                                                                                                            <option value="Canceled">رفض الإستلام</option>
+                                                                                                                                                                                                        </select>
+                                                                                                                                                                                                    `);
 
                     // 2. فلتر الإضافات
                     const additivesDropdown = $(`
-                                                                                                                                                                                                    <select id="additivesFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
-                                                                                                                                                                                                        <option value="">تصفية حسب الإضافات</option>
-                                                                                                                                                                                                        <option value="with_additives">مع إضافات</option>
-                                                                                                                                                                                                        <option value="with_out_additives">بدون إضافات</option>
-                                                                                                                                                                                                    </select>
-                                                                                                                                                                                                `);
+                                                                                                                                                                                                        <select id="additivesFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
+                                                                                                                                                                                                            <option value="">تصفية حسب الإضافات</option>
+                                                                                                                                                                                                            <option value="with_additives">مع إضافات</option>
+                                                                                                                                                                                                            <option value="with_out_additives">بدون إضافات</option>
+                                                                                                                                                                                                        </select>
+                                                                                                                                                                                                    `);
 
                     // 3. فلتر المصمم (هاد اللي كان ناقص عندك)
                     let designerOptions = '<option value="">تصفية حسب المصمم</option>';
@@ -1050,10 +1050,10 @@
                     }
 
                     const designerDropdown = $(`
-                                                                                                                                                                                                    <select id="designerFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
-                                                                                                                                                                                                        ${designerOptions}
-                                                                                                                                                                                                    </select>
-                                                                                                                                                                                                `);
+                                                                                                                                                                                                        <select id="designerFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
+                                                                                                                                                                                                            ${designerOptions}
+                                                                                                                                                                                                        </select>
+                                                                                                                                                                                                    `);
                     let codeNameOptions = '<option value="">تصفية حسب المجموعة</option>';
                     if (typeof DISCOUNT_CODES !== 'undefined') {
                         DISCOUNT_CODES.forEach(function (code) {
@@ -1062,10 +1062,10 @@
                         });
                     }
                     const codeNameDropdown = $(`
-                                                    <select id="codeNameFilter" class="form-select shadow-sm" style="width: 175px;height:34px; margin-left: 15px; border-radius: 50rem;">
-                                                        ${codeNameOptions}
-                                                    </select>
-                                                `);
+                                                        <select id="codeNameFilter" class="form-select shadow-sm" style="width: 175px;height:34px; margin-left: 15px; border-radius: 50rem;">
+                                                            ${codeNameOptions}
+                                                        </select>
+                                                    `);
                     // 4. تنسيق الحاوية وإضافة الفلاتر
                     $('.dataTables_filter').css({
                         display: 'flex',
@@ -1214,14 +1214,14 @@
                             $('#noteContent').val('');
                             const note = response.note;
                             const newItem = `
-                                                                                                                                                                                                            <li class="chat-message">
-                                                                                                                                                                                                                <div class="chat-header">
-                                                                                                                                                                                                                    <span class="chat-author"><i class="fas fa-user-circle me-1"></i>${note.user_name}</span>
-                                                                                                                                                                                                                    <span class="chat-time"><i class="far fa-clock me-1"></i>${note.created_at}</span>
-                                                                                                                                                                                                                </div>
-                                                                                                                                                                                                                <p class="chat-content">${note.content}</p>
-                                                                                                                                                                                                            </li>
-                                                                                                                                                                                                        `;
+                                                                                                                                                                                                                <li class="chat-message">
+                                                                                                                                                                                                                    <div class="chat-header">
+                                                                                                                                                                                                                        <span class="chat-author"><i class="fas fa-user-circle me-1"></i>${note.user_name}</span>
+                                                                                                                                                                                                                        <span class="chat-time"><i class="far fa-clock me-1"></i>${note.created_at}</span>
+                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                    <p class="chat-content">${note.content}</p>
+                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                            `;
                             $('#notesList').prepend(newItem);
                             // Remove empty indicator if exists
                             $('#notesList').find('.text-muted.text-center').remove();

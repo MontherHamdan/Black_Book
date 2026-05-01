@@ -1667,6 +1667,37 @@
         </div>
     </div>
 
+    {{--
+        ══════════════════════════════════════════════════════════════
+        Zero-Flash Tab Restore — يشتغل synchronously قبل أول paint
+        ══════════════════════════════════════════════════════════════
+        السبب: DOMContentLoaded يجي بعد ما المتصفح يرسم الصفحة،
+        فيظهر التاب الأول لجزء من الثانية ثم يتغير (flash).
+        الحل: سكريبت inline يقرأ sessionStorage ويعدّل الـ classes
+        مباشرة على DOM قبل أي رسم — صفر وميض مضمون.
+    --}}
+    <script>
+        (function () {
+            var KEY = 'order_active_tab_{{ $order->id }}';
+            var saved = sessionStorage.getItem(KEY);
+
+            // لو ما في شيء محفوظ، أو الرابط فيه hash (hash له أولوية) — توقف
+            if (!saved || window.location.hash) return;
+
+            // --- أزل active من التاب الافتراضي ---
+            var oldBtn  = document.querySelector('#orderTabs .nav-link.active');
+            var oldPane = document.querySelector('#orderTabsContent .tab-pane.active');
+            if (oldBtn)  { oldBtn.classList.remove('active');        oldBtn.setAttribute('aria-selected', 'false'); }
+            if (oldPane) { oldPane.classList.remove('show', 'active'); }
+
+            // --- فعّل التاب المحفوظ ---
+            var newBtn  = document.querySelector('#orderTabs button[data-bs-target="' + saved + '"]');
+            var newPane = document.querySelector(saved);
+            if (newBtn)  { newBtn.classList.add('active');          newBtn.setAttribute('aria-selected', 'true'); }
+            if (newPane) { newPane.classList.add('show', 'active'); }
+        })();
+    </script>
+
     @if($isAdmin || $isDesigner)
         {{-- Modal 1: تفاصيل الطلب --}}
         <div class="modal fade" id="editOrderDetailsModal" tabindex="-1" aria-hidden="true"
@@ -2106,14 +2137,23 @@
         <script>
             document.addEventListener('DOMContentLoaded', function () {
 
-                // 1. قراءة الـ Hash من الرابط لفتح التبويب مباشرة
+                var TAB_KEY = 'order_active_tab_{{ $order->id }}';
+
+                // ── حفظ التاب عند كل تغيير (يكفي هذا لأن الاستعادة تتم قبل الـ paint) ──
+                document.querySelectorAll('#orderTabs button[data-bs-toggle="tab"]').forEach(function (btn) {
+                    btn.addEventListener('shown.bs.tab', function () {
+                        sessionStorage.setItem(TAB_KEY, this.getAttribute('data-bs-target'));
+                    });
+                });
+
+                // ── URL Hash: أولوية قصوى، يحفظه أيضاً ──
                 var hash = window.location.hash;
                 if (hash) {
-                    var targetTabButton = document.querySelector('.order-tabs button[data-bs-target="' + hash + '"]');
-                    if (targetTabButton) {
-                        var tab = new bootstrap.Tab(targetTabButton);
-                        tab.show();
-                        setTimeout(() => {
+                    var hashBtn = document.querySelector('#orderTabs button[data-bs-target="' + hash + '"]');
+                    if (hashBtn) {
+                        new bootstrap.Tab(hashBtn).show();
+                        sessionStorage.setItem(TAB_KEY, hash);
+                        setTimeout(function () {
                             document.querySelector('.order-tabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
                         }, 300);
                     }

@@ -24,9 +24,15 @@
                                 <th class="text-center">ID</th>
                                 <th class="text-center">Code Name</th>
                                 <th class="text-center">Discount Code</th>
-                                <th class="text-center">Type (النوع)</th>
+                                <th class="text-center">Type </th>
                                 <th class="text-center">Discount Value</th>
                                 <th class="text-center">Discount Type</th>
+                                <th class="text-center">Phone 1</th>
+                                <th class="text-center">Phone 2</th>
+                                <th class="text-center">University</th>
+                                <th class="text-center">Governorate</th>
+                                <th class="text-center">City</th>
+                                <th class="text-center">Area</th>
                                 <th class="text-center">Actions</th>
                             </tr>
                         </thead>
@@ -68,6 +74,12 @@
                                             {{ ucfirst($code->discount_type) }}
                                         @endif
                                     </td>
+                                    <td class="text-center fw-bold">{{ $code->user_phone_number ?? '-' }}</td>
+                                    <td class="text-center text-muted">{{ $code->delivery_number_two ?? '-' }}</td>
+                                    <td class="text-center">{{ $code->university ? $code->university->name : '-' }}</td>
+                                    <td class="text-center">{{ $code->governorate ? $code->governorate->name_ar : '-' }}</td>
+                                    <td class="text-center">{{ $code->city ? $code->city->name_ar : '-' }}</td>
+                                    <td class="text-center text-muted">{{ $code->area ? $code->area->name_ar : '-' }}</td>
                                     <td class="text-center">
                                         <!-- Actions Dropdown -->
                                         <div class="dropdown">

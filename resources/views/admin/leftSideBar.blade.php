@@ -65,14 +65,6 @@
 
                 <li class="menu-title mt-2">Orders</li>
 
-                {{-- 1. Orders: متاح للجميع (آدمن، مشرف، مصمم، طابع) --}}
-                <li>
-                    <a href="{{ route('orders.index') }}">
-                        <i class="mdi mdi-cart-outline"></i>
-                        <span> Orders </span>
-                    </a>
-                </li>
-
                 {{-- 2. All Orders: متاح للآدمن والمشرف فقط --}}
                 @if(auth()->user()->isAdmin() || auth()->user()->isSupervisor())
                     <li>
@@ -82,6 +74,16 @@
                         </a>
                     </li>
                 @endif
+
+                {{-- 1. Orders: متاح للجميع (آدمن، مشرف، مصمم، طابع) --}}
+                <li>
+                    <a href="{{ route('orders.index') }}">
+                        <i class="mdi mdi-cart-outline"></i>
+                        <span> Orders </span>
+                    </a>
+                </li>
+
+
 
                 {{-- 3. Notebook Binding: متاح للآدمن، المشرف، والطابع --}}
                 @if(auth()->user()->isAdmin() || auth()->user()->isSupervisor() || auth()->user()->isPrinter())

@@ -56,6 +56,8 @@ class Order extends Model
         'area_id',
         'city_id',
         'governorate_id',
+        'delivery_target',
+        'delivery_university_id',
 
         'delivery_followup_note',
         'design_followup_note',
@@ -334,4 +336,12 @@ class Order extends Model
     public function governorate() { return $this->belongsTo(Governorate::class); }
     public function city() { return $this->belongsTo(City::class); }
     public function area() { return $this->belongsTo(Area::class); }
+
+    /**
+     * جامعة التوصيل (تختلف عن university_id الخاص بمعلومات الخريج)
+     */
+    public function deliveryUniversity()
+    {
+        return $this->belongsTo(University::class, 'delivery_university_id');
+    }
 }

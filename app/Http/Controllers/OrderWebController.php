@@ -62,6 +62,7 @@ class OrderWebController extends Controller
             'universityMajor',
             'diploma',
             'diplomaMajor',
+            'deliveryUniversity',
         ])->findOrFail($id);
 
         $decorations = BookDecoration::orderBy('id')
@@ -453,6 +454,7 @@ class OrderWebController extends Controller
             'frontImage',
             'transparentPrinting',
             'designer',
+            'deliveryUniversity',
         ]);
 
         // 🚫 إخفاء طلبات "قيد التجهيز" و "خرج مع التوصيل" عن المصممين
@@ -599,8 +601,8 @@ class OrderWebController extends Controller
                 'governorate' => $order->governorate,
                 'address' => $order->address,
 
-                // ✅ عشان DataTables ما يشتكي: نرجع school_name حتى لو فاضي مؤقتًا
-                'school_name' => '',
+                // جامعة التوصيل (تُعرض في عمود "الجامعة" بجدول الطلبات)
+                'school_name' => $order->deliveryUniversity?->name ?? '',
 
                 'phone' => $order->user_phone_number,
                 'phone2' => $order->delivery_number_two,

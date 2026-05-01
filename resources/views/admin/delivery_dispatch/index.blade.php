@@ -82,7 +82,12 @@
                                     $totalBooks = $ordersGroup->count();
                                     $masterPhoneOne = $ordersGroup->first()->delivery_number_one;
                                     $masterPhoneTwo = $ordersGroup->first()->delivery_number_two;
-                                    $masterAddress = current(array_filter([$ordersGroup->first()->governorate->name_ar, $ordersGroup->first()->address]));
+                                    $firstOrder = $ordersGroup->first();
+                                    if ($firstOrder->delivery_target === 'university') {
+                                        $masterAddress = $firstOrder->deliveryUniversity->name ?? 'جامعة غير محددة';
+                                    } else {
+                                        $masterAddress = current(array_filter([$firstOrder->governorate->name_ar ?? null, $firstOrder->address]));
+                                    }
                                     $aggregatePrice = $ordersGroup->sum('final_price_with_discount');
                                     $hasMultiple = $totalBooks > 1;
                                     $currentStatus = $ordersGroup->first()->status;

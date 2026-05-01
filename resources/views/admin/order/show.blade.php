@@ -1151,20 +1151,45 @@
                                 <span>{{ $order->delivery_number_two ?? 'غير متوفر' }}</span>
                             </div>
 
+                            {{-- وجهة التوصيل --}}
                             <div class="info-row">
-                                <strong>المحافظة:</strong>
-                                <span>{{ optional($order->governorate)->name_ar ?? 'غير متوفر' }}</span>
+                                <strong>وجهة التوصيل:</strong>
+                                @if($order->delivery_target === 'home')
+                                    <span class="badge bg-info text-dark">
+                                        <i class="fas fa-home me-1"></i> بيت
+                                    </span>
+                                @elseif($order->delivery_target === 'university')
+                                    <span class="badge bg-primary">
+                                        <i class="fas fa-university me-1"></i> جامعة
+                                    </span>
+                                @else
+                                    <span class="text-muted">غير محدد</span>
+                                @endif
                             </div>
 
-                            <div class="info-row">
-                                <strong>المدينة:</strong>
-                                <span>{{ optional($order->city)->name_ar ?? 'غير متوفر' }}</span>
-                            </div>
+                            @if($order->delivery_target === 'university')
+                                {{-- عرض جامعة التوصيل --}}
+                                <div class="info-row">
+                                    <strong>جامعة التوصيل:</strong>
+                                    <span>{{ optional($order->deliveryUniversity)->name ?? 'غير متوفر' }}</span>
+                                </div>
+                            @else
+                                {{-- عرض العنوان المنزلي (home أو غير محدد) --}}
+                                <div class="info-row">
+                                    <strong>المحافظة:</strong>
+                                    <span>{{ optional($order->governorate)->name_ar ?? 'غير متوفر' }}</span>
+                                </div>
 
-                            <div class="info-row">
-                                <strong>المنطقة (القرية):</strong>
-                                <span>{{ optional($order->area)->name_ar ?? 'غير متوفر' }}</span>
-                            </div>
+                                <div class="info-row">
+                                    <strong>المدينة:</strong>
+                                    <span>{{ optional($order->city)->name_ar ?? 'غير متوفر' }}</span>
+                                </div>
+
+                                <div class="info-row">
+                                    <strong>المنطقة (القرية):</strong>
+                                    <span>{{ optional($order->area)->name_ar ?? 'غير متوفر' }}</span>
+                                </div>
+                            @endif
 
                             <div class="info-row">
                                 <strong>تفاصيل العنوان:</strong>
@@ -1991,36 +2016,80 @@
                                 <input type="text" name="delivery_number_two" class="form-control"
                                     value="{{ $order->delivery_number_two }}">
                             </div>
+
+                            {{-- وجهة التوصيل --}}
                             <div class="mb-3">
-                                <label class="form-label">المحافظة <span class="text-danger">*</span></label>
-                                <select name="governorate_id" id="admin_gov_select" class="form-select" required>
-                                    <option value="">اختر المحافظة...</option>
-                                    @foreach($governorates as $gov)
-                                        <option value="{{ $gov->id }}" {{ $order->governorate_id == $gov->id ? 'selected' : '' }}>
-                                            {{ $gov->name_ar ?: $gov->name_en }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <label class="form-label fw-bold">وجهة التوصيل <span class="text-danger">*</span></label>
+                                <div class="d-flex gap-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="delivery_target"
+                                            id="modal_target_home" value="home"
+                                            {{ ($order->delivery_target ?? 'home') === 'home' ? 'checked' : '' }}
+                                            onchange="toggleDeliveryTargetModal(this.value)">
+                                        <label class="form-check-label" for="modal_target_home">
+                                            <i class="fas fa-home me-1"></i> بيت
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="delivery_target"
+                                            id="modal_target_university" value="university"
+                                            {{ $order->delivery_target === 'university' ? 'checked' : '' }}
+                                            onchange="toggleDeliveryTargetModal(this.value)">
+                                        <label class="form-check-label" for="modal_target_university">
+                                            <i class="fas fa-university me-1"></i> جامعة
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">المدينة <span class="text-danger">*</span></label>
-                                <select name="city_id" id="admin_city_select" class="form-select" required>
-                                    <option value="">اختر المدينة...</option>
-                                </select>
+                            {{-- قسم البيت --}}
+                            <div id="modal_home_fields" style="{{ $order->delivery_target === 'university' ? 'display:none;' : '' }}">
+                                <div class="mb-3">
+                                    <label class="form-label">المحافظة <span class="text-danger">*</span></label>
+                                    <select name="governorate_id" id="admin_gov_select" class="form-select">
+                                        <option value="">اختر المحافظة...</option>
+                                        @foreach($governorates as $gov)
+                                            <option value="{{ $gov->id }}" {{ $order->governorate_id == $gov->id ? 'selected' : '' }}>
+                                                {{ $gov->name_ar ?: $gov->name_en }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">المدينة <span class="text-danger">*</span></label>
+                                    <select name="city_id" id="admin_city_select" class="form-select">
+                                        <option value="">اختر المدينة...</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">المنطقة (القرية) <span class="text-danger">*</span></label>
+                                    <select name="area_id" id="admin_area_select" class="form-select">
+                                        <option value="">اختر المنطقة...</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">تفاصيل العنوان (الشارع، البناية، إلخ)</label>
+                                    <input type="text" name="address" class="form-control" value="{{ $order->address }}">
+                                </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">المنطقة (القرية) <span class="text-danger">*</span></label>
-                                <select name="area_id" id="admin_area_select" class="form-select" required>
-                                    <option value="">اختر المنطقة...</option>
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">تفاصيل العنوان (الشارع، البناية، إلخ) <span
-                                        class="text-danger">*</span></label>
-                                <input type="text" name="address" class="form-control" value="{{ $order->address }}" required>
+                            {{-- قسم الجامعة --}}
+                            <div id="modal_university_fields" style="{{ $order->delivery_target !== 'university' ? 'display:none;' : '' }}">
+                                <div class="mb-3">
+                                    <label class="form-label">جامعة التوصيل <span class="text-danger">*</span></label>
+                                    <select name="delivery_university_id" id="admin_delivery_university_select" class="form-select">
+                                        <option value="">اختر الجامعة...</option>
+                                        @foreach($universities as $uni)
+                                            <option value="{{ $uni->id }}"
+                                                {{ $order->delivery_university_id == $uni->id ? 'selected' : '' }}>
+                                                {{ $uni->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
 
                         </div>
@@ -2032,6 +2101,13 @@
                 </div>
             </div>
         </div>
+
+        <script>
+        function toggleDeliveryTargetModal(target) {
+            document.getElementById('modal_home_fields').style.display       = target === 'home'       ? '' : 'none';
+            document.getElementById('modal_university_fields').style.display = target === 'university' ? '' : 'none';
+        }
+        </script>
     @endif
     {{-- Modal التنبيه الخاص بخصم المجموعة --}}
     {{-- Modal التنبيه الإبداعي لخصم المجموعة --}}

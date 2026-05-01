@@ -905,7 +905,13 @@
                     {
                         data: 'school_name',
                         name: 'school_name',
-                        orderable: false
+                        orderable: false,
+                        render: function (data, type, row) {
+                            if (data) {
+                                return `<span><i class="fas fa-university text-muted me-1" style="font-size:0.8rem;"></i>${data}</span>`;
+                            }
+                            return '<span class="text-muted small">—</span>';
+                        }
                     },
                     {
                         data: 'phone',

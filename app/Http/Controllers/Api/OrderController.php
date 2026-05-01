@@ -67,9 +67,17 @@ class OrderController extends Controller
 
             'delivery_number_one' => 'required|string|max:20',
             'delivery_number_two' => 'nullable|string|max:20',
+
+            // 🚚 وجهة التوصيل
+            'delivery_target' => 'required|in:home,university',
+
+            // إذا كانت الوجهة بيت → محافظة / مدينة / منطقة مطلوبة
             'governorate_id' => 'nullable|exists:governorates,id',
             'city_id' => 'nullable|exists:cities,id',
             'area_id' => 'nullable|exists:areas,id',
+
+            // إذا كانت الوجهة جامعة → جامعة التوصيل مطلوبة
+            'delivery_university_id' => 'nullable|exists:universities,id',
             // 'address' => 'nullable|string',
 
             'final_price' => 'nullable|numeric|min:0',
@@ -100,6 +108,24 @@ class OrderController extends Controller
                 $msg = 'You must choose a ready-made design (book_design_id) or upload custom design images (custom_design_image_id). Both cannot be empty.';
                 $validator->errors()->add('book_design_id', $msg);
                 $validator->errors()->add('custom_design_image_id', $msg);
+            }
+
+            // 1) منطق وجهة التوصيل
+            $deliveryTarget = $request->input('delivery_target');
+            if ($deliveryTarget === 'home') {
+                if (empty($request->input('governorate_id'))) {
+                    $validator->errors()->add('governorate_id', 'The governorate is required when delivery target is home.');
+                }
+                if (empty($request->input('city_id'))) {
+                    $validator->errors()->add('city_id', 'The city is required when delivery target is home.');
+                }
+                if (empty($request->input('area_id'))) {
+                    $validator->errors()->add('area_id', 'The area is required when delivery target is home.');
+                }
+            } elseif ($deliveryTarget === 'university') {
+                if (empty($request->input('delivery_university_id'))) {
+                    $validator->errors()->add('delivery_university_id', 'The delivery university is required when delivery target is university.');
+                }
             }
 
 

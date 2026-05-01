@@ -201,8 +201,20 @@ class OrderController extends Controller
         $frontendBasePrice = $data['final_price'] ?? null;
         $frontendDiscountedPrice = $data['final_price_with_discount'] ?? null;
 
+        Log::info('[Order] Starting server-side price calculation', [
+            'book_type_id'       => $data['book_type_id'] ?? null,
+            'discount_code_id'   => $data['discount_code_id'] ?? null,
+            'frontend_base'      => $frontendBasePrice,
+            'frontend_discounted'=> $frontendDiscountedPrice,
+        ]);
+
         // Calculate prices on server side
         $calculatedPrices = $this->pricingService->calculateOrderPrices($data);
+
+        Log::info('[Order] Server-side prices calculated', [
+            'base_price'          => $calculatedPrices['base_price'],
+            'price_with_discount' => $calculatedPrices['price_with_discount'],
+        ]);
 
         // If frontend provided prices, validate them
         if ($frontendBasePrice !== null || $frontendDiscountedPrice !== null) {
@@ -213,6 +225,14 @@ class OrderController extends Controller
             );
 
             if (!$validation['is_valid']) {
+                Log::warning('[Order] Price validation failed', [
+                    'errors'             => $validation['errors'],
+                    'frontend_base'      => $frontendBasePrice,
+                    'frontend_discounted'=> $frontendDiscountedPrice,
+                    'server_base'        => $calculatedPrices['base_price'],
+                    'server_discounted'  => $calculatedPrices['price_with_discount'],
+                ]);
+
                 return response()->json([
                     'message' => 'Price validation failed. Please refresh and try again.',
                     'errors' => [
@@ -220,6 +240,8 @@ class OrderController extends Controller
                     ]
                 ], 422);
             }
+
+            Log::info('[Order] Frontend prices validated OK');
         }
 
         // ALWAYS use server-calculated prices (ignore frontend values)
@@ -236,12 +258,24 @@ class OrderController extends Controller
 
         $order = Order::create($data);
 
+        Log::info('[Order] Order created', [
+            'order_id'                   => $order->id,
+            'final_price'                => $order->final_price,
+            'final_price_with_discount'  => $order->final_price_with_discount,
+            'discount_code_id'           => $order->discount_code_id,
+        ]);
+
         // ════════════════════════════════════════════
         // SMART TIER TRIGGER — recalculate on threshold
         // ════════════════════════════════════════════
         $discountCodeId = $order->discount_code_id;
         if ($discountCodeId) {
             $count = Order::where('discount_code_id', $discountCodeId)->count();
+
+            Log::info('[Order] Checking tier trigger', [
+                'discount_code_id'  => $discountCodeId,
+                'current_count'     => $count,
+            ]);
 
             // Find matching tier for current count
             $tier = DiscountCodeTier::where('discount_code_id', $discountCodeId)
@@ -258,15 +292,40 @@ class OrderController extends Controller
                 } elseif ($tier->discount_type === 'byJd') {
                     $discountAmount = (float) $tier->discount_value;
                 }
-                $order->final_price_with_discount = max(0, round($basePrice - $discountAmount, 2));
+                $newPrice = max(0, round($basePrice - $discountAmount, 2));
+                $order->final_price_with_discount = $newPrice;
                 $order->saveQuietly();
+
+                Log::info('[Order] Tier applied to this order', [
+                    'order_id'       => $order->id,
+                    'tier_id'        => $tier->id,
+                    'tier_min_qty'   => $tier->min_qty,
+                    'discount_type'  => $tier->discount_type,
+                    'discount_value' => $tier->discount_value,
+                    'discount_amount'=> $discountAmount,
+                    'base_price'     => $basePrice,
+                    'new_price'      => $newPrice,
+                    'threshold_hit'  => ($count == $tier->min_qty),
+                ]);
 
                 // PERFORMANCE GUARD: dispatch bulk recalculation ONLY when
                 // the threshold was EXACTLY crossed (this order pushed it over)
                 if ($count == $tier->min_qty) {
+                    Log::info('[Order] Threshold exactly crossed — dispatching RecalculateGroupDiscountJob', [
+                        'discount_code_id' => $discountCodeId,
+                        'tier_id'          => $tier->id,
+                        'count'            => $count,
+                    ]);
                     RecalculateGroupDiscountJob::dispatch($discountCodeId, $tier);
                 }
+            } else {
+                Log::info('[Order] No tier matched for current count — price unchanged', [
+                    'discount_code_id' => $discountCodeId,
+                    'current_count'    => $count,
+                ]);
             }
+        } else {
+            Log::info('[Order] No discount code on order — skipping tier check');
         }
 
         $firstArabicName = ArabicNameNormalizer::firstArabicName($order->username_ar ?? '');

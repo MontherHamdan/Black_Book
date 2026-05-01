@@ -50,7 +50,6 @@ class Order extends Model
         'transparent_printing_id',
         'delivery_number_one',
         'delivery_number_two',
-        'address',
 
         'logestechs_order_id',
         'area_id',

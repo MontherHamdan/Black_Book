@@ -42,10 +42,10 @@ class DiscountCodeController extends Controller
             'user_phone_number' => $discount->user_phone_number,
             'delivery_number_two' => $discount->delivery_number_two,
             'delivery_target' => $discount->university_id ? 'university' : ($discount->governorate_id ? 'home' : null),
-            'university' => $discount->university ? $discount->university->name : null,
-            'governorate' => $discount->governorate ? $discount->governorate->name_ar : null,
-            'city' => $discount->city ? $discount->city->name_ar : null,
-            'area' => $discount->area ? $discount->area->name_ar : null,
+            'university_id' => $discount->university_id,
+            'governorate_id' => $discount->governorate_id,
+            'city_id' => $discount->city_id,
+            'area_id' => $discount->area_id,
         ]);
     }
 }

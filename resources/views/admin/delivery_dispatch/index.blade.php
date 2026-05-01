@@ -85,8 +85,10 @@
                                     $firstOrder = $ordersGroup->first();
                                     if ($firstOrder->delivery_target === 'university') {
                                         $masterAddress = $firstOrder->deliveryUniversity->name ?? 'جامعة غير محددة';
+                                        $masterIcon = 'fas fa-university text-muted';
                                     } else {
                                         $masterAddress = current(array_filter([$firstOrder->governorate->name_ar ?? null, $firstOrder->address]));
+                                        $masterIcon = 'fas fa-home text-muted';
                                     }
                                     $aggregatePrice = $ordersGroup->sum('final_price_with_discount');
                                     $hasMultiple = $totalBooks > 1;
@@ -175,7 +177,7 @@
                                         <div class="d-flex flex-column gap-2">
                                             @if($masterAddress)
                                                 <div class="text-slate-700 fw-bold fs-6 d-flex align-items-center gap-2">
-                                                    <i class="fas fa-map-marker-alt text-danger opacity-75"></i>
+                                                    <i class="{{ $masterIcon }} me-1" style="font-size: 0.9rem;"></i>
                                                     <span>{{ $masterAddress }}</span>
                                                 </div>
                                             @endif

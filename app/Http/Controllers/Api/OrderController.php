@@ -70,7 +70,7 @@ class OrderController extends Controller
             'governorate_id' => 'nullable|exists:governorates,id',
             'city_id' => 'nullable|exists:cities,id',
             'area_id' => 'nullable|exists:areas,id',
-            'address' => 'nullable|string',
+            // 'address' => 'nullable|string',
 
             'final_price' => 'nullable|numeric|min:0',
             'final_price_with_discount' => 'nullable|numeric|min:0',

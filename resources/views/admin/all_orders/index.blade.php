@@ -116,6 +116,7 @@
                             <th>المصمم</th>
                             <th>الحالة</th>
                             <th>المحافظة</th>
+                            <th>الجامعة</th>
                             <th>السعر</th>
                             <th>التاريخ</th>
                             <th></th>
@@ -134,6 +135,13 @@
                                 <td>{{ $order->designer->name ?? '—' }}</td>
                                 <td><span class="ao-status {{ $stClass }}">{{ $stLabel }}</span></td>
                                 <td>{{ $order->governorate->name_ar ?? '—' }}</td>
+                                <td>
+                                    @if($order->delivery_target === 'university' && $order->deliveryUniversity)
+                                        <span><i class="fas fa-university text-muted me-1" style="font-size:0.8rem;"></i>{{ $order->deliveryUniversity->name }}</span>
+                                    @else
+                                        <span class="text-muted small">—</span>
+                                    @endif
+                                </td>
                                 <td class="fw-bold text-success">{{ $order->final_price_with_discount ?? $order->final_price ?? 0 }} د.أ</td>
                                 <td class="text-muted small">{{ $order->created_at ? $order->created_at->format('Y-m-d') : '' }}</td>
                                 <td>

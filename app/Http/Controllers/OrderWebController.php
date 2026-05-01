@@ -455,6 +455,8 @@ class OrderWebController extends Controller
             'transparentPrinting',
             'designer',
             'deliveryUniversity',
+            'governorate',
+            'city',
         ]);
 
         // 🚫 إخفاء طلبات "قيد التجهيز" و "خرج مع التوصيل" عن المصممين
@@ -599,7 +601,9 @@ class OrderWebController extends Controller
                 'username' => $order->username_ar,
                 'order' => $order->bookType?->name_ar ?? '',
                 'governorate' => $order->governorate,
+                'city' => $order->city?->name_ar ?? '',
                 'address' => $order->address,
+                'delivery_target' => $order->delivery_target,
 
                 // جامعة التوصيل (تُعرض في عمود "الجامعة" بجدول الطلبات)
                 'school_name' => $order->deliveryUniversity?->name ?? '',

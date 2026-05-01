@@ -907,7 +907,7 @@
                         name: 'school_name',
                         orderable: false,
                         render: function (data, type, row) {
-                            if (data) {
+                            if (row.delivery_target === 'university' && data) {
                                 return `<span><i class="fas fa-university text-muted me-1" style="font-size:0.8rem;"></i>${data}</span>`;
                             }
                             return '<span class="text-muted small">—</span>';

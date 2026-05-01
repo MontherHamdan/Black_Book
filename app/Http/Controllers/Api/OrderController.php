@@ -78,7 +78,7 @@ class OrderController extends Controller
 
             // إذا كانت الوجهة جامعة → جامعة التوصيل مطلوبة
             'delivery_university_id' => 'nullable|exists:universities,id',
-            // 'address' => 'nullable|string',
+            'address' => 'nullable|string',
 
             'final_price' => 'nullable|numeric|min:0',
             'final_price_with_discount' => 'nullable|numeric|min:0',
@@ -232,6 +232,7 @@ class OrderController extends Controller
         $data['additional_image_id'] = $data['additional_images'] ?? [];
         unset($data['additional_images']);
 
+        $data['address'] = $data['address'] ?? '';
 
         $order = Order::create($data);
 

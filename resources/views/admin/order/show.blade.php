@@ -457,8 +457,7 @@
                                                     $src = resolveOrderImageUrl($img->image_path ?? null);
                                                 @endphp
 
-                                                @if ($src)
-                                                    <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
+                                                    @if ($src)
                                                         <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
                                                             <div class="image-wrapper-relative mx-auto">
                                                                 @if($isAdmin || $isDesigner)
@@ -473,8 +472,7 @@
                                                                     alt="الصورة الداخلية {{ $index + 1 }}">
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                @endif
+                                                    @endif
                                             @endforeach
                                         </div>
 
@@ -537,11 +535,11 @@
 
                                         <div class="download-buttons-wrapper">
                                             <!-- <button type="button"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        class="btn-download btn-download-all"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        id="downloadAllDecorationImages">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <i class="fas fa-cloud-download-alt"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        تحميل جميع الصور
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </button> -->
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                class="btn-download btn-download-all"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                id="downloadAllDecorationImages">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <i class="fas fa-cloud-download-alt"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                تحميل جميع الصور
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </button> -->
 
                                             <button type="button" class="btn-download btn-download-current"
                                                 id="downloadCurrentDecorationImage">
@@ -735,13 +733,7 @@
                                                 @endunless
                                             </div>
 
-                                            {{-- طباعة شفافة --}}
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" disabled {{ $order->transparentPrinting ? 'checked' : '' }}>
-                                                <label class="form-check-label">
-                                                    طباعة شفافة
-                                                </label>
-                                            </div>
+
                                         </div>
                                     </div>
 
@@ -1434,20 +1426,20 @@
 
 
                                     <!-- <div class="download-buttons-wrapper">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <button type="button"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            class="btn-download btn-download-all"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            id="downloadAllDesignImages">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="fas fa-cloud-download-alt"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            تحميل جميع الصور
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </button>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <button type="button"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            class="btn-download btn-download-all"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            id="downloadAllDesignImages">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="fas fa-cloud-download-alt"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            تحميل جميع الصور
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </button>
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <button type="button"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            class="btn-download btn-download-current"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            id="downloadCurrentDesignImage">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="fas fa-download"></i>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            تحميل الصورة الحالية
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </button>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div> -->
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <button type="button"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            class="btn-download btn-download-current"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            id="downloadCurrentDesignImage">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="fas fa-download"></i>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            تحميل الصورة الحالية
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </button>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div> -->
                                 @else
                                     <p class="text-muted mb-0">لا يوجد تصميم محدّد لهذا الطلب.</p>
                                     @if($isAdmin || $isDesigner)
@@ -1489,19 +1481,17 @@
                                         <div class="carousel-inner text-center">
                                             @foreach ($customDesignImages as $index => $img)
                                                 <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
-                                                    <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
-                                                        <div class="image-wrapper-relative mx-auto">
-                                                            @if($isAdmin || $isDesigner)
-                                                                <button type="button" class="delete-image-btn"
-                                                                    onclick="deleteOrderImage('custom_design_image_id', {{ $img->id }})"
-                                                                    title="حذف الصورة">
-                                                                    <i class="fas fa-trash-alt"></i>
-                                                                </button>
-                                                            @endif
-                                                            <img src="{{ $img->resolved_url }}" class="unified-image mb-2"
-                                                                style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
-                                                                alt="تصميم آخر {{ $index + 1 }}">
-                                                        </div>
+                                                    <div class="image-wrapper-relative mx-auto">
+                                                        @if($isAdmin || $isDesigner)
+                                                            <button type="button" class="delete-image-btn"
+                                                                onclick="deleteOrderImage('custom_design_image_id', {{ $img->id }})"
+                                                                title="حذف الصورة">
+                                                                <i class="fas fa-trash-alt"></i>
+                                                            </button>
+                                                        @endif
+                                                        <img src="{{ $img->resolved_url }}" class="unified-image mb-2"
+                                                            style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
+                                                            alt="تصميم آخر {{ $index + 1 }}">
                                                     </div>
                                                 </div>
                                             @endforeach
@@ -1589,19 +1579,17 @@
 
                                                 @if ($backSrc)
                                                     <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
-                                                        <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
-                                                            <div class="image-wrapper-relative mx-auto">
-                                                                @if($isAdmin || $isDesigner)
-                                                                    <button type="button" class="delete-image-btn"
-                                                                        onclick="deleteOrderImage('back_image_ids', {{ $backImage->id }})"
-                                                                        title="حذف الصورة">
-                                                                        <i class="fas fa-trash-alt"></i>
-                                                                    </button>
-                                                                @endif
-                                                                <img src="{{ $backSrc }}" class="unified-image mb-2"
-                                                                    style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
-                                                                    alt="الصورة الخلفية {{ $index + 1 }}">
-                                                            </div>
+                                                        <div class="image-wrapper-relative mx-auto">
+                                                            @if($isAdmin || $isDesigner)
+                                                                <button type="button" class="delete-image-btn"
+                                                                    onclick="deleteOrderImage('back_image_ids', {{ $backImage->id }})"
+                                                                    title="حذف الصورة">
+                                                                    <i class="fas fa-trash-alt"></i>
+                                                                </button>
+                                                            @endif
+                                                            <img src="{{ $backSrc }}" class="unified-image mb-2"
+                                                                style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
+                                                                alt="الصورة الخلفية {{ $index + 1 }}">
                                                         </div>
                                                     </div>
                                                 @endif
@@ -1693,13 +1681,13 @@
     </div>
 
     {{--
-        ══════════════════════════════════════════════════════════════
-        Zero-Flash Tab Restore — يشتغل synchronously قبل أول paint
-        ══════════════════════════════════════════════════════════════
-        السبب: DOMContentLoaded يجي بعد ما المتصفح يرسم الصفحة،
-        فيظهر التاب الأول لجزء من الثانية ثم يتغير (flash).
-        الحل: سكريبت inline يقرأ sessionStorage ويعدّل الـ classes
-        مباشرة على DOM قبل أي رسم — صفر وميض مضمون.
+    ══════════════════════════════════════════════════════════════
+    Zero-Flash Tab Restore — يشتغل synchronously قبل أول paint
+    ══════════════════════════════════════════════════════════════
+    السبب: DOMContentLoaded يجي بعد ما المتصفح يرسم الصفحة،
+    فيظهر التاب الأول لجزء من الثانية ثم يتغير (flash).
+    الحل: سكريبت inline يقرأ sessionStorage ويعدّل الـ classes
+    مباشرة على DOM قبل أي رسم — صفر وميض مضمون.
     --}}
     <script>
         (function () {
@@ -1710,15 +1698,15 @@
             if (!saved || window.location.hash) return;
 
             // --- أزل active من التاب الافتراضي ---
-            var oldBtn  = document.querySelector('#orderTabs .nav-link.active');
+            var oldBtn = document.querySelector('#orderTabs .nav-link.active');
             var oldPane = document.querySelector('#orderTabsContent .tab-pane.active');
-            if (oldBtn)  { oldBtn.classList.remove('active');        oldBtn.setAttribute('aria-selected', 'false'); }
+            if (oldBtn) { oldBtn.classList.remove('active'); oldBtn.setAttribute('aria-selected', 'false'); }
             if (oldPane) { oldPane.classList.remove('show', 'active'); }
 
             // --- فعّل التاب المحفوظ ---
-            var newBtn  = document.querySelector('#orderTabs button[data-bs-target="' + saved + '"]');
+            var newBtn = document.querySelector('#orderTabs button[data-bs-target="' + saved + '"]');
             var newPane = document.querySelector(saved);
-            if (newBtn)  { newBtn.classList.add('active');          newBtn.setAttribute('aria-selected', 'true'); }
+            if (newBtn) { newBtn.classList.add('active'); newBtn.setAttribute('aria-selected', 'true'); }
             if (newPane) { newPane.classList.add('show', 'active'); }
         })();
     </script>
@@ -1924,10 +1912,7 @@
                                 <input type="file" name="internal_images[]" class="form-control" accept="image/*" multiple>
                                 <small class="text-muted">يمكنك اختيار أكثر من صورة. الصور الجديدة ستضاف للصور الحالية.</small>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">الطباعة الشفافة</label>
-                                <input type="file" name="transparent_image" class="form-control" accept="image/*">
-                            </div>
+
                             <div class="mb-3">
                                 <label class="form-label">صورة الزخرفة</label>
                                 <input type="file" name="decoration_image" class="form-control" accept="image/*">
@@ -2023,17 +2008,14 @@
                                 <div class="d-flex gap-4">
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="delivery_target"
-                                            id="modal_target_home" value="home"
-                                            {{ ($order->delivery_target ?? 'home') === 'home' ? 'checked' : '' }}
-                                            onchange="toggleDeliveryTargetModal(this.value)">
+                                            id="modal_target_home" value="home" {{ ($order->delivery_target ?? 'home') === 'home' ? 'checked' : '' }} onchange="toggleDeliveryTargetModal(this.value)">
                                         <label class="form-check-label" for="modal_target_home">
                                             <i class="fas fa-home me-1"></i> بيت
                                         </label>
                                     </div>
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="delivery_target"
-                                            id="modal_target_university" value="university"
-                                            {{ $order->delivery_target === 'university' ? 'checked' : '' }}
+                                            id="modal_target_university" value="university" {{ $order->delivery_target === 'university' ? 'checked' : '' }}
                                             onchange="toggleDeliveryTargetModal(this.value)">
                                         <label class="form-check-label" for="modal_target_university">
                                             <i class="fas fa-university me-1"></i> جامعة
@@ -2043,7 +2025,8 @@
                             </div>
 
                             {{-- قسم البيت --}}
-                            <div id="modal_home_fields" style="{{ $order->delivery_target === 'university' ? 'display:none;' : '' }}">
+                            <div id="modal_home_fields"
+                                style="{{ $order->delivery_target === 'university' ? 'display:none;' : '' }}">
                                 <div class="mb-3">
                                     <label class="form-label">المحافظة <span class="text-danger">*</span></label>
                                     <select name="governorate_id" id="admin_gov_select" class="form-select">
@@ -2077,14 +2060,15 @@
                             </div>
 
                             {{-- قسم الجامعة --}}
-                            <div id="modal_university_fields" style="{{ $order->delivery_target !== 'university' ? 'display:none;' : '' }}">
+                            <div id="modal_university_fields"
+                                style="{{ $order->delivery_target !== 'university' ? 'display:none;' : '' }}">
                                 <div class="mb-3">
                                     <label class="form-label">جامعة التوصيل <span class="text-danger">*</span></label>
-                                    <select name="delivery_university_id" id="admin_delivery_university_select" class="form-select">
+                                    <select name="delivery_university_id" id="admin_delivery_university_select"
+                                        class="form-select">
                                         <option value="">اختر الجامعة...</option>
                                         @foreach($universities as $uni)
-                                            <option value="{{ $uni->id }}"
-                                                {{ $order->delivery_university_id == $uni->id ? 'selected' : '' }}>
+                                            <option value="{{ $uni->id }}" {{ $order->delivery_university_id == $uni->id ? 'selected' : '' }}>
                                                 {{ $uni->name }}
                                             </option>
                                         @endforeach
@@ -2103,10 +2087,10 @@
         </div>
 
         <script>
-        function toggleDeliveryTargetModal(target) {
-            document.getElementById('modal_home_fields').style.display       = target === 'home'       ? '' : 'none';
-            document.getElementById('modal_university_fields').style.display = target === 'university' ? '' : 'none';
-        }
+            function toggleDeliveryTargetModal(target) {
+                document.getElementById('modal_home_fields').style.display = target === 'home' ? '' : 'none';
+                document.getElementById('modal_university_fields').style.display = target === 'university' ? '' : 'none';
+            }
         </script>
     @endif
     {{-- Modal التنبيه الخاص بخصم المجموعة --}}
@@ -2119,337 +2103,339 @@
 
                     {{-- هيدر المودال بلون خفيف --}}
                     {{-- هيدر المودال بلون خفيف --}}
-                            <div class="modal-header border-0 pb-0 pt-4 px-4 position-relative d-flex justify-content-between align-items-start">
-                                <div class="d-flex align-items-center">
-                                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3"
-                                        style="width: 50px; height: 50px; background-color: rgba(220, 53, 69, 0.1);">
-                                        <i class="fas fa-exclamation-triangle fa-lg text-danger"></i>
-                                    </div>
-                                    <div>
-                                        <h5 class="modal-title fw-bold text-dark mb-1">المجموعة لم تكتمل!</h5>
-                                        <p class="text-muted small mb-0">يرجى الانتباه لعدد الطلبات في هذه الخطة</p>
-                                    </div>
-                                </div>
-                                <button type="button" class="btn-close m-0" data-bs-dismiss="modal"
-                                    aria-label="Close" style="opacity: 0.5;"></button>
+                    <div
+                        class="modal-header border-0 pb-0 pt-4 px-4 position-relative d-flex justify-content-between align-items-start">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center me-3"
+                                style="width: 50px; height: 50px; background-color: rgba(220, 53, 69, 0.1);">
+                                <i class="fas fa-exclamation-triangle fa-lg text-danger"></i>
                             </div>
-
-                            <div class="modal-body px-4 py-4">
-
-                                {{-- معلومات الخطة --}}
-                                <div class="p-3 mb-4 rounded-3" style="background: #f8f9fa; border: 1px solid #e9ecef;">
-                                    <div class="d-flex align-items-center mb-1">
-                                        <i class="fas fa-gem text-primary me-2"></i>
-                                        <span class="text-secondary fw-semibold">الخطة المُطبَّقة:</span>
-                                    </div>
-                                    <div class="fs-5 fw-bold text-dark ms-4 pl-2">{{ $groupWarning['applied_plan'] }}</div>
-                                </div>
-
-                                {{-- شريط التقدم والأرقام --}}
-                                <div class="mb-4">
-                                    <div class="d-flex justify-content-between align-items-end mb-2">
-                                        <div>
-                                            <span class="text-muted fw-bold d-block" style="font-size: 0.85rem;">التقدم الحالي</span>
-                                            <strong class="fs-4 text-danger">{{ $groupWarning['current_count'] }}</strong>
-                                            <span class="text-muted mx-1">من</span>
-                                            <strong class="fs-5 text-dark">{{ $groupWarning['required_count'] }}</strong>
-                                            <span class="text-muted small">شخص</span>
-                                        </div>
-                                        <div class="text-end">
-                                            <span class="badge rounded-pill bg-danger-subtle text-danger fw-bold px-3 py-2">
-                                                ناقص {{ $groupWarning['required_count'] - $groupWarning['current_count'] }} أشخاص
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {{-- شريط التقدم الديناميكي (بحسب النسبة مئوية لحاله!) --}}
-                                    <div class="progress" style="height: 10px; border-radius: 10px; background-color: #ffe6e6;">
-                                        <div class="progress-bar bg-danger progress-bar-striped progress-bar-animated"
-                                            role="progressbar"
-                                            style="width: {{ ($groupWarning['current_count'] / $groupWarning['required_count']) * 100 }}%;"
-                                            aria-valuenow="{{ $groupWarning['current_count'] }}" aria-valuemin="0"
-                                            aria-valuemax="{{ $groupWarning['required_count'] }}">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {{-- قسم السعر --}}
-                                <div class="d-flex align-items-center justify-content-between p-3 rounded-4"
-                                    style="background: linear-gradient(135deg, #fff3cd 0%, #ffecb3 100%); border: 1px solid rgba(255, 193, 7, 0.3);">
-                                    <div class="d-flex align-items-center">
-                                        <div class="rounded-circle d-flex align-items-center justify-content-center me-2"
-                                            style="width: 35px; height: 35px; background-color: rgba(255, 255, 255, 0.5);">
-                                            <i class="fas fa-money-bill-wave text-warning"
-                                                style="filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.1));"></i>
-                                        </div>
-                                        <span class="fw-bold text-dark">السعر المُطبَّق</span>
-                                    </div>
-                                    <h4 class="mb-0 fw-black text-dark" style="letter-spacing: -0.5px;">
-                                        {{ $groupWarning['applied_price'] }} <span class="fs-6 text-muted">JOD</span></h4>
-                                </div>
-
-                            </div>
-
-                            {{-- الفوتر --}}
-                            <div class="modal-footer border-0 px-4 pb-4 pt-0 text-start w-100 d-block">
-                                <button type="button" class="btn btn-light w-100 fw-bold py-2 rounded-3 text-secondary"
-                                    data-bs-dismiss="modal" style="background-color: #f1f3f5;">إغلاق التنبيه</button>
+                            <div>
+                                <h5 class="modal-title fw-bold text-dark mb-1">المجموعة لم تكتمل!</h5>
+                                <p class="text-muted small mb-0">يرجى الانتباه لعدد الطلبات في هذه الخطة</p>
                             </div>
                         </div>
+                        <button type="button" class="btn-close m-0" data-bs-dismiss="modal" aria-label="Close"
+                            style="opacity: 0.5;"></button>
+                    </div>
+
+                    <div class="modal-body px-4 py-4">
+
+                        {{-- معلومات الخطة --}}
+                        <div class="p-3 mb-4 rounded-3" style="background: #f8f9fa; border: 1px solid #e9ecef;">
+                            <div class="d-flex align-items-center mb-1">
+                                <i class="fas fa-gem text-primary me-2"></i>
+                                <span class="text-secondary fw-semibold">الخطة المُطبَّقة:</span>
+                            </div>
+                            <div class="fs-5 fw-bold text-dark ms-4 pl-2">{{ $groupWarning['applied_plan'] }}</div>
+                        </div>
+
+                        {{-- شريط التقدم والأرقام --}}
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-end mb-2">
+                                <div>
+                                    <span class="text-muted fw-bold d-block" style="font-size: 0.85rem;">التقدم الحالي</span>
+                                    <strong class="fs-4 text-danger">{{ $groupWarning['current_count'] }}</strong>
+                                    <span class="text-muted mx-1">من</span>
+                                    <strong class="fs-5 text-dark">{{ $groupWarning['required_count'] }}</strong>
+                                    <span class="text-muted small">شخص</span>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge rounded-pill bg-danger-subtle text-danger fw-bold px-3 py-2">
+                                        ناقص {{ $groupWarning['required_count'] - $groupWarning['current_count'] }} أشخاص
+                                    </span>
+                                </div>
+                            </div>
+
+                            {{-- شريط التقدم الديناميكي (بحسب النسبة مئوية لحاله!) --}}
+                            <div class="progress" style="height: 10px; border-radius: 10px; background-color: #ffe6e6;">
+                                <div class="progress-bar bg-danger progress-bar-striped progress-bar-animated"
+                                    role="progressbar"
+                                    style="width: {{ ($groupWarning['current_count'] / $groupWarning['required_count']) * 100 }}%;"
+                                    aria-valuenow="{{ $groupWarning['current_count'] }}" aria-valuemin="0"
+                                    aria-valuemax="{{ $groupWarning['required_count'] }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- قسم السعر --}}
+                        <div class="d-flex align-items-center justify-content-between p-3 rounded-4"
+                            style="background: linear-gradient(135deg, #fff3cd 0%, #ffecb3 100%); border: 1px solid rgba(255, 193, 7, 0.3);">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center me-2"
+                                    style="width: 35px; height: 35px; background-color: rgba(255, 255, 255, 0.5);">
+                                    <i class="fas fa-money-bill-wave text-warning"
+                                        style="filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.1));"></i>
+                                </div>
+                                <span class="fw-bold text-dark">السعر المُطبَّق</span>
+                            </div>
+                            <h4 class="mb-0 fw-black text-dark" style="letter-spacing: -0.5px;">
+                                {{ $groupWarning['applied_price'] }} <span class="fs-6 text-muted">JOD</span>
+                            </h4>
+                        </div>
+
+                    </div>
+
+                    {{-- الفوتر --}}
+                    <div class="modal-footer border-0 px-4 pb-4 pt-0 text-start w-100 d-block">
+                        <button type="button" class="btn btn-light w-100 fw-bold py-2 rounded-3 text-secondary"
+                            data-bs-dismiss="modal" style="background-color: #f1f3f5;">إغلاق التنبيه</button>
                     </div>
                 </div>
+            </div>
+        </div>
     @endif
-        <script>
-            window.orderShowConfig = {
-                csrfToken: '{{ csrf_token() }}',
-                updateStatusUrl: '{{ route('orders.updateStatus') }}',
-                updateDesignerUrl: '{{ route('orders.updateDesigner') }}',
-                currentUniversityMajorId: {{ $order->university_major_id ?? 'null' }},
-                currentDiplomaMajorId: {{ $order->diploma_major_id ?? 'null' }},
-            };
+    <script>
+        window.orderShowConfig = {
+            csrfToken: '{{ csrf_token() }}',
+            updateStatusUrl: '{{ route('orders.updateStatus') }}',
+            updateDesignerUrl: '{{ route('orders.updateDesigner') }}',
+            currentUniversityMajorId: {{ $order->university_major_id ?? 'null' }},
+            currentDiplomaMajorId: {{ $order->diploma_major_id ?? 'null' }},
+        };
 
-        </script>
-        <script src="{{ asset('js/order-show.js') }}"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
+    </script>
+    <script src="{{ asset('js/order-show.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
 
-                var TAB_KEY = 'order_active_tab_{{ $order->id }}';
+            var TAB_KEY = 'order_active_tab_{{ $order->id }}';
 
-                // ── حفظ التاب عند كل تغيير (يكفي هذا لأن الاستعادة تتم قبل الـ paint) ──
-                document.querySelectorAll('#orderTabs button[data-bs-toggle="tab"]').forEach(function (btn) {
-                    btn.addEventListener('shown.bs.tab', function () {
-                        sessionStorage.setItem(TAB_KEY, this.getAttribute('data-bs-target'));
-                    });
+            // ── حفظ التاب عند كل تغيير (يكفي هذا لأن الاستعادة تتم قبل الـ paint) ──
+            document.querySelectorAll('#orderTabs button[data-bs-toggle="tab"]').forEach(function (btn) {
+                btn.addEventListener('shown.bs.tab', function () {
+                    sessionStorage.setItem(TAB_KEY, this.getAttribute('data-bs-target'));
                 });
-
-                // ── URL Hash: أولوية قصوى، يحفظه أيضاً ──
-                var hash = window.location.hash;
-                if (hash) {
-                    var hashBtn = document.querySelector('#orderTabs button[data-bs-target="' + hash + '"]');
-                    if (hashBtn) {
-                        new bootstrap.Tab(hashBtn).show();
-                        sessionStorage.setItem(TAB_KEY, hash);
-                        setTimeout(function () {
-                            document.querySelector('.order-tabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }, 300);
-                    }
-                }
-
-                // 2. تحسين السحب (Drag) لبرامج مثل الـ Word التي تقبل كود الـ HTML المدمج
-                document.addEventListener('dragstart', async function (e) {
-                    if (e.target && e.target.classList.contains('drag-to-ps')) {
-                        const imgUrl = e.target.src;
-                        e.dataTransfer.setData('text/plain', imgUrl);
-
-                        try {
-                            // سحب كود الـ SVG ووضعه كـ HTML في الحافظة أثناء السحب ليفهمه Word
-                            fetch(imgUrl).then(res => res.text()).then(svgText => {
-                                e.dataTransfer.setData('text/html', svgText);
-                            });
-                        } catch (err) { }
-                    }
-                });
-
-                // 3. السر الأعظم: كود "نسخ للفوتوشوب"
-                const copyBtns = document.querySelectorAll('.copy-for-ps-btn');
-                copyBtns.forEach(btn => {
-                    btn.addEventListener('click', async function () {
-                        const originalHtml = this.innerHTML;
-                        this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري النسخ...';
-                        this.classList.add('disabled');
-
-                        const svgUrl = this.getAttribute('data-url');
-
-                        try {
-                            // جلب محتوى الـ SVG
-                            const response = await fetch(svgUrl);
-                            const svgText = await response.text();
-
-                            // تحويله لـ Blob
-                            const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
-                            const DOMURL = window.URL || window.webkitURL || window;
-                            const url = DOMURL.createObjectURL(svgBlob);
-
-                            // رسمه على Canvas بدقة 2000x2000 بكسل عشان الفوتوشوب
-                            const img = new Image();
-                            img.onload = function () {
-                                const canvas = document.createElement('canvas');
-                                canvas.width = 2000;
-                                canvas.height = 2000;
-                                const ctx = canvas.getContext('2d');
-
-                                // رسم الصورة
-                                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                                DOMURL.revokeObjectURL(url);
-
-                                // تحويل الـ Canvas لـ PNG ونسخه لـ Clipboard
-                                canvas.toBlob(async function (blob) {
-                                    try {
-                                        const item = new ClipboardItem({ 'image/png': blob });
-                                        await navigator.clipboard.write([item]);
-
-                                        // نجاح
-                                        btn.innerHTML = '<i class="fas fa-check me-2"></i> تم النسخ بنجاح!';
-                                        btn.classList.replace('btn-dark', 'btn-success');
-                                    } catch (clipboardErr) {
-                                        console.error('Clipboard error:', clipboardErr);
-                                        btn.innerHTML = '<i class="fas fa-times me-2"></i> فشل (راجع صلاحيات المتصفح)';
-                                        btn.classList.replace('btn-dark', 'btn-danger');
-                                    }
-
-                                    // إرجاع الزر لشكله الطبيعي
-                                    btn.classList.remove('disabled');
-                                    setTimeout(() => {
-                                        btn.innerHTML = originalHtml;
-                                        btn.classList.remove('btn-success', 'btn-danger');
-                                        btn.classList.add('btn-dark');
-                                    }, 3000);
-
-                                }, 'image/png');
-                            };
-                            img.src = url;
-
-                        } catch (err) {
-                            console.error('Fetch error:', err);
-                            this.innerHTML = '<i class="fas fa-times me-2"></i> خطأ بالنسخ';
-                            this.classList.replace('btn-dark', 'btn-danger');
-                            this.classList.remove('disabled');
-                            setTimeout(() => {
-                                this.innerHTML = originalHtml;
-                                this.classList.replace('btn-danger', 'btn-dark');
-                            }, 3000);
-                        }
-                    });
-                });
-
             });
 
-        </script>
-        <script>
-            function deleteOrderImage(fieldName, imageId = null, filePath = null) {
-                Swal.fire({
-                    title: 'هل أنت متأكد؟',
-                    text: "سيتم حذف هذه الصورة نهائياً ولن تتمكن من التراجع!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'نعم، احذفها!',
-                    cancelButtonText: 'إلغاء'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-
-                        Swal.fire({
-                            title: 'جاري الحذف...',
-                            allowOutsideClick: false,
-                            didOpen: () => { Swal.showLoading(); }
-                        });
-
-                        fetch(`/orders/{{ $order->id }}/delete-image`, {
-                            method: 'DELETE',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                field_name: fieldName,
-                                image_id: imageId,
-                                file_path: filePath
-                            })
-                        })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    Swal.fire({
-                                        icon: 'success', title: 'تم الحذف!', text: data.message, timer: 1500, showConfirmButton: false
-                                    }).then(() => window.location.reload());
-                                } else {
-                                    Swal.fire('خطأ!', data.message, 'error');
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
-                                Swal.fire('خطأ!', 'حدث مشكلة في الاتصال بالسيرفر.', 'error');
-                            });
-                    }
-                });
+            // ── URL Hash: أولوية قصوى، يحفظه أيضاً ──
+            var hash = window.location.hash;
+            if (hash) {
+                var hashBtn = document.querySelector('#orderTabs button[data-bs-target="' + hash + '"]');
+                if (hashBtn) {
+                    new bootstrap.Tab(hashBtn).show();
+                    sessionStorage.setItem(TAB_KEY, hash);
+                    setTimeout(function () {
+                        document.querySelector('.order-tabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 300);
+                }
             }
 
-        </script>
-        <script>
+            // 2. تحسين السحب (Drag) لبرامج مثل الـ Word التي تقبل كود الـ HTML المدمج
+            document.addEventListener('dragstart', async function (e) {
+                if (e.target && e.target.classList.contains('drag-to-ps')) {
+                    const imgUrl = e.target.src;
+                    e.dataTransfer.setData('text/plain', imgUrl);
 
-            document.addEventListener('DOMContentLoaded', function () {
-                const govSelect = document.getElementById('admin_gov_select');
-                const citySelect = document.getElementById('admin_city_select');
-                const areaSelect = document.getElementById('admin_area_select');
-
-                // 🔴 الحل هون: عرفنا الرابط الأساسي بشكل آمن جداً
-                const baseUrl = "{{ url('/') }}";
-
-                if (govSelect && citySelect && areaSelect) {
-                    const currentCityId = '{{ $order->city_id }}';
-                    const currentAreaId = '{{ $order->area_id }}';
-
-                    function fetchCities(govId, selectedCityId = null) {
-                        if (!govId) {
-                            citySelect.innerHTML = '<option value="">اختر المدينة...</option>';
-                            areaSelect.innerHTML = '<option value="">اختر المنطقة...</option>';
-                            return;
-                        }
-
-                        // استخدمنا الـ baseUrl مع مسار الـ API
-                        fetch(`${baseUrl}/api/v1/locations/cities/${govId}`)
-                            .then(res => res.json())
-                            .then(data => {
-                                let options = '<option value="">اختر المدينة...</option>';
-                                data.data.forEach(city => {
-                                    let selected = (selectedCityId == city.id) ? 'selected' : '';
-                                    options += `<option value="${city.id}" ${selected}>${city.name_ar || city.name_en}</option>`;
-                                });
-                                citySelect.innerHTML = options;
-
-                                if (selectedCityId) {
-                                    fetchAreas(selectedCityId, currentAreaId);
-                                } else {
-                                    areaSelect.innerHTML = '<option value="">اختر المنطقة...</option>';
-                                }
-                            })
-                            .catch(error => console.error('Error fetching cities:', error));
-                    }
-
-                    function fetchAreas(cityId, selectedAreaId = null) {
-                        if (!cityId) {
-                            areaSelect.innerHTML = '<option value="">اختر المنطقة...</option>';
-                            return;
-                        }
-
-                        // استخدمنا الـ baseUrl مع مسار الـ API
-                        fetch(`${baseUrl}/api/v1/locations/areas/${cityId}`)
-                            .then(res => res.json())
-                            .then(data => {
-                                let options = '<option value="">اختر المنطقة...</option>';
-                                data.data.forEach(area => {
-                                    let selected = (selectedAreaId == area.id) ? 'selected' : '';
-                                    options += `<option value="${area.id}" ${selected}>${area.name_ar || area.name_en}</option>`;
-                                });
-                                areaSelect.innerHTML = options;
-                            })
-                            .catch(error => console.error('Error fetching areas:', error));
-                    }
-
-                    govSelect.addEventListener('change', function () {
-                        fetchCities(this.value);
-                    });
-
-                    citySelect.addEventListener('change', function () {
-                        fetchAreas(this.value);
-                    });
-
-                    if (govSelect.value) {
-                        fetchCities(govSelect.value, currentCityId);
-                    }
+                    try {
+                        // سحب كود الـ SVG ووضعه كـ HTML في الحافظة أثناء السحب ليفهمه Word
+                        fetch(imgUrl).then(res => res.text()).then(svgText => {
+                            e.dataTransfer.setData('text/html', svgText);
+                        });
+                    } catch (err) { }
                 }
             });
-        </script>
+
+            // 3. السر الأعظم: كود "نسخ للفوتوشوب"
+            const copyBtns = document.querySelectorAll('.copy-for-ps-btn');
+            copyBtns.forEach(btn => {
+                btn.addEventListener('click', async function () {
+                    const originalHtml = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري النسخ...';
+                    this.classList.add('disabled');
+
+                    const svgUrl = this.getAttribute('data-url');
+
+                    try {
+                        // جلب محتوى الـ SVG
+                        const response = await fetch(svgUrl);
+                        const svgText = await response.text();
+
+                        // تحويله لـ Blob
+                        const svgBlob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+                        const DOMURL = window.URL || window.webkitURL || window;
+                        const url = DOMURL.createObjectURL(svgBlob);
+
+                        // رسمه على Canvas بدقة 2000x2000 بكسل عشان الفوتوشوب
+                        const img = new Image();
+                        img.onload = function () {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = 2000;
+                            canvas.height = 2000;
+                            const ctx = canvas.getContext('2d');
+
+                            // رسم الصورة
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            DOMURL.revokeObjectURL(url);
+
+                            // تحويل الـ Canvas لـ PNG ونسخه لـ Clipboard
+                            canvas.toBlob(async function (blob) {
+                                try {
+                                    const item = new ClipboardItem({ 'image/png': blob });
+                                    await navigator.clipboard.write([item]);
+
+                                    // نجاح
+                                    btn.innerHTML = '<i class="fas fa-check me-2"></i> تم النسخ بنجاح!';
+                                    btn.classList.replace('btn-dark', 'btn-success');
+                                } catch (clipboardErr) {
+                                    console.error('Clipboard error:', clipboardErr);
+                                    btn.innerHTML = '<i class="fas fa-times me-2"></i> فشل (راجع صلاحيات المتصفح)';
+                                    btn.classList.replace('btn-dark', 'btn-danger');
+                                }
+
+                                // إرجاع الزر لشكله الطبيعي
+                                btn.classList.remove('disabled');
+                                setTimeout(() => {
+                                    btn.innerHTML = originalHtml;
+                                    btn.classList.remove('btn-success', 'btn-danger');
+                                    btn.classList.add('btn-dark');
+                                }, 3000);
+
+                            }, 'image/png');
+                        };
+                        img.src = url;
+
+                    } catch (err) {
+                        console.error('Fetch error:', err);
+                        this.innerHTML = '<i class="fas fa-times me-2"></i> خطأ بالنسخ';
+                        this.classList.replace('btn-dark', 'btn-danger');
+                        this.classList.remove('disabled');
+                        setTimeout(() => {
+                            this.innerHTML = originalHtml;
+                            this.classList.replace('btn-danger', 'btn-dark');
+                        }, 3000);
+                    }
+                });
+            });
+
+        });
+
+    </script>
+    <script>
+        function deleteOrderImage(fieldName, imageId = null, filePath = null) {
+            Swal.fire({
+                title: 'هل أنت متأكد؟',
+                text: "سيتم حذف هذه الصورة نهائياً ولن تتمكن من التراجع!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'نعم، احذفها!',
+                cancelButtonText: 'إلغاء'
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                    Swal.fire({
+                        title: 'جاري الحذف...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
+                    fetch(`/orders/{{ $order->id }}/delete-image`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            field_name: fieldName,
+                            image_id: imageId,
+                            file_path: filePath
+                        })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success', title: 'تم الحذف!', text: data.message, timer: 1500, showConfirmButton: false
+                                }).then(() => window.location.reload());
+                            } else {
+                                Swal.fire('خطأ!', data.message, 'error');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire('خطأ!', 'حدث مشكلة في الاتصال بالسيرفر.', 'error');
+                        });
+                }
+            });
+        }
+
+    </script>
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const govSelect = document.getElementById('admin_gov_select');
+            const citySelect = document.getElementById('admin_city_select');
+            const areaSelect = document.getElementById('admin_area_select');
+
+            // 🔴 الحل هون: عرفنا الرابط الأساسي بشكل آمن جداً
+            const baseUrl = "{{ url('/') }}";
+
+            if (govSelect && citySelect && areaSelect) {
+                const currentCityId = '{{ $order->city_id }}';
+                const currentAreaId = '{{ $order->area_id }}';
+
+                function fetchCities(govId, selectedCityId = null) {
+                    if (!govId) {
+                        citySelect.innerHTML = '<option value="">اختر المدينة...</option>';
+                        areaSelect.innerHTML = '<option value="">اختر المنطقة...</option>';
+                        return;
+                    }
+
+                    // استخدمنا الـ baseUrl مع مسار الـ API
+                    fetch(`${baseUrl}/api/v1/locations/cities/${govId}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            let options = '<option value="">اختر المدينة...</option>';
+                            data.data.forEach(city => {
+                                let selected = (selectedCityId == city.id) ? 'selected' : '';
+                                options += `<option value="${city.id}" ${selected}>${city.name_ar || city.name_en}</option>`;
+                            });
+                            citySelect.innerHTML = options;
+
+                            if (selectedCityId) {
+                                fetchAreas(selectedCityId, currentAreaId);
+                            } else {
+                                areaSelect.innerHTML = '<option value="">اختر المنطقة...</option>';
+                            }
+                        })
+                        .catch(error => console.error('Error fetching cities:', error));
+                }
+
+                function fetchAreas(cityId, selectedAreaId = null) {
+                    if (!cityId) {
+                        areaSelect.innerHTML = '<option value="">اختر المنطقة...</option>';
+                        return;
+                    }
+
+                    // استخدمنا الـ baseUrl مع مسار الـ API
+                    fetch(`${baseUrl}/api/v1/locations/areas/${cityId}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            let options = '<option value="">اختر المنطقة...</option>';
+                            data.data.forEach(area => {
+                                let selected = (selectedAreaId == area.id) ? 'selected' : '';
+                                options += `<option value="${area.id}" ${selected}>${area.name_ar || area.name_en}</option>`;
+                            });
+                            areaSelect.innerHTML = options;
+                        })
+                        .catch(error => console.error('Error fetching areas:', error));
+                }
+
+                govSelect.addEventListener('change', function () {
+                    fetchCities(this.value);
+                });
+
+                citySelect.addEventListener('change', function () {
+                    fetchAreas(this.value);
+                });
+
+                if (govSelect.value) {
+                    fetchCities(govSelect.value, currentCityId);
+                }
+            }
+        });
+    </script>
 @endsection

@@ -43,15 +43,7 @@ class OrderPricingService
             $breakdown['decoration'] = ['id' => $orderData['book_decorations_id'], 'cost' => $decorationCost];
         }
 
-        // 3. الصور الخلفية (1 دينار للصورة)
-        $backCount = $this->countJsonItems($orderData, 'back_image_ids');
-        if ($backCount > 0) {
-            $backCost = $backCount * config('pricing.back_image_cost_per_image', 1);
-            $price += $backCost;
-            $breakdown['back_images'] = ['count' => $backCount, 'cost_each' => config('pricing.back_image_cost_per_image', 1), 'total' => $backCost];
-        }
-
-        // 4. الصور الإضافية (1 دينار للصورة)
+        // 3. الصور الإضافية (1 دينار للصورة)
         $additionalCount = $this->countJsonItems($orderData, 'additional_image_id');
         if ($additionalCount > 0) {
             $additionalCost = $additionalCount * config('pricing.additional_image_cost_per_image', 1);

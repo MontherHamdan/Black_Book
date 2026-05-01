@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Order;
-use App\Models\SvgName;
-use App\Support\ArabicNameNormalizer;
-use App\Services\OrderPricingService;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Validator;
 use App\Jobs\RecalculateGroupDiscountJob;
 use App\Models\DiscountCodeTier;
+use App\Models\Order;
+use App\Models\SvgName;
+use App\Services\OrderPricingService;
+use App\Support\ArabicNameNormalizer;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
@@ -26,7 +25,6 @@ class OrderController extends Controller
     /**
      * Store a newly created order in storage.
      *
-     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
@@ -78,7 +76,7 @@ class OrderController extends Controller
 
             // إذا كانت الوجهة جامعة → جامعة التوصيل مطلوبة
             'delivery_university_id' => 'nullable|exists:universities,id',
-            'address' => 'nullable|string',
+            // 'address' => 'nullable|string',
 
             'final_price' => 'nullable|numeric|min:0',
             'final_price_with_discount' => 'nullable|numeric|min:0',
@@ -100,8 +98,9 @@ class OrderController extends Controller
             $bookDesignId = $request->input('book_design_id');
 
             $customDesignImageIds = $request->input('custom_design_image_id', []);
-            if (is_null($customDesignImageIds))
+            if (is_null($customDesignImageIds)) {
                 $customDesignImageIds = [];
+            }
 
             // المرفوض الوحيد
             if (empty($bookDesignId) && empty($customDesignImageIds)) {
@@ -128,9 +127,6 @@ class OrderController extends Controller
                 }
             }
 
-
-
-
             // 2) منطق university / diploma + majors
             $userType = $request->input('user_type');
 
@@ -144,7 +140,7 @@ class OrderController extends Controller
                         ->where('university_id', $universityId)
                         ->exists();
 
-                    if (!$exists) {
+                    if (! $exists) {
                         $validator->errors()->add(
                             'university_major_id',
                             'The specialisation is not specific to a particular university.'
@@ -163,7 +159,7 @@ class OrderController extends Controller
                         ->where('diploma_id', $diplomaId)
                         ->exists();
 
-                    if (!$exists) {
+                    if (! $exists) {
                         $validator->errors()->add(
                             'diploma_major_id',
                             'The specialisation does not follow the specific diploma programme.'
@@ -182,8 +178,7 @@ class OrderController extends Controller
         $data['book_design_id'] = $data['book_design_id'] ?? null;
         $data['custom_design_image_id'] = $data['custom_design_image_id'] ?? [];
 
-
-        if (!array_key_exists('book_design_id', $data)) {
+        if (! array_key_exists('book_design_id', $data)) {
             $data['book_design_id'] = null;
         }
         if ($data['gift_type'] !== 'custom') {
@@ -201,20 +196,8 @@ class OrderController extends Controller
         $frontendBasePrice = $data['final_price'] ?? null;
         $frontendDiscountedPrice = $data['final_price_with_discount'] ?? null;
 
-        Log::info('[Order] Starting server-side price calculation', [
-            'book_type_id'       => $data['book_type_id'] ?? null,
-            'discount_code_id'   => $data['discount_code_id'] ?? null,
-            'frontend_base'      => $frontendBasePrice,
-            'frontend_discounted'=> $frontendDiscountedPrice,
-        ]);
-
         // Calculate prices on server side
         $calculatedPrices = $this->pricingService->calculateOrderPrices($data);
-
-        Log::info('[Order] Server-side prices calculated', [
-            'base_price'          => $calculatedPrices['base_price'],
-            'price_with_discount' => $calculatedPrices['price_with_discount'],
-        ]);
 
         // If frontend provided prices, validate them
         if ($frontendBasePrice !== null || $frontendDiscountedPrice !== null) {
@@ -224,24 +207,14 @@ class OrderController extends Controller
                 $frontendDiscountedPrice
             );
 
-            if (!$validation['is_valid']) {
-                Log::warning('[Order] Price validation failed', [
-                    'errors'             => $validation['errors'],
-                    'frontend_base'      => $frontendBasePrice,
-                    'frontend_discounted'=> $frontendDiscountedPrice,
-                    'server_base'        => $calculatedPrices['base_price'],
-                    'server_discounted'  => $calculatedPrices['price_with_discount'],
-                ]);
-
+            if (! $validation['is_valid']) {
                 return response()->json([
                     'message' => 'Price validation failed. Please refresh and try again.',
                     'errors' => [
-                        'final_price' => ['The calculated price does not match the server configuration.']
-                    ]
+                        'final_price' => ['The calculated price does not match the server configuration.'],
+                    ],
                 ], 422);
             }
-
-            Log::info('[Order] Frontend prices validated OK');
         }
 
         // ALWAYS use server-calculated prices (ignore frontend values)
@@ -258,24 +231,12 @@ class OrderController extends Controller
 
         $order = Order::create($data);
 
-        Log::info('[Order] Order created', [
-            'order_id'                   => $order->id,
-            'final_price'                => $order->final_price,
-            'final_price_with_discount'  => $order->final_price_with_discount,
-            'discount_code_id'           => $order->discount_code_id,
-        ]);
-
         // ════════════════════════════════════════════
         // SMART TIER TRIGGER — recalculate on threshold
         // ════════════════════════════════════════════
         $discountCodeId = $order->discount_code_id;
         if ($discountCodeId) {
             $count = Order::where('discount_code_id', $discountCodeId)->count();
-
-            Log::info('[Order] Checking tier trigger', [
-                'discount_code_id'  => $discountCodeId,
-                'current_count'     => $count,
-            ]);
 
             // Find matching tier for current count
             $tier = DiscountCodeTier::where('discount_code_id', $discountCodeId)
@@ -292,45 +253,20 @@ class OrderController extends Controller
                 } elseif ($tier->discount_type === 'byJd') {
                     $discountAmount = (float) $tier->discount_value;
                 }
-                $newPrice = max(0, round($basePrice - $discountAmount, 2));
-                $order->final_price_with_discount = $newPrice;
+                $order->final_price_with_discount = max(0, round($basePrice - $discountAmount, 2));
                 $order->saveQuietly();
-
-                Log::info('[Order] Tier applied to this order', [
-                    'order_id'       => $order->id,
-                    'tier_id'        => $tier->id,
-                    'tier_min_qty'   => $tier->min_qty,
-                    'discount_type'  => $tier->discount_type,
-                    'discount_value' => $tier->discount_value,
-                    'discount_amount'=> $discountAmount,
-                    'base_price'     => $basePrice,
-                    'new_price'      => $newPrice,
-                    'threshold_hit'  => ($count == $tier->min_qty),
-                ]);
 
                 // PERFORMANCE GUARD: dispatch bulk recalculation ONLY when
                 // the threshold was EXACTLY crossed (this order pushed it over)
                 if ($count == $tier->min_qty) {
-                    Log::info('[Order] Threshold exactly crossed — dispatching RecalculateGroupDiscountJob', [
-                        'discount_code_id' => $discountCodeId,
-                        'tier_id'          => $tier->id,
-                        'count'            => $count,
-                    ]);
                     RecalculateGroupDiscountJob::dispatch($discountCodeId, $tier);
                 }
-            } else {
-                Log::info('[Order] No tier matched for current count — price unchanged', [
-                    'discount_code_id' => $discountCodeId,
-                    'current_count'    => $count,
-                ]);
             }
-        } else {
-            Log::info('[Order] No discount code on order — skipping tier check');
         }
 
         $firstArabicName = ArabicNameNormalizer::firstArabicName($order->username_ar ?? '');
 
-        if (!empty($firstArabicName)) {
+        if (! empty($firstArabicName)) {
             $normalized = ArabicNameNormalizer::normalize($firstArabicName);
 
             SvgName::firstOrCreate(

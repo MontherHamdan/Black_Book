@@ -488,7 +488,10 @@ class OrderWebController extends Controller
                         $q->where('name_ar', 'like', "%{$searchValue}%")
                             ->orWhere('name_en', 'like', "%{$searchValue}%");
                     })
-                    ->orWhere('address', 'like', "%{$searchValue}%")
+                    ->orWhereHas('city', function ($q) use ($searchValue) {
+                        $q->where('name_ar', 'like', "%{$searchValue}%")
+                            ->orWhere('name_en', 'like', "%{$searchValue}%");
+                    })
                     ->orWhere('user_phone_number', 'like', "%{$searchValue}%")
                     ->orWhere('delivery_number_two', 'like', "%{$searchValue}%")
                     ->orWhere('status', 'like', "%{$searchValue}%")
@@ -520,8 +523,8 @@ class OrderWebController extends Controller
         }
         if (! empty($codeNameFilter)) {
             $query->whereHas('discountCode', function ($q) use ($codeNameFilter) {
-                $q->where('code_name', 'like', "%{$codeNameFilter}%")
-                    ->orWhere('discount_code', 'like', "%{$codeNameFilter}%");
+                $q->where('code_name', $codeNameFilter)
+                    ->orWhere('discount_code', $codeNameFilter);
             });
         }
         $duplicatePhones = Order::select('user_phone_number')

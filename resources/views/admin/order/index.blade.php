@@ -616,6 +616,141 @@
     <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
 
+    <style>
+        /* === Group Search Autocomplete Widget === */
+        .group-search-wrapper {
+            position: relative;
+            margin-left: 12px;
+        }
+
+        .group-search-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #fff;
+            border: 1.5px solid #d1d5db;
+            border-radius: 8px;
+            padding: 0 10px;
+            height: 34px;
+            transition: border-color .2s, box-shadow .2s;
+            min-width: 190px;
+        }
+
+        .group-search-input-wrap:focus-within {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, .15);
+        }
+
+        .group-search-input-wrap i {
+            color: #9ca3af;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        #groupSearchInput {
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 13px;
+            color: #374151;
+            width: 100%;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        #groupSearchInput::placeholder {
+            color: #9ca3af;
+        }
+
+        .group-clear-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            color: #9ca3af;
+            font-size: 12px;
+            display: none;
+            flex-shrink: 0;
+        }
+
+        .group-clear-btn:hover {
+            color: #ef4444;
+        }
+
+        .group-dropdown-list {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .1);
+            z-index: 9999;
+            max-height: 240px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .group-dropdown-list li {
+            list-style: none;
+            padding: 9px 14px;
+            font-size: 13px;
+            color: #374151;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background .15s;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .group-dropdown-list li:hover,
+        .group-dropdown-list li.active-highlight {
+            background: #eef2ff;
+            color: #4f46e5;
+        }
+
+        .group-dropdown-list li i {
+            color: #a5b4fc;
+            font-size: 11px;
+        }
+
+        .group-badge-active {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #eef2ff;
+            color: #4f46e5;
+            border: 1px solid #c7d2fe;
+            border-radius: 50px;
+            padding: 1px 10px 1px 8px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .group-badge-active button {
+            background: none;
+            border: none;
+            padding: 0;
+            color: #6366f1;
+            cursor: pointer;
+            font-size: 11px;
+            line-height: 1;
+        }
+
+        .group-badge-active button:hover {
+            color: #ef4444;
+        }
+
+        .group-no-results {
+            color: #9ca3af;
+            text-align: center;
+            padding: 12px;
+            font-size: 13px;
+        }
+    </style>
+
     <script>
         $(document).ready(function () {
 
@@ -645,14 +780,14 @@
 
                         notes.forEach(function (note) {
                             const itemHtml = `
-                                                                                                                                                                                                                        <li class="chat-message">
-                                                                                                                                                                                                                            <div class="chat-header">
-                                                                                                                                                                                                                                <span class="chat-author"><i class="fas fa-user-circle me-1"></i>${note.user_name}</span>
-                                                                                                                                                                                                                                <span class="chat-time"><i class="far fa-clock me-1"></i>${note.created_at}</span>
-                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                            <p class="chat-content">${note.content}</p>
-                                                                                                                                                                                                                        </li>
-                                                                                                                                                                                                                    `;
+                                                                                                                                                                                                                                <li class="chat-message">
+                                                                                                                                                                                                                                    <div class="chat-header">
+                                                                                                                                                                                                                                        <span class="chat-author"><i class="fas fa-user-circle me-1"></i>${note.user_name}</span>
+                                                                                                                                                                                                                                        <span class="chat-time"><i class="far fa-clock me-1"></i>${note.created_at}</span>
+                                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                                    <p class="chat-content">${note.content}</p>
+                                                                                                                                                                                                                                </li>
+                                                                                                                                                                                                                            `;
                             $list.append(itemHtml);
                         });
                     },
@@ -661,6 +796,9 @@
                     }
                 });
             }
+
+            // متغير اسم المجموعة المختارة (خارج DataTable حتى تقدر الـ ajax data function تقرأها)
+            let selectedGroupName = '';
 
             const table = $('#orders-table').DataTable({
                 processing: true,
@@ -677,7 +815,7 @@
                         d.date_from = $('#dateFrom').val();
                         d.date_to = $('#dateTo').val();
                         d.designer_id = $('#designerFilter').val();
-                        d.code_name = $('#codeNameFilter').val();
+                        d.code_name = selectedGroupName;
                     },
                     error: function (xhr) {
                         console.error('DataTables AJAX error:', xhr);
@@ -695,7 +833,7 @@
                 pageLength: 10,
                 columns: [
                     @if(auth()->user()->isAdmin())
-                                                                                                                                                                                                                                                                                                                                                                                                {
+                                                                                                                                                                                                                                                                                                                                                                                                                {
                             data: null,
                             name: 'checkbox',
                             orderable: false,
@@ -791,12 +929,12 @@
                             // لو ما عنده صلاحية → Badge كبير + المدة فقط
                             if (!canChangeStatus) {
                                 return `
-                                                                                                                                                                                                            <div class="text-center">
-                                                                                                                                                                                                                <span class="status-badge-soft shadow-sm ${currentStatus.class}">
-                                                                                                                                                                                                                    ${currentStatus.label}
-                                                                                                                                                                                                                </span>
-                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                        `;
+                                                                                                                                                                                                                    <div class="text-center">
+                                                                                                                                                                                                                        <span class="status-badge-soft shadow-sm ${currentStatus.class}">
+                                                                                                                                                                                                                            ${currentStatus.label}
+                                                                                                                                                                                                                        </span>
+                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                `;
                             }
 
                             // لو عنده صلاحية → Dropdown + المدة تحت
@@ -807,34 +945,34 @@
                                 .map(function (status) {
                                     const cfg = statusConfig[status] || defaultConfig;
                                     return `
-                                                                                                                                                                                                                <li>
-                                                                                                                                                                                                                    <a class="dropdown-item change-status-item py-2"
-                                                                                                                                                                                                                       href="#"
-                                                                                                                                                                                                                       data-order-id="${row.id}"
-                                                                                                                                                                                                                       data-new-status="${status}">
-                                                                                                                                                                                                                        <span class="status-badge-soft w-100 ${cfg.class}">${cfg.label}</span>
-                                                                                                                                                                                                                    </a>
-                                                                                                                                                                                                                </li>
-                                                                                                                                                                                                            `;
+                                                                                                                                                                                                                        <li>
+                                                                                                                                                                                                                            <a class="dropdown-item change-status-item py-2"
+                                                                                                                                                                                                                               href="#"
+                                                                                                                                                                                                                               data-order-id="${row.id}"
+                                                                                                                                                                                                                               data-new-status="${status}">
+                                                                                                                                                                                                                                <span class="status-badge-soft w-100 ${cfg.class}">${cfg.label}</span>
+                                                                                                                                                                                                                            </a>
+                                                                                                                                                                                                                        </li>
+                                                                                                                                                                                                                    `;
                                 })
                                 .join('');
                             return `
-                                                                                                <div class="text-center">
-                                                                                                    <div class="dropdown d-inline">
-                                                                                                        <span
-                                                                                                            class="status-badge-soft shadow-sm dropdown-toggle ${currentStatus.class}"
-                                                                                                            id="statusDropdown${row.id}"
-                                                                                                            data-bs-toggle="dropdown"
-                                                                                                            aria-expanded="false"
-                                                                                                            style="cursor: pointer;">
-                                                                                                            ${currentStatus.label}
-                                                                                                        </span>
-                                                                                                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 py-2" style="z-index: 1050; min-width: 140px;" aria-labelledby="statusDropdown${row.id}">
-                                                                                                            ${dropdownItems}
-                                                                                                        </ul>
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                            `;
+                                                                                                        <div class="text-center">
+                                                                                                            <div class="dropdown d-inline">
+                                                                                                                <span
+                                                                                                                    class="status-badge-soft shadow-sm dropdown-toggle ${currentStatus.class}"
+                                                                                                                    id="statusDropdown${row.id}"
+                                                                                                                    data-bs-toggle="dropdown"
+                                                                                                                    aria-expanded="false"
+                                                                                                                    style="cursor: pointer;">
+                                                                                                                    ${currentStatus.label}
+                                                                                                                </span>
+                                                                                                                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 py-2" style="z-index: 1050; min-width: 140px;" aria-labelledby="statusDropdown${row.id}">
+                                                                                                                    ${dropdownItems}
+                                                                                                                </ul>
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    `;
                         }
                     },
 
@@ -842,6 +980,9 @@
                         data: 'designer',
                         name: 'designer',
                         orderable: false,
+                        orderable: false,
+                        className: 'text-nowrap', // 👈 هون مكانها الصحيح
+                        width: '120px',
                         searchable: false,
                         render: function (data, type, row) {
                             const currentDesignerId = (data && data.id) ? data.id : null;
@@ -864,14 +1005,14 @@
                             }
 
                             return `
-                                                                <select class="form-select form-select-sm order-designer-select"
-                                                                    data-order-id="${row.id}"
-                                                                    data-current-designer-id="${currentDesignerId || ''}"
-                                                                    ${disabledAttr}>
-                                                                    ${notAssignedOption}
-                                                                    ${optionsHtml}
-                                                                </select>
-                                                            `;
+                                                                        <select class="form-select form-select-sm order-designer-select"
+                                                                            data-order-id="${row.id}"
+                                                                            data-current-designer-id="${currentDesignerId || ''}"
+                                                                            ${disabledAttr}>
+                                                                            ${notAssignedOption}
+                                                                            ${optionsHtml}
+                                                                        </select>
+                                                                    `;
                         }
                     },
                     {
@@ -932,12 +1073,12 @@
                             }
 
                             return `
-                                                                                                                                                                                                                        <span>${data}</span>
-                                                                                                                                                                                                                        <a href="https://wa.me/${waNumber}" target="_blank"
-                                                                                                                                                                                                                           class="ms-2 text-success" title="WhatsApp">
-                                                                                                                                                                                                                            <i class="fab fa-whatsapp"></i>
-                                                                                                                                                                                                                        </a>
-                                                                                                                                                                                                                    `;
+                                                                                                                                                                                                                                <span>${data}</span>
+                                                                                                                                                                                                                                <a href="https://wa.me/${waNumber}" target="_blank"
+                                                                                                                                                                                                                                   class="ms-2 text-success" title="WhatsApp">
+                                                                                                                                                                                                                                    <i class="fab fa-whatsapp"></i>
+                                                                                                                                                                                                                                </a>
+                                                                                                                                                                                                                            `;
                         }
                     },
                     {
@@ -969,26 +1110,26 @@
                             const label = data.name || data.code;
                             if (!data.is_group) {
                                 return `<span class="badge-discount badge-individual" title="${label}">
-                                                                        <i class="fas fa-user"></i> فردي
-                                                                    </span>`;
+                                                                                <i class="fas fa-user"></i> فردي
+                                                                            </span>`;
                             }
                             // مجموعة
                             if (data.incomplete) {
                                 return `<span class="badge-discount badge-group-warn js-show-group-warning" 
-                                                                      data-plan="${label}" 
-                                                                      data-current="${data.group_count}" 
-                                                                      data-required="${data.required_count}" 
-                                                                      data-price="${row.price}"
-                                                                      style="cursor: pointer;" title="اضغط لعرض التفاصيل">
-                                                                    <i class="fas fa-users"></i> مجموعة
-                                                                    <span style="font-size:0.65rem;opacity:0.85;">(${data.group_count}/${data.required_count})</span>
-                                                                    <i class="fas fa-exclamation-triangle" style="font-size:0.6rem;"></i>
-                                                                </span>`;
+                                                                              data-plan="${label}" 
+                                                                              data-current="${data.group_count}" 
+                                                                              data-required="${data.required_count}" 
+                                                                              data-price="${row.price}"
+                                                                              style="cursor: pointer;" title="اضغط لعرض التفاصيل">
+                                                                            <i class="fas fa-users"></i> مجموعة
+                                                                            <span style="font-size:0.65rem;opacity:0.85;">(${data.group_count}/${data.required_count})</span>
+                                                                            <i class="fas fa-exclamation-triangle" style="font-size:0.6rem;"></i>
+                                                                        </span>`;
                             }
                             return `<span class="badge-discount badge-group-ok" title="${label}">
-                                                                    <i class="fas fa-users"></i> مجموعة
-                                                                    <i class="fas fa-check" style="font-size:0.6rem;"></i>
-                                                                </span>`;
+                                                                            <i class="fas fa-users"></i> مجموعة
+                                                                            <i class="fas fa-check" style="font-size:0.6rem;"></i>
+                                                                        </span>`;
                         }
                     },
                     {
@@ -1014,29 +1155,29 @@
                 initComplete: function () {
                     // 1. فلتر الحالة
                     const statusDropdown = $(`
-                                                                                                                                                                                                        <select id="statusFilter" class="form-select" style="width: 230px;height:34px; margin-left: 15px;">
-                                                                                                                                                                                                            <option value="">تصفية حسب الحالة</option>
-                                                                                                                                                                                                            <option value="new_order">طلب جديد</option>
-                                                                                                                                                                                                            <option value="needs_modification">يوجد تعديل</option>
-                                                                                                                                                                                                            <option value="Pending">تم التصميم</option>
-                                                                                                                                                                                                            <option value="Completed">تم الاعتماد</option>
-                                                                                                                                                                                                            <option value="preparing">قيد التجهيز</option>
-                                                                                                                                                                                                            <option value="Printed">تم الطباعة</option>
-                                                                                                                                                                                                            <option value="Received">تم التسليم</option>
-                                                                                                                                                                                                            <option value="out_for_delivery">خرج مع التوصيل</option>
-                                                                                                                                                                                                            <option value="returned">مرتجع</option>
-                                                                                                                                                                                                            <option value="Canceled">رفض الإستلام</option>
-                                                                                                                                                                                                        </select>
-                                                                                                                                                                                                    `);
+                                                                                                                                                                                                                <select id="statusFilter" class="form-select" style="width: 230px;height:34px; margin-left: 15px;">
+                                                                                                                                                                                                                    <option value="">تصفية حسب الحالة</option>
+                                                                                                                                                                                                                    <option value="new_order">طلب جديد</option>
+                                                                                                                                                                                                                    <option value="needs_modification">يوجد تعديل</option>
+                                                                                                                                                                                                                    <option value="Pending">تم التصميم</option>
+                                                                                                                                                                                                                    <option value="Completed">تم الاعتماد</option>
+                                                                                                                                                                                                                    <option value="preparing">قيد التجهيز</option>
+                                                                                                                                                                                                                    <option value="Printed">تم الطباعة</option>
+                                                                                                                                                                                                                    <option value="Received">تم التسليم</option>
+                                                                                                                                                                                                                    <option value="out_for_delivery">خرج مع التوصيل</option>
+                                                                                                                                                                                                                    <option value="returned">مرتجع</option>
+                                                                                                                                                                                                                    <option value="Canceled">رفض الإستلام</option>
+                                                                                                                                                                                                                </select>
+                                                                                                                                                                                                            `);
 
                     // 2. فلتر الإضافات
                     const additivesDropdown = $(`
-                                                                                                                                                                                                        <select id="additivesFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
-                                                                                                                                                                                                            <option value="">تصفية حسب الإضافات</option>
-                                                                                                                                                                                                            <option value="with_additives">مع إضافات</option>
-                                                                                                                                                                                                            <option value="with_out_additives">بدون إضافات</option>
-                                                                                                                                                                                                        </select>
-                                                                                                                                                                                                    `);
+                                                                                                                                                                                                                <select id="additivesFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
+                                                                                                                                                                                                                    <option value="">تصفية حسب الإضافات</option>
+                                                                                                                                                                                                                    <option value="with_additives">مع إضافات</option>
+                                                                                                                                                                                                                    <option value="with_out_additives">بدون إضافات</option>
+                                                                                                                                                                                                                </select>
+                                                                                                                                                                                                            `);
 
                     // 3. فلتر المصمم (هاد اللي كان ناقص عندك)
                     let designerOptions = '<option value="">تصفية حسب المصمم</option>';
@@ -1050,22 +1191,31 @@
                     }
 
                     const designerDropdown = $(`
-                                                                                                                                                                                                        <select id="designerFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
-                                                                                                                                                                                                            ${designerOptions}
-                                                                                                                                                                                                        </select>
-                                                                                                                                                                                                    `);
-                    let codeNameOptions = '<option value="">تصفية حسب المجموعة</option>';
+                                                                                                                                                                                                                <select id="designerFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
+                                                                                                                                                                                                                    ${designerOptions}
+                                                                                                                                                                                                                </select>
+                                                                                                                                                                                                            `);
+                    // --- Group Autocomplete Widget ---
+                    let allGroupNames = [];
+
                     if (typeof DISCOUNT_CODES !== 'undefined') {
                         DISCOUNT_CODES.forEach(function (code) {
-                            let displayName = code.code_name ? code.code_name : code.discount_code;
-                            codeNameOptions += `<option value="${displayName}">${displayName}</option>`;
+                            let name = code.code_name ? code.code_name : code.discount_code;
+                            if (name) allGroupNames.push(name);
                         });
                     }
-                    const codeNameDropdown = $(`
-                                                        <select id="codeNameFilter" class="form-select shadow-sm" style="width: 175px;height:34px; margin-left: 15px; border-radius: 50rem;">
-                                                            ${codeNameOptions}
-                                                        </select>
-                                                    `);
+
+                    const groupSearchWidget = $(`
+                            <div class="group-search-wrapper" id="groupSearchWrapper">
+                                <div class="group-search-input-wrap">
+                                    <i class="fas fa-users"></i>
+                                    <input type="text" id="groupSearchInput" placeholder="بحث عن مجموعة..." autocomplete="off" />
+                                    <button class="group-clear-btn" id="groupClearBtn" title="مسح"><i class="fas fa-times"></i></button>
+                                </div>
+                                <ul class="group-dropdown-list" id="groupDropdownList"></ul>
+                            </div>
+                        `);
+
                     // 4. تنسيق الحاوية وإضافة الفلاتر
                     $('.dataTables_filter').css({
                         display: 'flex',
@@ -1076,18 +1226,71 @@
                     $('.dataTables_filter').append(designerDropdown);
                     $('.dataTables_filter').append(statusDropdown);
                     $('.dataTables_filter').append(additivesDropdown);
-                    $('.dataTables_filter').append(codeNameDropdown);
+                    $('.dataTables_filter').append(groupSearchWidget);
+
+                    // ---- Logic: Group Autocomplete ----
+                    function renderGroupList(filter) {
+                        const $list = $('#groupDropdownList');
+                        $list.empty();
+                        const matches = allGroupNames.filter(n => n.toLowerCase().includes(filter.toLowerCase()));
+                        if (matches.length === 0) {
+                            $list.append('<li class="group-no-results"><i class="fas fa-search me-1"></i>لا توجد نتائج</li>');
+                        } else {
+                            matches.slice(0, 30).forEach(function (name) {
+                                const $li = $('<li>').html(`<i class="fas fa-tag"></i>${name}`).attr('data-value', name);
+                                $li.on('mousedown', function (e) {
+                                    e.preventDefault();
+                                    selectGroup(name);
+                                });
+                                $list.append($li);
+                            });
+                        }
+                        $list.show();
+                    }
+
+                    function selectGroup(name) {
+                        selectedGroupName = name;
+                        $('#groupSearchInput').val('').attr('placeholder', '').hide();
+                        const $wrap = $('#groupSearchWrapper .group-search-input-wrap');
+                        $wrap.find('.group-badge-active').remove();
+                        const $badge = $(`
+                                <span class="group-badge-active">
+                                    <i class="fas fa-tag" style="font-size:10px;"></i>
+                                    ${name}
+                                    <button type="button" id="removeBadgeBtn"><i class="fas fa-times"></i></button>
+                                </span>`);
+                        $wrap.prepend($badge);
+                        $('#groupDropdownList').hide();
+                        table.ajax.reload();
+                    }
+
+                    function clearGroup() {
+                        selectedGroupName = '';
+                        const $wrap = $('#groupSearchWrapper .group-search-input-wrap');
+                        $wrap.find('.group-badge-active').remove();
+                        $('#groupSearchInput').val('').attr('placeholder', 'بحث عن مجموعة...').show();
+                        $('#groupDropdownList').hide();
+                        table.ajax.reload();
+                    }
+
+                    $(document).on('click', '#removeBadgeBtn', clearGroup);
+
+                    $('#groupSearchInput').on('focus', function () {
+                        renderGroupList($(this).val());
+                    }).on('input', function () {
+                        renderGroupList($(this).val());
+                    }).on('blur', function () {
+                        setTimeout(function () { $('#groupDropdownList').hide(); }, 150);
+                    });
+
+                    // Override ajax data to use selectedGroupName
+                    // (already wired via d.code_name below — update the DataTable data fn)
+
                     // 5. تفعيل التحديث التلقائي عند تغيير أي فلتر
-                    $('#statusFilter, #additivesFilter, #designerFilter, #codeNameFilter').on('change', function () {
+                    $('#statusFilter, #additivesFilter, #designerFilter').on('change', function () {
                         table.ajax.reload();
                     });
-                    let typingTimer;
-                    $('#codeNameFilter').on('keyup', function () {
-                        clearTimeout(typingTimer);
-                        typingTimer = setTimeout(function () {
-                            table.ajax.reload();
-                        }, 500); // ينتظر نص ثانية بعد آخر ضغطة زر
-                    });
+
                 }
             }); // ← نهاية DataTable config
 
@@ -1214,14 +1417,14 @@
                             $('#noteContent').val('');
                             const note = response.note;
                             const newItem = `
-                                                                                                                                                                                                                <li class="chat-message">
-                                                                                                                                                                                                                    <div class="chat-header">
-                                                                                                                                                                                                                        <span class="chat-author"><i class="fas fa-user-circle me-1"></i>${note.user_name}</span>
-                                                                                                                                                                                                                        <span class="chat-time"><i class="far fa-clock me-1"></i>${note.created_at}</span>
-                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                    <p class="chat-content">${note.content}</p>
-                                                                                                                                                                                                                </li>
-                                                                                                                                                                                                            `;
+                                                                                                                                                                                                                        <li class="chat-message">
+                                                                                                                                                                                                                            <div class="chat-header">
+                                                                                                                                                                                                                                <span class="chat-author"><i class="fas fa-user-circle me-1"></i>${note.user_name}</span>
+                                                                                                                                                                                                                                <span class="chat-time"><i class="far fa-clock me-1"></i>${note.created_at}</span>
+                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                            <p class="chat-content">${note.content}</p>
+                                                                                                                                                                                                                        </li>
+                                                                                                                                                                                                                    `;
                             $('#notesList').prepend(newItem);
                             // Remove empty indicator if exists
                             $('#notesList').find('.text-muted.text-center').remove();

@@ -10,9 +10,6 @@ class OrderPricingService
 {
     /**
      * Calculate the final price based on Client Rules.
-     *
-     * @param array $orderData
-     * @return float
      */
     public function calculateBasePrice(array $orderData): float
     {
@@ -20,12 +17,12 @@ class OrderPricingService
         $breakdown = [];
 
         // 1. سعر المنتج الأساسي
-        if (!empty($orderData['book_type_id'])) {
+        if (! empty($orderData['book_type_id'])) {
             $bookType = BookType::withTrashed()->find($orderData['book_type_id']);
 
-            if (!$bookType || $bookType->trashed()) {
+            if (! $bookType || $bookType->trashed()) {
                 throw \Illuminate\Validation\ValidationException::withMessages([
-                    'book_type_id' => ['The selected book type is deleted or no longer available.']
+                    'book_type_id' => ['The selected book type is deleted or no longer available.'],
                 ]);
             }
 
@@ -37,7 +34,7 @@ class OrderPricingService
         }
 
         // 2. الزخرفة (2.5 دينار)
-        if (!empty($orderData['book_decorations_id'])) {
+        if (! empty($orderData['book_decorations_id'])) {
             $decorationCost = config('pricing.decoration_cost', 2.5);
             $price += $decorationCost;
             $breakdown['decoration'] = ['id' => $orderData['book_decorations_id'], 'cost' => $decorationCost];
@@ -52,7 +49,7 @@ class OrderPricingService
         }
 
         // 5. الإهداء (Custom = 3 دنانير، والباقي مجاني)
-        if (!empty($orderData['gift_type'])) {
+        if (! empty($orderData['gift_type'])) {
             if ($orderData['gift_type'] === 'custom') {
                 $giftCost = config('pricing.gift_custom_cost', 3);
                 $price += $giftCost;
@@ -75,7 +72,7 @@ class OrderPricingService
      */
     private function countJsonItems(array $data, string $key): int
     {
-        if (!isset($data[$key])) {
+        if (! isset($data[$key])) {
             return 0;
         }
 
@@ -101,49 +98,23 @@ class OrderPricingService
      */
     public function calculatePriceWithDiscount(float $basePrice, ?int $discountCodeId, ?int $orderCount = null): float
     {
-        if (!$discountCodeId) {
+        if (! $discountCodeId) {
             Log::info('[Pricing] No discount code — returning base price', ['base_price' => $basePrice]);
+
             return $basePrice;
         }
 
         $discountCode = DiscountCode::find($discountCodeId);
 
-        if (!$discountCode) {
+        if (! $discountCode) {
             Log::warning('[Pricing] Discount code not found', ['discount_code_id' => $discountCodeId]);
+
             return $basePrice;
         }
 
         $discountValue = (float) $discountCode->discount_value;
         $discountType = $discountCode->discount_type;
-        $source = 'discount_code_default';
-
-        // Check for tier-based discount if order count is provided
-        if ($orderCount !== null && $orderCount >= 2) {
-            $tier = \App\Models\DiscountCodeTier::where('discount_code_id', $discountCodeId)
-                ->where('min_qty', '<=', $orderCount)
-                ->orderByDesc('min_qty')
-                ->first();
-
-            if ($tier) {
-                $discountValue = (float) $tier->discount_value;
-                $discountType = $tier->discount_type;
-                $source = 'tier';
-                Log::info('[Pricing] Tier discount matched', [
-                    'tier_id'        => $tier->id,
-                    'min_qty'        => $tier->min_qty,
-                    'discount_value' => $discountValue,
-                    'discount_type'  => $discountType,
-                    'order_count'    => $orderCount,
-                ]);
-            } else {
-                Log::info('[Pricing] No tier matched — falling back to default discount', [
-                    'discount_code_id' => $discountCodeId,
-                    'order_count'      => $orderCount,
-                    'discount_value'   => $discountValue,
-                    'discount_type'    => $discountType,
-                ]);
-            }
-        }
+        $source = 'discount_code';
 
         $discountAmount = 0;
 
@@ -158,14 +129,14 @@ class OrderPricingService
 
         Log::info('[Pricing] Discount applied', [
             'discount_code_id' => $discountCodeId,
-            'code'             => $discountCode->discount_code,
-            'is_group'         => (bool) $discountCode->is_group,
-            'source'           => $source,
-            'discount_type'    => $discountType,
-            'discount_value'   => $discountValue,
-            'discount_amount'  => $discountAmount,
-            'base_price'       => $basePrice,
-            'final_price'      => $finalPrice,
+            'code' => $discountCode->discount_code,
+            'is_group' => (bool) $discountCode->is_group,
+            'source' => $source,
+            'discount_type' => $discountType,
+            'discount_value' => $discountValue,
+            'discount_amount' => $discountAmount,
+            'base_price' => $basePrice,
+            'final_price' => $finalPrice,
         ]);
 
         return $finalPrice;

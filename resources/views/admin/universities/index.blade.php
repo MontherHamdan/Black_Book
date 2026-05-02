@@ -18,6 +18,8 @@
                                 <th>ID</th>
                                 <th>Name</th>
                                 <th>Governorate</th>
+                                <th>City</th>
+                                <th>Area</th>
                                 <th>View Majors</th>
                                 <th class="text-center">Actions</th>
                             </tr>
@@ -27,7 +29,9 @@
                                 <tr>
                                     <td>{{ $university->id }}</td>
                                     <td>{{ $university->name }}</td>
-                                    <td>{{ $university->governorate_name }}</td>
+                                    <td>{{ $university->governorate?->name_ar ?? '—' }}</td>
+                                    <td>{{ $university->city?->name_ar ?? '—' }}</td>
+                                    <td>{{ $university->area?->name_ar ?? '—' }}</td>
                                     <td>
                                         <button type="button" class="btn btn-info" data-bs-toggle="modal"
                                             data-bs-target="#majorsModal" data-id="{{ $university->id }}">
@@ -58,8 +62,7 @@
                                                         method="POST" id="delete-form-{{ $university->id }}">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="button"
-                                                            class="dropdown-item text-danger sa-warning-btn">
+                                                        <button type="button" class="dropdown-item text-danger sa-warning-btn">
                                                             <i class="fas fa-trash me-2"></i>Delete
                                                         </button>
                                                     </form>
@@ -112,11 +115,11 @@
         </div>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const modal = document.getElementById('majorsModal');
             let universityId = null;
 
-            modal.addEventListener('show.bs.modal', function(event) {
+            modal.addEventListener('show.bs.modal', function (event) {
                 const button = event.relatedTarget;
                 universityId = button.getAttribute('data-id');
                 const modalContent = document.getElementById('modalContent');
@@ -135,14 +138,14 @@
 
             // Handle major creation form submission
             const addMajorForm = document.getElementById('addMajorForm');
-            addMajorForm.addEventListener('submit', function(event) {
+            addMajorForm.addEventListener('submit', function (event) {
                 event.preventDefault();
 
                 const formData = new FormData(addMajorForm);
                 fetch(`/universities/${universityId}/add-major`, {
-                        method: 'POST',
-                        body: formData,
-                    })
+                    method: 'POST',
+                    body: formData,
+                })
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {

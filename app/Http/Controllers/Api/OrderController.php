@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Jobs\RecalculateGroupDiscountJob;
-use App\Models\DiscountCodeTier;
 use App\Models\Order;
 use App\Models\SvgName;
 use App\Services\OrderPricingService;
@@ -230,39 +228,6 @@ class OrderController extends Controller
         $data['address'] = $data['address'] ?? '';
 
         $order = Order::create($data);
-
-        // ════════════════════════════════════════════
-        // SMART TIER TRIGGER — recalculate on threshold
-        // ════════════════════════════════════════════
-        $discountCodeId = $order->discount_code_id;
-        if ($discountCodeId) {
-            $count = Order::where('discount_code_id', $discountCodeId)->count();
-
-            // Find matching tier for current count
-            $tier = DiscountCodeTier::where('discount_code_id', $discountCodeId)
-                ->where('min_qty', '<=', $count)
-                ->orderByDesc('min_qty')
-                ->first();
-
-            if ($tier) {
-                // Apply tier discount to this order immediately
-                $basePrice = (float) $order->final_price;
-                $discountAmount = 0;
-                if ($tier->discount_type === 'percentage') {
-                    $discountAmount = ($basePrice * $tier->discount_value) / 100;
-                } elseif ($tier->discount_type === 'byJd') {
-                    $discountAmount = (float) $tier->discount_value;
-                }
-                $order->final_price_with_discount = max(0, round($basePrice - $discountAmount, 2));
-                $order->saveQuietly();
-
-                // PERFORMANCE GUARD: dispatch bulk recalculation ONLY when
-                // the threshold was EXACTLY crossed (this order pushed it over)
-                if ($count == $tier->min_qty) {
-                    RecalculateGroupDiscountJob::dispatch($discountCodeId, $tier);
-                }
-            }
-        }
 
         $firstArabicName = ArabicNameNormalizer::firstArabicName($order->username_ar ?? '');
 

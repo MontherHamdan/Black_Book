@@ -51,8 +51,10 @@
 
                 {{-- 📦 Delivery Grid - Ultra Modern Floating UI 📦 --}}
                 <div class="d-flex justify-content-between align-items-center mb-3 px-2 mt-4">
-                    <h5 class="fw-bold text-slate-700 m-0"><i class="fas fa-list-ul me-2 text-primary"></i> قائمة الشحنات</h5>
-                    <button id="bulkPrintBtn" class="btn btn-info text-white fw-bold shadow-sm px-4 rounded-pill" disabled style="background-color: #0dcaf0; border-color: #0dcaf0;">
+                    <h5 class="fw-bold text-slate-700 m-0"><i class="fas fa-list-ul me-2 text-primary"></i> قائمة الشحنات
+                    </h5>
+                    <button id="bulkPrintBtn" class="btn btn-info text-white fw-bold shadow-sm px-4 rounded-pill" disabled
+                        style="background-color: #0dcaf0; border-color: #0dcaf0;">
                         <i class="fas fa-print me-1"></i> طباعة المحدد (<span id="printCount">0</span>)
                     </button>
                 </div>
@@ -61,7 +63,8 @@
                         <thead>
                             <tr>
                                 <th width="5%" class="text-center py-3 border-0">
-                                    <input class="form-check-input shadow-sm" type="checkbox" id="selectAllDeliveries" style="transform: scale(1.2); cursor: pointer;" title="تحديد الكل للطباعة">
+                                    <input class="form-check-input shadow-sm" type="checkbox" id="selectAllDeliveries"
+                                        style="transform: scale(1.2); cursor: pointer;" title="تحديد الكل للطباعة">
                                 </th>
                                 <th class="text-muted fw-bold py-3 border-0 fs-6" width="30%">المجموعة / الطلبات التابعة
                                 </th>
@@ -99,8 +102,12 @@
                                         'Received' => 'تم التسليم',
                                         'returned' => 'مرتجع',
                                         'Canceled' => 'رفض الاستلام',
-                                        'Printed' => 'تمت الطباعة',
                                     ];
+
+                                    // أضف "تمت الطباعة" فقط إذا الحالة الحالية لسا Printed
+                                    if ($currentStatus === 'Printed') {
+                                        $statusOptions = ['Printed' => 'تمت الطباعة'] + $statusOptions;
+                                    }
 
                                     // استخراج جميع أرقام الطلبات في هذه المجموعة
                                     $orderIds = $ordersGroup->pluck('id')->toArray();
@@ -108,31 +115,34 @@
 
                                 {{-- 💳 Parent Row 💳 --}}
                                 <tr class="ui-row bg-white">
-                                 <td class="text-center py-4 position-relative">
+                                    <td class="text-center py-4 position-relative">
                                         <div class="position-absolute top-0 bottom-0 end-0"
                                             style="width: 4px; background: {{ $isGroup ? '#3b82f6' : '#94a3b8' }}; border-radius: 0 12px 12px 0;">
                                         </div>
-                                        
+
                                         <div class="d-flex align-items-center justify-content-center gap-2">
                                             {{-- حماية: نظهر مربع التحديد فقط للشحنات المترحلة --}}
                                             @if(in_array($currentStatus, ['out_for_delivery', 'Received', 'returned', 'Canceled']))
-                                                <input class="form-check-input delivery-checkbox shadow-sm" type="checkbox" value="{{ json_encode($orderIds) }}" style="transform: scale(1.2); cursor: pointer;">
+                                                <input class="form-check-input delivery-checkbox shadow-sm" type="checkbox"
+                                                    value="{{ json_encode($orderIds) }}"
+                                                    style="transform: scale(1.2); cursor: pointer;">
                                             @else
-                                                <span title="يجب تحويل الحالة لـ 'خرج مع التوصيل' أولاً"><i class="fas fa-lock text-muted opacity-25"></i></span>
+                                                <span title="يجب تحويل الحالة لـ 'خرج مع التوصيل' أولاً"><i
+                                                        class="fas fa-lock text-muted opacity-25"></i></span>
                                             @endif
 
                                             @if($hasMultiple)
-                                            <button class="btn btn-sm text-secondary expand-btn" data-bs-toggle="collapse"
-                                                data-bs-target="#collapse-{{ $groupKey }}" aria-expanded="false"
-                                                title="عرض التفاصيل">
-                                                <i class="fas fa-chevron-down"></i>
-                                            </button>
-                                        @else
-                                            <div class="d-inline-flex align-items-center justify-content-center text-muted rounded-circle"
-                                                style="width: 32px; height: 32px; background: #f1f5f9;">
-                                                <i class="fas fa-user fs-6"></i>
-                                            </div>
-                                        @endif
+                                                <button class="btn btn-sm text-secondary expand-btn" data-bs-toggle="collapse"
+                                                    data-bs-target="#collapse-{{ $groupKey }}" aria-expanded="false"
+                                                    title="عرض التفاصيل">
+                                                    <i class="fas fa-chevron-down"></i>
+                                                </button>
+                                            @else
+                                                <div class="d-inline-flex align-items-center justify-content-center text-muted rounded-circle"
+                                                    style="width: 32px; height: 32px; background: #f1f5f9;">
+                                                    <i class="fas fa-user fs-6"></i>
+                                                </div>
+                                            @endif
                                     </td>
 
                                     <td class="py-4">
@@ -223,7 +233,9 @@
                                             </select>
                                             {{-- زر الطباعة الفردي --}}
                                             @if(in_array($currentStatus, ['out_for_delivery', 'Received', 'returned', 'Canceled']))
-                                                <button class="btn btn-info text-white shadow-sm ms-2 print-single-btn" data-ids="{{ json_encode($orderIds) }}" title="طباعة بوليصة الشحن" style="border-radius: 8px;">
+                                                <button class="btn btn-info text-white shadow-sm ms-2 print-single-btn"
+                                                    data-ids="{{ json_encode($orderIds) }}" title="طباعة بوليصة الشحن"
+                                                    style="border-radius: 8px;">
                                                     <i class="fas fa-print"></i>
                                                 </button>
                                             @endif
@@ -241,79 +253,89 @@
                                                     <i class="fas fa-bars-staggered"></i> تفاصيل محتويات المجموعة
                                                 </h6>
                                                 <div class="table-responsive">
-                                             <table class="table table-borderless align-middle mb-0">
-    <thead style="border-bottom: 2px solid #e2e8f0;">
-        <tr>
-            <th class="text-slate-400 fw-bold pb-2" width="8%">رقم الطلب</th>
-            <th class="text-slate-400 fw-bold pb-2">اسم الخريج</th>
-            <th class="text-slate-400 fw-bold pb-2">نوع الدفتر</th>
-            <th class="text-slate-400 fw-bold pb-2">أرقام التواصل</th> <th class="text-center text-slate-400 fw-bold pb-2">الحالة</th>
-            <th class="text-start text-slate-400 fw-bold ps-2 pb-2" width="12%">السعر</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach($ordersGroup as $order)
-            <tr style="border-bottom: 1px solid #f1f5f9;">
-                <td class="fw-bold text-slate-400 py-3">#{{ $order->id }}</td>
-                <td class="py-3 fw-bold text-dark fs-6">
-                    {{ current(array_filter([$order->username_ar, $order->username_en])) }}
-                </td>
-                <td class="py-3">
-                    <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded bg-white border"
-                        style="border-color: #e2e8f0;">
-                        <i class="fas fa-book-open text-slate-400 small"></i>
-                        <span class="fw-bold text-slate-700 fs-6">{{ $order->bookType->name_ar ?? 'غير محدد' }}</span>
-                    </div>
-                </td>
-                
-                {{-- 🌟 داتا العمود الجديد (أرقام الهواتف مع الواتساب) 🌟 --}}
-                <td class="py-3">
-                    <div class="d-flex flex-column gap-1">
-                        @if($order->delivery_number_one)
-                            <a href="{{ $order->whatsapp_link }}" target="_blank" class="contact-link text-decoration-none fw-bold d-flex align-items-center gap-1" style="font-size: 0.85rem;">
-                                <i class="fab fa-whatsapp text-success fs-6"></i>
-                                <span dir="ltr">{{ $order->delivery_number_one }}</span>
-                            </a>
-                        @endif
-                        @if($order->delivery_number_two)
-                            <a href="{{ $order->whatsapp_link_two }}" target="_blank" class="contact-link text-decoration-none fw-bold d-flex align-items-center gap-1" style="font-size: 0.85rem;">
-                                <i class="fab fa-whatsapp text-success fs-6"></i>
-                                <span dir="ltr">{{ $order->delivery_number_two }}</span>
-                            </a>
-                        @endif
-                        @if(!$order->delivery_number_one && !$order->delivery_number_two)
-                            <span class="text-muted small fw-bold">لا يوجد رقم</span>
-                        @endif
-                    </div>
-                </td>
+                                                    <table class="table table-borderless align-middle mb-0">
+                                                        <thead style="border-bottom: 2px solid #e2e8f0;">
+                                                            <tr>
+                                                                <th class="text-slate-400 fw-bold pb-2" width="8%">رقم الطلب</th>
+                                                                <th class="text-slate-400 fw-bold pb-2">اسم الخريج</th>
+                                                                <th class="text-slate-400 fw-bold pb-2">نوع الدفتر</th>
+                                                                <th class="text-slate-400 fw-bold pb-2">أرقام التواصل</th>
+                                                                <th class="text-center text-slate-400 fw-bold pb-2">الحالة</th>
+                                                                <th class="text-start text-slate-400 fw-bold ps-2 pb-2" width="12%">
+                                                                    السعر</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach($ordersGroup as $order)
+                                                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                                                    <td class="fw-bold text-slate-400 py-3">#{{ $order->id }}</td>
+                                                                    <td class="py-3 fw-bold text-dark fs-6">
+                                                                        {{ current(array_filter([$order->username_ar, $order->username_en])) }}
+                                                                    </td>
+                                                                    <td class="py-3">
+                                                                        <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded bg-white border"
+                                                                            style="border-color: #e2e8f0;">
+                                                                            <i class="fas fa-book-open text-slate-400 small"></i>
+                                                                            <span
+                                                                                class="fw-bold text-slate-700 fs-6">{{ $order->bookType->name_ar ?? 'غير محدد' }}</span>
+                                                                        </div>
+                                                                    </td>
 
-                <td class="text-center py-3">
-                   @php
-                        $statusClass = 'bg-slate-100 text-slate-600';
-                        $statusLabel = $order->status;
-                        $statuses = [
-                            'Printed' => ['class' => 'bg-indigo-100 text-indigo-700', 'label' => 'تمت الطباعة'], // 👈 الحالة الجديدة
-                            'out_for_delivery' => ['class' => 'bg-amber-100 text-amber-700', 'label' => 'خرج مع التوصيل'],
-                            'Received' => ['class' => 'bg-emerald-100 text-emerald-700', 'label' => 'تم التسليم'],
-                            'returned' => ['class' => 'bg-slate-200 text-slate-700', 'label' => 'مرتجع'],
-                            'Canceled' => ['class' => 'bg-rose-100 text-rose-700', 'label' => 'ملغى'],
-                        ];
-                        if (isset($statuses[$order->status])) {
-                            $statusClass = $statuses[$order->status]['class'];
-                            $statusLabel = $statuses[$order->status]['label'];
-                        }
-                    @endphp
-                    <span class="badge {{ $statusClass }} px-3 py-2 rounded-pill fw-bold" style="font-size: 0.85rem;">
-                        {{ $statusLabel }}
-                    </span>
-                </td>
-                <td class="text-start fw-black text-dark ps-2 py-3 fs-5">
-                    {{ number_format($order->final_price_with_discount, 2) }} <span class="fw-bold text-slate-400 fs-6">د.أ</span>
-                </td>
-            </tr>
-        @endforeach
-    </tbody>
-</table>
+                                                                    {{-- 🌟 داتا العمود الجديد (أرقام الهواتف مع الواتساب) 🌟 --}}
+                                                                    <td class="py-3">
+                                                                        <div class="d-flex flex-column gap-1">
+                                                                            @if($order->delivery_number_one)
+                                                                                <a href="{{ $order->whatsapp_link }}" target="_blank"
+                                                                                    class="contact-link text-decoration-none fw-bold d-flex align-items-center gap-1"
+                                                                                    style="font-size: 0.85rem;">
+                                                                                    <i class="fab fa-whatsapp text-success fs-6"></i>
+                                                                                    <span dir="ltr">{{ $order->delivery_number_one }}</span>
+                                                                                </a>
+                                                                            @endif
+                                                                            @if($order->delivery_number_two)
+                                                                                <a href="{{ $order->whatsapp_link_two }}" target="_blank"
+                                                                                    class="contact-link text-decoration-none fw-bold d-flex align-items-center gap-1"
+                                                                                    style="font-size: 0.85rem;">
+                                                                                    <i class="fab fa-whatsapp text-success fs-6"></i>
+                                                                                    <span dir="ltr">{{ $order->delivery_number_two }}</span>
+                                                                                </a>
+                                                                            @endif
+                                                                            @if(!$order->delivery_number_one && !$order->delivery_number_two)
+                                                                                <span class="text-muted small fw-bold">لا يوجد رقم</span>
+                                                                            @endif
+                                                                        </div>
+                                                                    </td>
+
+                                                                    <td class="text-center py-3">
+                                                                        @php
+                                                                            $statusClass = 'bg-slate-100 text-slate-600';
+                                                                            $statusLabel = $order->status;
+                                                                            $statuses = [
+                                                                                'Printed' => ['class' => 'bg-indigo-100 text-indigo-700', 'label' => 'تمت الطباعة'], // 👈 الحالة الجديدة
+                                                                                'out_for_delivery' => ['class' => 'bg-amber-100 text-amber-700', 'label' => 'خرج مع التوصيل'],
+                                                                                'Received' => ['class' => 'bg-emerald-100 text-emerald-700', 'label' => 'تم التسليم'],
+                                                                                'returned' => ['class' => 'bg-slate-200 text-slate-700', 'label' => 'مرتجع'],
+                                                                                'Canceled' => ['class' => 'bg-rose-100 text-rose-700', 'label' => 'ملغى'],
+                                                                            ];
+                                                                            if (isset($statuses[$order->status])) {
+                                                                                $statusClass = $statuses[$order->status]['class'];
+                                                                                $statusLabel = $statuses[$order->status]['label'];
+                                                                            }
+                                                                        @endphp
+                                                                        <span
+                                                                            class="badge {{ $statusClass }} px-3 py-2 rounded-pill fw-bold"
+                                                                            style="font-size: 0.85rem;">
+                                                                            {{ $statusLabel }}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td class="text-start fw-black text-dark ps-2 py-3 fs-5">
+                                                                        {{ number_format($order->final_price_with_discount, 2) }} <span
+                                                                            class="fw-bold text-slate-400 fs-6">د.أ</span>
+                                                                    </td>
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                             </div>
                                         </td>
@@ -351,14 +373,14 @@
     </div>
 
     <script>
-function updateGroupStatus(selectElement, groupIdsArray) {
+        function updateGroupStatus(selectElement, groupIdsArray) {
             const newStatus = selectElement.value;
             const originalValue = selectElement.getAttribute('data-original-value');
 
             if (!newStatus) return;
 
             const selectedText = selectElement.options[selectElement.selectedIndex].text;
-            
+
             // 🔴 تعديل رسالة التحذير بناءً على الحالة
             let alertHtml = `سيتم تغيير حالة <strong>${groupIdsArray.length}</strong> طلب إلى <span class="fw-bold text-primary">"${selectedText}"</span>. هل أنت متأكد؟`;
             let confirmBtnColor = '#0f172a';
@@ -453,7 +475,7 @@ function updateGroupStatus(selectElement, groupIdsArray) {
                 });
             });
         });
-   document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function () {
             // --- Logic 1: Checkboxes & Bulk Print Button UI ---
             const selectAll = document.getElementById('selectAllDeliveries');
             const checkboxes = document.querySelectorAll('.delivery-checkbox');
@@ -464,7 +486,7 @@ function updateGroupStatus(selectElement, groupIdsArray) {
                 const checked = document.querySelectorAll('.delivery-checkbox:checked');
                 printCountSpan.textContent = checked.length;
                 bulkPrintBtn.disabled = checked.length === 0;
-                
+
                 if (checked.length > 0 && checked.length === checkboxes.length) {
                     selectAll.checked = true;
                 } else {
@@ -473,7 +495,7 @@ function updateGroupStatus(selectElement, groupIdsArray) {
             }
 
             if (selectAll) {
-                selectAll.addEventListener('change', function() {
+                selectAll.addEventListener('change', function () {
                     checkboxes.forEach(cb => cb.checked = this.checked);
                     updateBulkButton();
                 });
@@ -498,28 +520,28 @@ function updateGroupStatus(selectElement, groupIdsArray) {
                     },
                     body: JSON.stringify({ order_ids: orderIdsArray })
                 })
-                .then(res => res.json())
-                .then(data => {
-                    btnElement.disabled = false;
-                    btnElement.innerHTML = originalHtml;
+                    .then(res => res.json())
+                    .then(data => {
+                        btnElement.disabled = false;
+                        btnElement.innerHTML = originalHtml;
 
-                    if (data.success && data.url) {
-                        window.open(data.url, '_blank'); // فتح الـ PDF بتاب جديد
-                        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'تم تجهيز بوليصة الشحن', showConfirmButton: false, timer: 3000 });
-                    } else {
-                        Swal.fire('تنبيه', data.message || 'حدث خطأ أثناء الطباعة.', 'warning');
-                    }
-                })
-                .catch(error => {
-                    btnElement.disabled = false;
-                    btnElement.innerHTML = originalHtml;
-                    Swal.fire('خطأ اتصال', 'تأكد أن الطلبات تم ترحيلها بنجاح لشركة التوصيل.', 'error');
-                });
+                        if (data.success && data.url) {
+                            window.open(data.url, '_blank'); // فتح الـ PDF بتاب جديد
+                            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'تم تجهيز بوليصة الشحن', showConfirmButton: false, timer: 3000 });
+                        } else {
+                            Swal.fire('تنبيه', data.message || 'حدث خطأ أثناء الطباعة.', 'warning');
+                        }
+                    })
+                    .catch(error => {
+                        btnElement.disabled = false;
+                        btnElement.innerHTML = originalHtml;
+                        Swal.fire('خطأ اتصال', 'تأكد أن الطلبات تم ترحيلها بنجاح لشركة التوصيل.', 'error');
+                    });
             }
 
             // A) Individual Print Click
             document.querySelectorAll('.print-single-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', function () {
                     // Extract the array of IDs stored in data-ids
                     const ids = JSON.parse(this.getAttribute('data-ids'));
                     executePrint(ids, this);
@@ -528,7 +550,7 @@ function updateGroupStatus(selectElement, groupIdsArray) {
 
             // B) Bulk Print Click
             if (bulkPrintBtn) {
-                bulkPrintBtn.addEventListener('click', function() {
+                bulkPrintBtn.addEventListener('click', function () {
                     const checked = document.querySelectorAll('.delivery-checkbox:checked');
                     let allIds = [];
                     checked.forEach(cb => {
@@ -538,14 +560,14 @@ function updateGroupStatus(selectElement, groupIdsArray) {
 
                     // Remove duplicates just in case
                     const uniqueIds = [...new Set(allIds)];
-                    
+
                     if (uniqueIds.length > 0) {
                         executePrint(uniqueIds, this);
                     }
                 });
             }
         });
-   </script>
+    </script>
 
     <style>
         /* 🌟 Minimalist Premium UI Styles 🌟 */
@@ -687,6 +709,7 @@ function updateGroupStatus(selectElement, groupIdsArray) {
             border-color: #0f172a !important;
             background-color: #fff;
         }
+
         .bg-rose-100 {
             background-color: #ffe4e6;
         }

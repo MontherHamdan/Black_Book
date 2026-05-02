@@ -21,7 +21,27 @@ trait LogesTechsIntegration
         $companyId = env('LOGESTECHS_COMPANY_ID', 186);
 
         // Load relationships to access the logestechs_id of each area
-        $order->load(['governorate', 'city', 'area']);
+        if ($order->delivery_target === 'university' && $order->university_id) {
+            $order->load(['university.governorate', 'university.city', 'university.area']);
+            $governorate = $order->university?->governorate;
+            $city = $order->university?->city;
+            $area = $order->university?->area;
+        } else {
+            if ($order->delivery_target === 'university' && $order->university_id) {
+                $order->load(['university.governorate', 'university.city', 'university.area']);
+                $governorate = $order->university?->governorate;
+                $city = $order->university?->city;
+                $area = $order->university?->area;
+            } else {
+                $order->load(['governorate', 'city', 'area']);
+                $governorate = $order->governorate;
+                $city = $order->city;
+                $area = $order->area;
+            }
+            $governorate = $order->governorate;
+            $city = $order->city;
+            $area = $order->area;
+        }
         // 2. حساب السعر والكمية بناءً على إذا كان الطلب فردي أو مجموعة
         $cod = (float) ($order->final_price_with_discount ?? $order->final_price ?? 0);
         $quantity = 1;
@@ -59,11 +79,11 @@ trait LogesTechsIntegration
                 'quantity' => $quantity, // 🔴 الكمية الديناميكية
                 'description' => $description, // 🔴 الوصف
             ],
-            'destinationAddress' => [ // customer's address selected in the Checkout
+            'destinationAddress' => [
                 'addressLine1' => $order->address ?? 'No details',
-                'regionId' => optional($order->governorate)->logestechs_id,
-                'cityId' => optional($order->city)->logestechs_id,
-                'villageId' => optional($order->area)->logestechs_id,
+                'regionId' => optional($governorate)->logestechs_id,
+                'cityId' => optional($city)->logestechs_id,
+                'villageId' => optional($area)->logestechs_id,
             ],
             'originAddress' => [ // warehouse address from .env
                 'addressLine1' => env('LOGESTECHS_ORIGIN_ADDRESS', 'عمان'),

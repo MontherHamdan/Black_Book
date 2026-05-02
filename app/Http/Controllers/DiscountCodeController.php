@@ -15,7 +15,7 @@ class DiscountCodeController extends Controller
     public function index()
     {
         $discountCodes = DiscountCode::with(['plan', 'university', 'governorate', 'city', 'area'])
-            ->withCount('tiers', 'orders')
+            ->withCount('orders')
             ->orderByDesc('id')
             ->get();
 
@@ -56,50 +56,43 @@ class DiscountCodeController extends Controller
         } else {
             $rules['discount_value'] = 'required|numeric|min:0';
             $rules['discount_type'] = 'required|in:percentage,byJd';
-            $rules['tiers'] = 'nullable|array';
-            $rules['tiers.*.min_qty'] = 'required_with:tiers|integer|min:2';
-            $rules['tiers.*.discount_value'] = 'required_with:tiers|numeric|min:0';
-            $rules['tiers.*.discount_type'] = 'required_with:tiers|in:percentage,byJd';
+
         }
 
         $request->validate($rules);
 
-        $data = $request->only([
-            'code_name', 'discount_code', 'is_group',
-            'user_phone_number', 'delivery_number_two',
-            'university_id', 'governorate_id', 'city_id', 'area_id',
-        ]);
+        $data = $request->only(['code_name', 'discount_code', 'is_group']);
 
         if ($isGroup) {
             $data['plan_id'] = $request->plan_id;
             $data['discount_value'] = null;
             $data['discount_type'] = null;
+            $data['user_phone_number'] = $request->user_phone_number;
+            $data['delivery_number_two'] = $request->delivery_number_two;
+            $data['university_id'] = $request->university_id;
+            $data['governorate_id'] = $request->governorate_id;
+            $data['city_id'] = $request->city_id;
+            $data['area_id'] = $request->area_id;
         } else {
             $data['plan_id'] = null;
             $data['discount_value'] = $request->discount_value;
             $data['discount_type'] = $request->discount_type;
+            $data['user_phone_number'] = '';
+            $data['delivery_number_two'] = '';
+            $data['university_id'] = null;
+            $data['governorate_id'] = null;
+            $data['city_id'] = null;
+            $data['area_id'] = null;
         }
 
         $discountCode = DiscountCode::create($data);
-
-        if (! $isGroup && $request->has('tiers') && is_array($request->tiers)) {
-            foreach ($request->tiers as $tier) {
-                if (! empty($tier['min_qty']) && isset($tier['discount_value'])) {
-                    $discountCode->tiers()->create([
-                        'min_qty' => $tier['min_qty'],
-                        'discount_value' => $tier['discount_value'],
-                        'discount_type' => $tier['discount_type'],
-                    ]);
-                }
-            }
-        }
 
         return redirect()->route('discount-codes.index')->with('success', 'Discount code created successfully.');
     }
 
     public function edit(DiscountCode $discountCode)
     {
-        $discountCode->load('tiers', 'plan');
+        $discountCode->load('plan');
         $plans = Plan::all();
         $universities = University::all();
         $governorates = Governorate::all();
@@ -137,10 +130,7 @@ class DiscountCodeController extends Controller
         } else {
             $rules['discount_value'] = 'required|numeric|min:0';
             $rules['discount_type'] = 'required|in:percentage,byJd';
-            $rules['tiers'] = 'nullable|array';
-            $rules['tiers.*.min_qty'] = 'required_with:tiers|integer|min:2';
-            $rules['tiers.*.discount_value'] = 'required_with:tiers|numeric|min:0';
-            $rules['tiers.*.discount_type'] = 'required_with:tiers|in:percentage,byJd';
+
         }
 
         $request->validate($rules);
@@ -185,21 +175,6 @@ class DiscountCodeController extends Controller
         }
 
         $discountCode->update($data);
-
-        // Sync tiers
-        $discountCode->tiers()->delete();
-
-        if (! $isGroup && $request->has('tiers') && is_array($request->tiers)) {
-            foreach ($request->tiers as $tier) {
-                if (! empty($tier['min_qty']) && isset($tier['discount_value'])) {
-                    $discountCode->tiers()->create([
-                        'min_qty' => $tier['min_qty'],
-                        'discount_value' => $tier['discount_value'],
-                        'discount_type' => $tier['discount_type'],
-                    ]);
-                }
-            }
-        }
 
         return redirect()->route('discount-codes.index')->with('success', 'Discount code updated successfully.');
     }

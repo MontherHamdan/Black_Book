@@ -14,11 +14,6 @@ class DiscountCode extends Model
         'user_phone_number', 'delivery_number_two', 'university_id', 'governorate_id', 'city_id', 'area_id',
     ];
 
-    public function tiers()
-    {
-        return $this->hasMany(DiscountCodeTier::class)->orderBy('min_qty');
-    }
-
     public function orders()
     {
         return $this->hasMany(Order::class);

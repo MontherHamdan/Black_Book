@@ -240,18 +240,31 @@ class OrderWebController extends Controller
                 // (يعني: الخصم طُبِّق بس المجموعة ما اكتملت بعد!)
                 if ($groupOrdersCount < $appliedPlan->person_number) {
 
-                    // السعر الأصلي للدفتر (بدون خصم)
-                    $originalPrice = 25;
+                    $dc = $order->discountCode;
 
-                    // السعر اللي طُبِّق على هاد الطلب بناءً على الخطة
-                    $appliedPrice = $originalPrice - (float) $appliedPlan->discount_price;
+                    // ✅ 1. قيمة الخصم من الخطة
+                    $discountAmount = (float) $appliedPlan->discount_price;
+
+                    // ✅ 2. السعر الأصلي أولاً
+                    $originalPrice = ! is_null($order->final_price)
+                        ? (float) $order->final_price
+                        : (float) ($appliedPlan->book_price + $discountAmount);
+
+                    // ✅ 3. السعر المُطبَّق بعدها (يعتمد على $originalPrice)
+                    $appliedPrice = max(0, $originalPrice - $discountAmount);
+
+                    // ✅ 4. نص عرض الخصم
+                    $discountDisplay = $dc->discount_value
+                        .($dc->discount_type === 'percentage' ? '%' : ' دينار');
 
                     $groupWarning = [
-                        'original_price'  => $originalPrice,
-                        'applied_price'   => $appliedPrice,
-                        'applied_plan'    => $appliedPlan->title ?? ('Plan ' . $appliedPlan->id),
-                        'current_count'   => $groupOrdersCount,   // العدد الحالي
-                        'required_count'  => $appliedPlan->person_number, // العدد المطلوب
+                        'original_price' => $originalPrice,
+                        'discount_amount' => $discountAmount,
+                        'discount_display' => $discountDisplay,
+                        'applied_price' => $appliedPrice,
+                        'applied_plan' => $appliedPlan->title ?? ('Plan '.$appliedPlan->id),
+                        'current_count' => $groupOrdersCount,
+                        'required_count' => $appliedPlan->person_number,
                     ];
                 }
             }
@@ -583,16 +596,29 @@ class OrderWebController extends Controller
                     if ($plan) {
                         $requiredCount = (int) $plan->person_number;
                         $incomplete = $groupCount < $requiredCount;
+
+                        // حساب الأسعار
+                        $planDiscountAmount = (float) $plan->discount_price;
+                        $planOriginalPrice = ! is_null($order->final_price)
+                            ? (float) $order->final_price
+                            : (float) ($plan->book_price + $plan->discount_price);
+                        $planAppliedPrice = max(0, $planOriginalPrice - $planDiscountAmount);
+                        $planDiscountDisplay = $dc->discount_value
+                            .($dc->discount_type === 'percentage' ? '%' : ' دينار');
                     }
                 }
 
                 $discountInfo = [
-                    'code'          => $dc->discount_code,
-                    'name'          => $dc->code_name,
-                    'is_group'      => $isGroup,
-                    'group_count'   => $groupCount,
-                    'required_count'=> $requiredCount,
-                    'incomplete'    => $incomplete,
+                    'code' => $dc->discount_code,
+                    'name' => $dc->code_name,
+                    'is_group' => $isGroup,
+                    'group_count' => $groupCount,
+                    'required_count' => $requiredCount,
+                    'incomplete' => $incomplete,
+                    'original_price' => $planOriginalPrice ?? null,
+                    'discount_amount' => $planDiscountAmount ?? null,
+                    'discount_display' => $planDiscountDisplay ?? null,
+                    'applied_price' => $planAppliedPrice ?? null,
                 ];
             }
 
@@ -962,7 +988,79 @@ class OrderWebController extends Controller
 
         $updateData = ['status' => $status];
         if ($status === Order::STATUS_OUT_FOR_DELIVERY) {
-            $updateData['dispatched_at'] = now();
+            $orders = Order::whereIn('id', $orderIds)->get();
+
+            foreach ($orders as $order) {
+                if (! empty($order->logestechs_order_id)) {
+                    continue;
+                }
+
+                // 1. Validation أولاً
+                if ($order->delivery_target === 'university') {
+                    $uni = \App\Models\University::find($order->university_id);
+                    if (! $uni?->city_id) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => "الطلب #{$order->id}: الجامعة المحددة ليس لها موقع محدد، يرجى إضافة موقعها أولاً.",
+                        ], 422);
+                    }
+                } else {
+                    if (! $order->governorate_id || ! $order->city_id || ! $order->area_id) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => "الطلب #{$order->id}: يرجى تحديث معلومات التوصيل (المحافظة، المدينة، المنطقة) أولاً.",
+                        ], 422);
+                    }
+                }
+
+                // 2. Group check ثانياً
+                $isGroupOrder = ! empty($order->discount_code_id);
+
+                if ($isGroupOrder) {
+                    $sibling = Order::where('discount_code_id', $order->discount_code_id)
+                        ->whereNotNull('logestechs_order_id')
+                        ->first();
+
+                    if ($sibling) {
+                        $order->logestechs_order_id = $sibling->logestechs_order_id;
+                        $order->status = $status;
+                        $order->dispatched_at = now();
+                        $order->save();
+
+                        continue;
+                    }
+                }
+
+                // 3. ضرب الـ API مرة وحدة فقط هون
+                $logestechsResponse = $this->dispatchOrderToLogesTechs($order);
+
+                if (! $logestechsResponse['success']) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "فشل ترحيل الطلب #{$order->id}: ".$logestechsResponse['message'],
+                    ], 422);
+                }
+
+                $order->logestechs_order_id = $logestechsResponse['data']['id'] ?? null;
+                $order->status = $status;
+                $order->dispatched_at = now();
+                $order->save();
+
+                if ($isGroupOrder && $order->logestechs_order_id) {
+                    Order::where('discount_code_id', $order->discount_code_id)
+                        ->where('id', '!=', $order->id)
+                        ->update([
+                            'logestechs_order_id' => $order->logestechs_order_id,
+                            'status' => $status,
+                            'dispatched_at' => now(),
+                        ]);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم ترحيل '.count($orderIds).' طلب بنجاح.',
+            ]);
         }
 
         Order::whereIn('id', $orderIds)->update($updateData);

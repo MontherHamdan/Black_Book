@@ -29,7 +29,7 @@ jobs:
 
             echo "==> Building frontend assets"
             cd Black_Book
-            npm ci
+            npm install
             npm run build
             cd ..
 

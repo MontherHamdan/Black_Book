@@ -146,6 +146,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         'update',
         'destroy',
     ]);
+    Route::post('svg-names/bulk-import', [SvgNameController::class, 'bulkImport'])->name('svg-names.bulk-import');
 
     // Svg Categories
     Route::get('/svg-categories', [SvgController::class, 'categoryIndex'])->name('svg-categories.index');

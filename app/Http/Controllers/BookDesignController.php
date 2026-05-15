@@ -38,20 +38,21 @@ class BookDesignController extends Controller
         // Validate incoming request
         $validated = $request->validate([
             'design_name' => 'nullable|string|max:255',
-            'image' => 'required|file|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:2048',
+            'image' => 'required|image|mimes:jpeg,png,gif,webp|max:20480',
             'category_id' => 'required|exists:book_design_categories,id',
             'sub_category_id' => 'nullable|exists:book_design_sub_categories,id',
             'is_image_required' => 'boolean',
         ]);
 
-        // Store the uploaded image in the "book_designs" folder under the "public" disk
         $imageFile = $request->file('image');
+        $imageName = \Str::uuid().'.'.$imageFile->getClientOriginalExtension();
+        $imagePath = $imageFile->storeAs('book_designs', $imageName, 'public');
 
-        $imageName = $imageFile->getClientOriginalName(); // Get original file name
-        $imagePath = $imageFile->storeAs('book_designs', $imageName, 'public'); // Store image with original name
+        if (! $imagePath) {
+            return back()->withErrors(['image' => 'فشل حفظ الصورة، تحقق من صلاحيات المجلد.'])->withInput();
+        }
 
-        // Generate the full URL for the image
-        $imageUrl = url('storage/'.$imagePath);  // Create a full URL using the stored path
+        $imageUrl = url('storage/'.$imagePath);
 
         // Handle sub_category_id properly if it's present
         $subCategoryId = $validated['sub_category_id'] ?? null;
@@ -100,27 +101,27 @@ class BookDesignController extends Controller
         // Validate the input
         $validated = $request->validate([
             'design_name' => 'nullable|string|max:255',
-            'image' => 'nullable|image|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,gif,webp|max:20480',
             'category_id' => 'required|exists:book_design_categories,id',
             'sub_category_id' => 'nullable|exists:book_design_sub_categories,id',
             'is_image_required' => 'boolean',
         ]);
 
-        // If a new image is uploaded
         if ($request->hasFile('image')) {
-            // Delete the old image if it exists
             if ($bookDesign->image) {
-                $oldImagePath = str_replace(url('storage').'/', '', $bookDesign->image); // Extract relative path
-                if (Storage::disk('public')->exists($oldImagePath)) {
-                    Storage::disk('public')->delete($oldImagePath);
-                }
+                $oldImagePath = ltrim(str_replace(url('storage'), '', $bookDesign->image), '/');
+                Storage::disk('public')->delete($oldImagePath);
             }
 
-            // Store the new image
             $imageFile = $request->file('image');
-            $imageName = $imageFile->getClientOriginalName(); // Get the original file name
-            $imagePath = $imageFile->storeAs('book_designs', $imageName, 'public'); // Store with original name
-            $validated['image'] = url('storage/'.$imagePath); // Generate full URL
+            $imageName = \Str::uuid().'.'.$imageFile->getClientOriginalExtension();
+            $imagePath = $imageFile->storeAs('book_designs', $imageName, 'public');
+
+            if (! $imagePath) {
+                return back()->withErrors(['image' => 'فشل حفظ الصورة، تحقق من صلاحيات المجلد.'])->withInput();
+            }
+
+            $validated['image'] = url('storage/'.$imagePath);
         }
 
         // Update the BookDesign record

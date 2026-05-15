@@ -81,26 +81,27 @@ class BookDesignController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'image' => 'required|image|max:20480',
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,gif,webp|max:20480',
         ]);
 
-        // Store the image
         $imageFile = $request->file('image');
-        $imageName = time().'_'.$imageFile->getClientOriginalName();
+        $imageName = \Str::uuid().'.'.$imageFile->getClientOriginalExtension();
         $imagePath = $imageFile->storeAs('book_designs', $imageName, 'public');
-        $imageUrl = url('storage/'.$imagePath);
 
-        // Save to database
+        if (! $imagePath) {
+            return response()->json(['success' => false, 'message' => 'فشل حفظ الصورة على الخادم.'], 500);
+        }
+
         $bookDesign = BookDesign::create([
-            'image' => $imageUrl,
-            'is_uploaded_by_user' => true, // Always set to true for user uploads
+            'image' => url('storage/'.$imagePath),
+            'is_uploaded_by_user' => true,
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Book design uploaded successfully.',
             'data' => $bookDesign,
-        ]);
+        ], 201);
     }
 }

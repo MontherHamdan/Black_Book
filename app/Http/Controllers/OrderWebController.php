@@ -179,6 +179,8 @@ class OrderWebController extends Controller
         $internalImages = $order->additionalImagesFromIds();
         $internalImagesCount = $internalImages ? $internalImages->count() : 0;
 
+        $finalDesignSvg = $this->buildFinalDesignSvg($order, $internalImagesCount);
+
         $internalImages = $internalImages->map(function ($img) {
             $img->resolved_url = $this->resolveImageUrl($img->image_path ?? null);
 
@@ -345,7 +347,7 @@ class OrderWebController extends Controller
             'governorates' => $governorates,
 
             'groupWarning' => $groupWarning,
-
+            'finalDesignSvg' => $finalDesignSvg,
         ]);
     }
 
@@ -2407,5 +2409,42 @@ class OrderWebController extends Controller
         }
 
         return response()->json(['success' => false, 'message' => $response['message']], 422);
+    }
+
+    private function buildFinalDesignSvg(Order $order, int $internalImagesCount): string
+    {
+        $templatePath = public_path('svg-templates/book-final-design.svg');
+
+        if (! file_exists($templatePath)) {
+            return '';
+        }
+
+        $svg = file_get_contents($templatePath);
+
+        $dash = 'ـــــــ';
+
+        $giftMap = [
+            'default' => 'موحد',
+            'custom' => 'عبارة مخصصة',
+            'none' => 'بدون عبارة',
+        ];
+
+        $arabicDigits = [
+            '0' => '٠', '1' => '١', '2' => '٢', '3' => '٣', '4' => '٤',
+            '5' => '٥', '6' => '٦', '7' => '٧', '8' => '٨', '9' => '٩',
+        ];
+
+        $toArabicNumerals = fn ($num) => strtr((string) $num, $arabicDigits);
+
+        $replacements = [
+            '>الاسفنج<' => '>'.($order->is_sponge ? 'مع اسفنج' : $dash).'<',
+            '>الاسم<' => '>'.(! empty($order->username_ar) ? e($order->username_ar) : $dash).'<',
+            '>مزخرف<' => '>'.($order->book_decorations_id ? 'مزخرف' : $dash).'<',
+            '>صور<' => '>'.($internalImagesCount > 0 ? 'مع صور ('.$toArabicNumerals($internalImagesCount).')' : $dash).'<',
+            '>عدد الورق<' => '>'.($order->pages_number ? $toArabicNumerals($order->pages_number) : $dash).'<',
+            '>عبارة مخصصة<' => '>'.($giftMap[$order->gift_type] ?? $dash).'<',
+        ];
+
+        return str_replace(array_keys($replacements), array_values($replacements), $svg);
     }
 }

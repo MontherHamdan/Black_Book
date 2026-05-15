@@ -166,7 +166,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // phone numbers
     Route::resource('phone-numbers', PhoneNumberController::class)->only(['index', 'destroy']);
-
+    Route::resource('phone_numbers', PhoneNumberController::class);
     // diploma and majors
     Route::resource('diplomas', DiplomaController::class);
     Route::post('diplomas/{diplomaId}/majors', [DiplomaController::class, 'storeMajor'])->name('diplomas.storeMajor');

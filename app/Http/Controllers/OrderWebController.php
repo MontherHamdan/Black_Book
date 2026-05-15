@@ -2445,6 +2445,15 @@ class OrderWebController extends Controller
             '>عبارة مخصصة<' => '>'.($giftMap[$order->gift_type] ?? $dash).'<',
         ];
 
-        return str_replace(array_keys($replacements), array_values($replacements), $svg);
+        $svg = str_replace(array_keys($replacements), array_values($replacements), $svg);
+
+        // Fix: RTL + right-anchor for long Arabic names
+        $svg = str_replace(
+            '<text class="cls-5" transform="translate(461.69 20.92)">',
+            '<text class="cls-5" transform="translate(510 20.92)" text-anchor="start" direction="rtl" unicode-bidi="bidi-override">',
+            $svg
+        );
+
+        return $svg;
     }
 }

@@ -1696,15 +1696,15 @@
                             <div class="mb-4">
                                 <div class="section-label">عبارة الدفتر (ملف SVG)</div>
 
-                                @if ($hasSvg)
-                                    @if ($svgTitle)
-                                        <p class="mb-2">
-                                            <span class="badge bg-info text-dark">
-                                                {{ $svgTitle }}
-                                            </span>
-                                        </p>
-                                    @endif
+                                @if ($svgTitle)
+                                    <p class="mb-2">
+                                        <span class="badge bg-info text-dark">
+                                            {{ $svgTitle }}
+                                        </span>
+                                    </p>
+                                @endif
 
+                                @if ($hasSvg)
                                     <script>window._orderSvgPhrase = @json($svgRecord->svg_code);</script>
 
                                     <div class="svg-phrase-wrapper">
@@ -1723,7 +1723,7 @@
                                             {!! $svgRecord->svg_code !!}
                                         </div>
                                     </div>
-                                @else
+                                @elseif (!$svgTitle)
                                     <p class="text-muted mb-0">لا يوجد ملف SVG مرفق لهذا الطلب.</p>
                                 @endif
                             </div>

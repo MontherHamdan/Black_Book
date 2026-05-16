@@ -835,6 +835,11 @@
                                                         data-filename="FinalDesign_Order_{{ $order->id }}">
                                                         <i class="fas fa-download me-1"></i> تنزيل PNG شفاف
                                                     </button>
+                                                    <button type="button"
+                                                        class="btn btn-sm btn-outline-dark js-download-final-svg-file-btn"
+                                                        data-filename="FinalDesign_Order_{{ $order->id }}">
+                                                        <i class="fas fa-file-code me-1"></i> تنزيل SVG
+                                                    </button>
                                                 </div>
                                             @endif
                                             @if($order->designer_design_file)
@@ -2389,6 +2394,33 @@
                             this.classList.add('btn-secondary');
                         }, 2500);
                     }
+                });
+            });
+
+            document.querySelectorAll('.js-download-final-svg-file-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    if (!window.finalDesignSvg) return;
+                    const original = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-check me-1"></i> تم التنزيل!';
+                    this.classList.replace('btn-outline-dark', 'btn-success');
+                    this.disabled = true;
+
+                    const blob = new Blob([window.finalDesignSvg], { type: 'image/svg+xml;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = (this.dataset.filename || 'final_design') + '.svg';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    setTimeout(() => URL.revokeObjectURL(url), 5000);
+
+                    this.disabled = false;
+                    setTimeout(() => {
+                        this.innerHTML = original;
+                        this.classList.remove('btn-success');
+                        this.classList.add('btn-outline-dark');
+                    }, 2500);
                 });
             });
         });

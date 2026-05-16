@@ -2456,7 +2456,7 @@ class OrderWebController extends Controller
             '>الاسم<' => '>'.e($shape(! empty($order->username_ar) ? $order->username_ar : $dash)).'<',
             '>مزخرف<' => '>'.e($shape($order->book_decorations_id ? 'مزخرف' : $dash)).'<',
             '>صور<' => '>'.e($shape($internalImagesCount > 0 ? 'مع صور ('.$toArabicNumerals($internalImagesCount).')' : $dash)).'<',
-            '>عدد الورق<' => '>'.e($shape($order->pages_number ? $toArabicNumerals($order->pages_number) : $dash)).'<',
+            '>عدد الورق<' => '>'.e($order->pages_number ? $toArabicNumerals($order->pages_number) : $shape($dash)).'<',
             '>عبارة مخصصة<' => '>'.e($shape($giftMap[$order->gift_type] ?? $dash)).'<',
         ];
 

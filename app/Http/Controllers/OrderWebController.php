@@ -155,8 +155,15 @@ class OrderWebController extends Controller
         [$designImagePath, $designTitle] = $this->resolveDesignImage($order);
 
         // معلومات الـ SVG لعبارة الدفتر
-        $hasSvg = (bool) ($order->svg && $order->svg->svg_code);
-        $svgTitle = $order->svg->title ?? null;
+        $svgRecord = $order->svg;
+        if (! $svgRecord && $order->svg_title) {
+            $svgRecord = \App\Models\Svg::where('title', $order->svg_title)->first();
+            if (! $svgRecord) {
+                $svgRecord = \App\Models\Svg::where('svg_code', 'LIKE', '%'.$order->svg_title.'%')->first();
+            }
+        }
+        $hasSvg = (bool) ($svgRecord && $svgRecord->svg_code);
+        $svgTitle = $svgRecord->title ?? $order->svg_title ?? null;
 
         $canEditDesignFollowup = $isAdmin || $isDesigner;
         $designFollowupText = $order->design_followup_note;
@@ -311,6 +318,7 @@ class OrderWebController extends Controller
             'designTitle' => $designTitle,
             'hasSvg' => $hasSvg,
             'svgTitle' => $svgTitle,
+            'svgRecord' => $svgRecord ?? null,
             'canEditDesignFollowup' => $canEditDesignFollowup,
             'designFollowupText' => $designFollowupText,
             'frontSrc' => $frontSrc,

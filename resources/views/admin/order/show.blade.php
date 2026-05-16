@@ -827,8 +827,9 @@
                                             <div class="final-file-card-label">التصميم النهائي</div>
                                             @if(!empty($finalDesignSvg))
                                                 <div class="text-center mb-2 d-flex gap-2 justify-content-center flex-wrap">
-                                                    <button type="button" class="btn btn-sm btn-dark js-copy-final-svg-btn">
-                                                        <i class="fas fa-copy me-1"></i> نسخ SVG
+                                                    <button type="button" class="btn btn-sm btn-dark js-copy-final-svg-btn"
+                                                        data-filename="FinalDesign_Order_{{ $order->id }}">
+                                                        <i class="fas fa-download me-1"></i> تحميل SVG
                                                     </button>
                                                     <button type="button"
                                                         class="btn btn-sm btn-secondary js-download-final-svg-btn"
@@ -2339,13 +2340,20 @@
                     this.disabled = true;
 
                     try {
-                        const pngBlob = await finalSvgStringToPngBlob(window.finalDesignSvg, 2000, false);
-                        await navigator.clipboard.write([new ClipboardItem({ 'image/png': pngBlob })]);
-                        this.innerHTML = '<i class="fas fa-check me-1"></i> تم النسخ! الصق في Illustrator';
+                        const blob = new Blob([window.finalDesignSvg], { type: 'image/svg+xml;charset=utf-8' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = (this.dataset.filename || 'FinalDesign') + '.svg';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        setTimeout(() => URL.revokeObjectURL(url), 5000);
+                        this.innerHTML = '<i class="fas fa-check me-1"></i> تم التحميل!';
                         this.classList.replace('btn-dark', 'btn-success');
                     } catch (err) {
                         console.error(err);
-                        this.innerHTML = '<i class="fas fa-times me-1"></i> فشل النسخ';
+                        this.innerHTML = '<i class="fas fa-times me-1"></i> فشل التحميل';
                         this.classList.replace('btn-dark', 'btn-danger');
                     } finally {
                         this.disabled = false;

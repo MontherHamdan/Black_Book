@@ -2338,38 +2338,19 @@
                     this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> جاري النسخ...';
                     this.disabled = true;
 
-                    const svgBlob = new Blob([window.finalDesignSvg], { type: 'image/svg+xml;charset=utf-8' });
-                    let copied = false;
-
-                    // Try proper SVG clipboard (works in Firefox; Chrome does not support this)
                     try {
-                        await navigator.clipboard.write([
-                            new ClipboardItem({ 'image/svg+xml': svgBlob })
-                        ]);
-                        copied = true;
-                    } catch (_) {}
-
-                    if (copied) {
-                        this.innerHTML = '<i class="fas fa-check me-1"></i> تم نسخ SVG! الصق في Illustrator';
+                        await navigator.clipboard.writeText(window.finalDesignSvg);
+                        this.innerHTML = '<i class="fas fa-check me-1"></i> تم نسخ SVG!';
                         this.classList.replace('btn-dark', 'btn-success');
-                    } else {
-                        // Chrome can't clipboard SVG as vector — download the file instead
-                        const url = URL.createObjectURL(svgBlob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = 'FinalDesign_Order_{{ $order->id }}.svg';
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        setTimeout(() => URL.revokeObjectURL(url), 5000);
-                        this.innerHTML = '<i class="fas fa-download me-1"></i> تم تحميل SVG – افتح في Illustrator';
-                        this.classList.replace('btn-dark', 'btn-warning');
+                    } catch (err) {
+                        this.innerHTML = '<i class="fas fa-times me-1"></i> فشل النسخ';
+                        this.classList.replace('btn-dark', 'btn-danger');
                     }
 
                     this.disabled = false;
                     setTimeout(() => {
                         this.innerHTML = original;
-                        this.classList.remove('btn-success', 'btn-warning');
+                        this.classList.remove('btn-success', 'btn-danger');
                         this.classList.add('btn-dark');
                     }, 3500);
                 });

@@ -1370,24 +1370,17 @@
                                         </div>
 
                                         <div class="d-flex flex-column gap-2">
+                                            <button type="button"
+                                                class="btn btn-dark rounded-pill px-3 py-2 fw-bold shadow-sm d-flex align-items-center copy-name-svg-btn"
+                                                data-url="{{ $svgCodeForName['url'] }}">
+                                                <i class="fas fa-copy me-2"></i> نسخ SVG
+                                            </button>
+
                                             <a href="{{ $svgCodeForName['url'] }}"
                                                 download="Name_{{ $order->username_ar }}_Order_{{ $order->id }}.svg"
-                                                class="btn btn-primary rounded-pill px-3 py-2 fw-bold shadow-sm d-flex align-items-center">
-                                                <i class="fas fa-download me-2"></i> تنزيل كملف
+                                                class="btn btn-outline-dark rounded-pill px-3 py-2 fw-bold shadow-sm d-flex align-items-center">
+                                                <i class="fas fa-file-code me-2"></i> تنزيل SVG
                                             </a>
-
-                                            <button type="button"
-                                                class="btn btn-dark rounded-pill px-3 py-2 fw-bold shadow-sm d-flex align-items-center copy-for-ps-btn"
-                                                data-url="{{ $svgCodeForName['url'] }}">
-                                                <i class="fas fa-copy me-2"></i> نسخ PNG للكليبورد
-                                            </button>
-
-                                            <button type="button"
-                                                class="btn btn-secondary rounded-pill px-3 py-2 fw-bold shadow-sm d-flex align-items-center download-png-btn"
-                                                data-url="{{ $svgCodeForName['url'] }}"
-                                                data-filename="Name_{{ $order->username_ar }}_Order_{{ $order->id }}">
-                                                <i class="fas fa-file-image me-2"></i> تنزيل PNG للفوتوشوب
-                                            </button>
                                         </div>
                                     </div>
                                 @else
@@ -2512,30 +2505,22 @@
                 });
             }
 
-            // ── تنزيل PNG للفوتوشوب (Drag to PS مستحيل من المتصفح — PS يرفض blob: URLs) ──
-            document.querySelectorAll('.drag-to-ps').forEach(imgEl => {
-                imgEl.style.cursor = 'default';
-                imgEl.draggable = false;
-                imgEl.title = 'استخدم زر "تنزيل PNG للفوتوشوب" لتحميل الملف';
-            });
-
-            // ── نسخ للفوتوشوب ──
-            document.querySelectorAll('.copy-for-ps-btn').forEach(btn => {
+            // ── نسخ SVG الاسم للكليبورد ──
+            document.querySelectorAll('.copy-name-svg-btn').forEach(btn => {
                 btn.addEventListener('click', async function () {
                     const originalHtml = this.innerHTML;
                     this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري النسخ...';
                     this.disabled = true;
 
                     try {
-                        // نمرر true للخلفية البيضاء لتجنب سواد الفوتوشوب عند النسخ
-                        const blob = await svgToPngBlob(this.dataset.url, 2000, true);
-                        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-
+                        const response = await fetch(this.dataset.url);
+                        const svgText = await response.text();
+                        await navigator.clipboard.writeText(svgText);
                         this.innerHTML = '<i class="fas fa-check me-2"></i> تم النسخ!';
                         this.classList.replace('btn-dark', 'btn-success');
                     } catch (err) {
                         console.error(err);
-                        this.innerHTML = '<i class="fas fa-times me-2"></i> فشل — تحقق من صلاحيات المتصفح';
+                        this.innerHTML = '<i class="fas fa-times me-2"></i> فشل النسخ';
                         this.classList.replace('btn-dark', 'btn-danger');
                     } finally {
                         this.disabled = false;
@@ -2543,38 +2528,6 @@
                             this.innerHTML = originalHtml;
                             this.classList.remove('btn-success', 'btn-danger');
                             this.classList.add('btn-dark');
-                        }, 3000);
-                    }
-                });
-            });
-
-            document.querySelectorAll('.download-png-btn').forEach(btn => {
-                btn.addEventListener('click', async function () {
-                    const originalHtml = this.innerHTML;
-                    this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري التحضير...';
-                    this.disabled = true;
-
-                    try {
-                        // نمرر false للشفافية المطلقة عند التحميل كملف
-                        const blob = await svgToPngBlob(this.dataset.url, 2000, false);
-                        const pngUrl = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = pngUrl;
-                        a.download = (this.dataset.filename || 'svg_name') + '.png';
-                        a.click();
-                        setTimeout(() => URL.revokeObjectURL(pngUrl), 5000);
-
-                        this.innerHTML = '<i class="fas fa-check me-2"></i> تم التنزيل!';
-                        this.classList.replace('btn-secondary', 'btn-success');
-                    } catch (err) {
-                        this.innerHTML = '<i class="fas fa-times me-2"></i> فشل التنزيل';
-                        this.classList.replace('btn-secondary', 'btn-danger');
-                    } finally {
-                        this.disabled = false;
-                        setTimeout(() => {
-                            this.innerHTML = originalHtml;
-                            this.classList.remove('btn-success', 'btn-danger');
-                            this.classList.add('btn-secondary');
                         }, 3000);
                     }
                 });

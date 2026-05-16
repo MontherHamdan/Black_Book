@@ -39,11 +39,11 @@
     </style>
   </defs>
   <g id="Layer_1-2" data-name="Layer 1">
-    <text class="cls-2" transform="translate(19.74 593.78) rotate(-90)"><tspan x="0" y="0">الاسفنج</tspan></text>
+    <text class="cls-2" transform="translate(19.74 593.78) rotate(-90)" direction="rtl" unicode-bidi="bidi-override"><tspan x="0" y="0">الاسفنج</tspan></text>
     <text class="cls-5" transform="translate(461.69 20.92)"><tspan x="0" y="0">الاسم</tspan></text>
-    <text class="cls-3" transform="translate(319.11 20.88) scale(.95 1)"><tspan x="0" y="0">مزخرف</tspan></text>
-    <text class="cls-1" transform="translate(207.82 19.81) scale(.95 1)"><tspan x="0" y="0">صور</tspan></text>
-    <text class="cls-4" transform="translate(19.74 474.26) rotate(-90)"><tspan x="0" y="0">عدد الورق</tspan></text>
-    <text class="cls-6" transform="translate(19.74 347.4) rotate(-90)"><tspan x="0" y="0">عبارة مخصصة</tspan></text>
+    <text class="cls-3" transform="translate(319.11 20.88) scale(.95 1)" direction="rtl" unicode-bidi="bidi-override"><tspan x="0" y="0">مزخرف</tspan></text>
+    <text class="cls-1" transform="translate(207.82 19.81) scale(.95 1)" direction="rtl" unicode-bidi="bidi-override"><tspan x="0" y="0">صور</tspan></text>
+    <text class="cls-4" transform="translate(19.74 474.26) rotate(-90)" direction="rtl" unicode-bidi="bidi-override"><tspan x="0" y="0">عدد الورق</tspan></text>
+    <text class="cls-6" transform="translate(19.74 347.4) rotate(-90)" direction="rtl" unicode-bidi="bidi-override"><tspan x="0" y="0">عبارة مخصصة</tspan></text>
   </g>
 </svg>

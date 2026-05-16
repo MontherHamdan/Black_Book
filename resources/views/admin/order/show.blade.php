@@ -831,11 +831,6 @@
                                                         <i class="fas fa-copy me-1"></i> نسخ SVG
                                                     </button>
                                                     <button type="button"
-                                                        class="btn btn-sm btn-secondary js-download-final-svg-btn"
-                                                        data-filename="FinalDesign_Order_{{ $order->id }}">
-                                                        <i class="fas fa-download me-1"></i> تنزيل PNG شفاف
-                                                    </button>
-                                                    <button type="button"
                                                         class="btn btn-sm btn-outline-dark js-download-final-svg-file-btn"
                                                         data-filename="FinalDesign_Order_{{ $order->id }}">
                                                         <i class="fas fa-file-code me-1"></i> تنزيل SVG
@@ -2358,42 +2353,6 @@
                         this.classList.remove('btn-success', 'btn-danger');
                         this.classList.add('btn-dark');
                     }, 3500);
-                });
-            });
-
-            document.querySelectorAll('.js-download-final-svg-btn').forEach(function (btn) {
-                btn.addEventListener('click', async function () {
-                    if (!window.finalDesignSvg) return;
-                    const original = this.innerHTML;
-                    this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> جاري التحضير...';
-                    this.disabled = true;
-
-                    try {
-                        // نمرر false للحفاظ على الشفافية 100% عند التحميل
-                        const pngBlob = await finalSvgStringToPngBlob(window.finalDesignSvg, 2000, false);
-                        const url = URL.createObjectURL(pngBlob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = (this.dataset.filename || 'final_design') + '.png';
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        setTimeout(() => URL.revokeObjectURL(url), 5000);
-
-                        this.innerHTML = '<i class="fas fa-check me-1"></i> تم التنزيل!';
-                        this.classList.replace('btn-secondary', 'btn-success');
-                    } catch (err) {
-                        console.error(err);
-                        this.innerHTML = '<i class="fas fa-times me-1"></i> فشل التنزيل';
-                        this.classList.replace('btn-secondary', 'btn-danger');
-                    } finally {
-                        this.disabled = false;
-                        setTimeout(() => {
-                            this.innerHTML = original;
-                            this.classList.remove('btn-success', 'btn-danger');
-                            this.classList.add('btn-secondary');
-                        }, 2500);
-                    }
                 });
             });
 

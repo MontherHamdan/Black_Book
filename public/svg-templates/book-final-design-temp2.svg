@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 1100" width="200" height="1100">
+    <style>
+        .vertical-text {
+            font-family: 'Arial', 'Adobe Arabic', sans-serif;
+            font-size: 36px;
+            fill: #000000;
+        }
+    </style>
+    <g transform="translate(100, 0)">
+        <text class="vertical-text" transform="translate(0, 200) rotate(-90)">الاسم</text>
+        <text class="vertical-text" transform="translate(0, 450) rotate(-90)">اهداء مخصص</text>
+        <text class="vertical-text" transform="translate(0, 650) rotate(-90)">عدد الورق</text>
+        <text class="vertical-text" transform="translate(0, 850) rotate(-90)">عدد الصور</text>
+        <text class="vertical-text" transform="translate(0, 1050) rotate(-90)">مع زخرفة</text>
+    </g>
+</svg>

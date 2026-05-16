@@ -188,6 +188,7 @@ class OrderWebController extends Controller
         $internalImagesCount = $internalImages ? $internalImages->count() : 0;
 
         $finalDesignSvg = $this->buildFinalDesignSvg($order, $internalImagesCount);
+        $decorationDesignSvg = $this->buildDecorationSvg($order, $internalImagesCount);
 
         $internalImages = $internalImages->map(function ($img) {
             $img->resolved_url = $this->resolveImageUrl($img->image_path ?? null);
@@ -357,6 +358,7 @@ class OrderWebController extends Controller
 
             'groupWarning' => $groupWarning,
             'finalDesignSvg' => $finalDesignSvg,
+            'decorationDesignSvg' => $decorationDesignSvg,
         ]);
     }
 
@@ -2448,7 +2450,7 @@ class OrderWebController extends Controller
         // Convert Arabic logical-order text to visual-order presentation forms so that
         // Illustrator (which always renders text LTR) displays Arabic correctly without
         // requiring any preference changes. $hindo=false preserves Arabic-Indic numerals.
-        $ar = new Arabic();
+        $ar = new Arabic;
         $shape = fn (string $text): string => $ar->utf8Glyphs($text, 500, false);
 
         $replacements = [
@@ -2470,5 +2472,44 @@ class OrderWebController extends Controller
         );
 
         return $svg;
+    }
+
+    private function buildDecorationSvg(Order $order, int $internalImagesCount): string
+    {
+        $templatePath = public_path('svg-templates/book-final-design-temp2.svg');
+        if (! file_exists($templatePath)) {
+            return '';
+        }
+
+        $svg = file_get_contents($templatePath);
+
+        $dash = 'ـــــــ';
+
+        $giftMap = [
+            'default' => 'موحد',
+            'custom' => 'عبارة مخصصة',
+            'none' => 'بدون عبارة',
+        ];
+
+        $arabicDigits = [
+            '0' => '٠', '1' => '١', '2' => '٢', '3' => '٣', '4' => '٤',
+            '5' => '٥', '6' => '٦', '7' => '٧', '8' => '٨', '9' => '٩',
+        ];
+
+        $toArabicNumerals = fn ($num) => strtr((string) $num, $arabicDigits);
+
+        $ar = new Arabic;
+        $shape = fn (string $text): string => $ar->utf8Glyphs($text, 500, false);
+
+        // هنا حطينا المتغيرات تتطابق "بالحرف" مع اللي موجودة في ملف الـ SVG الجديد
+        $replacements = [
+            '>الاسم<' => '>'.e($shape(! empty($order->username_ar) ? $order->username_ar : $dash)).'<',
+            '>اهداء مخصص<' => '>'.e($shape($giftMap[$order->gift_type] ?? $dash)).'<',
+            '>عدد الورق<' => '>'.e($order->pages_number ? $toArabicNumerals($order->pages_number) : $shape($dash)).'<',
+            '>عدد الصور<' => '>'.e($shape($internalImagesCount > 0 ? 'مع صور ('.$toArabicNumerals($internalImagesCount).')' : $dash)).'<',
+            '>مع زخرفة<' => '>'.e($shape($order->book_decorations_id ? 'مزخرف' : $dash)).'<',
+        ];
+
+        return str_replace(array_keys($replacements), array_values($replacements), $svg);
     }
 }

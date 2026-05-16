@@ -16,6 +16,7 @@ use App\Models\User;
 use App\Models\UserImage;
 use App\Support\ArabicNameNormalizer;
 use App\Traits\LogesTechsIntegration;
+use ArPHP\I18N\Arabic;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -2444,20 +2445,19 @@ class OrderWebController extends Controller
 
         $toArabicNumerals = fn ($num) => strtr((string) $num, $arabicDigits);
 
-        // U+202E (RLO) forces Illustrator to render text RTL at the text-engine level.
-        // U+202C (PDF) closes the override. Browsers already handle RTL via the SVG
-        // direction attribute, so these characters are harmlessly redundant there.
-        $rlo = "\u{202E}";
-        $pdf = "\u{202C}";
-        $rtl = fn (string $text) => $rlo.$text.$pdf;
+        // Convert Arabic logical-order text to visual-order presentation forms so that
+        // Illustrator (which always renders text LTR) displays Arabic correctly without
+        // requiring any preference changes. $hindo=false preserves Arabic-Indic numerals.
+        $ar = new Arabic();
+        $shape = fn (string $text): string => $ar->utf8Glyphs($text, 500, false);
 
         $replacements = [
-            '>الاسفنج<' => '>'.$rtl($order->is_sponge ? 'مع اسفنج' : $dash).'<',
-            '>الاسم<' => '>'.$rtl(! empty($order->username_ar) ? e($order->username_ar) : $dash).'<',
-            '>مزخرف<' => '>'.$rtl($order->book_decorations_id ? 'مزخرف' : $dash).'<',
-            '>صور<' => '>'.$rtl($internalImagesCount > 0 ? 'مع صور ('.$toArabicNumerals($internalImagesCount).')' : $dash).'<',
-            '>عدد الورق<' => '>'.$rtl($order->pages_number ? $toArabicNumerals($order->pages_number) : $dash).'<',
-            '>عبارة مخصصة<' => '>'.$rtl($giftMap[$order->gift_type] ?? $dash).'<',
+            '>الاسفنج<' => '>'.e($shape($order->is_sponge ? 'مع اسفنج' : $dash)).'<',
+            '>الاسم<' => '>'.e($shape(! empty($order->username_ar) ? $order->username_ar : $dash)).'<',
+            '>مزخرف<' => '>'.e($shape($order->book_decorations_id ? 'مزخرف' : $dash)).'<',
+            '>صور<' => '>'.e($shape($internalImagesCount > 0 ? 'مع صور ('.$toArabicNumerals($internalImagesCount).')' : $dash)).'<',
+            '>عدد الورق<' => '>'.e($shape($order->pages_number ? $toArabicNumerals($order->pages_number) : $dash)).'<',
+            '>عبارة مخصصة<' => '>'.e($shape($giftMap[$order->gift_type] ?? $dash)).'<',
         ];
 
         $svg = str_replace(array_keys($replacements), array_values($replacements), $svg);
@@ -2465,7 +2465,7 @@ class OrderWebController extends Controller
         // Fix: RTL + right-anchor for long Arabic names
         $svg = str_replace(
             '<text class="cls-5" transform="translate(461.69 20.92)">',
-            '<text class="cls-5" transform="translate(510 20.92)" text-anchor="start" direction="rtl" unicode-bidi="bidi-override">',
+            '<text class="cls-5" transform="translate(510 20.92)" text-anchor="end" direction="ltr" unicode-bidi="bidi-override">',
             $svg
         );
 

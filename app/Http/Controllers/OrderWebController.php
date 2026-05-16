@@ -2510,6 +2510,6 @@ class OrderWebController extends Controller
             '>مع زخرفة<' => '>'.e($shape($order->book_decorations_id ? 'مزخرف' : $dash)).'<',
         ];
 
-        return str_replace(array_keys($replacements), array_values($replacements), $svg);
+        return str_replace(array_keys($replacements), array_values($replacements), $svg); 
     }
 }

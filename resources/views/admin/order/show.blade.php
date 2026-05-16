@@ -2339,8 +2339,9 @@
                     this.disabled = true;
 
                     try {
-                        await navigator.clipboard.writeText(window.finalDesignSvg);
-                        this.innerHTML = '<i class="fas fa-check me-1"></i> تم نسخ SVG!';
+                        const pngBlob = await finalSvgStringToPngBlob(window.finalDesignSvg, 2000, false);
+                        await navigator.clipboard.write([new ClipboardItem({ 'image/png': pngBlob })]);
+                        this.innerHTML = '<i class="fas fa-check me-1"></i> تم النسخ! الصق في Illustrator';
                         this.classList.replace('btn-dark', 'btn-success');
                     } catch (err) {
                         console.error(err);

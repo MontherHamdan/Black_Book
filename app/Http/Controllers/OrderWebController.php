@@ -2444,13 +2444,20 @@ class OrderWebController extends Controller
 
         $toArabicNumerals = fn ($num) => strtr((string) $num, $arabicDigits);
 
+        // U+202E (RLO) forces Illustrator to render text RTL at the text-engine level.
+        // U+202C (PDF) closes the override. Browsers already handle RTL via the SVG
+        // direction attribute, so these characters are harmlessly redundant there.
+        $rlo = "\u{202E}";
+        $pdf = "\u{202C}";
+        $rtl = fn (string $text) => $rlo.$text.$pdf;
+
         $replacements = [
-            '>الاسفنج<' => '>'.($order->is_sponge ? 'مع اسفنج' : $dash).'<',
-            '>الاسم<' => '>'.(! empty($order->username_ar) ? e($order->username_ar) : $dash).'<',
-            '>مزخرف<' => '>'.($order->book_decorations_id ? 'مزخرف' : $dash).'<',
-            '>صور<' => '>'.($internalImagesCount > 0 ? 'مع صور ('.$toArabicNumerals($internalImagesCount).')' : $dash).'<',
-            '>عدد الورق<' => '>'.($order->pages_number ? $toArabicNumerals($order->pages_number) : $dash).'<',
-            '>عبارة مخصصة<' => '>'.($giftMap[$order->gift_type] ?? $dash).'<',
+            '>الاسفنج<' => '>'.$rtl($order->is_sponge ? 'مع اسفنج' : $dash).'<',
+            '>الاسم<' => '>'.$rtl(! empty($order->username_ar) ? e($order->username_ar) : $dash).'<',
+            '>مزخرف<' => '>'.$rtl($order->book_decorations_id ? 'مزخرف' : $dash).'<',
+            '>صور<' => '>'.$rtl($internalImagesCount > 0 ? 'مع صور ('.$toArabicNumerals($internalImagesCount).')' : $dash).'<',
+            '>عدد الورق<' => '>'.$rtl($order->pages_number ? $toArabicNumerals($order->pages_number) : $dash).'<',
+            '>عبارة مخصصة<' => '>'.$rtl($giftMap[$order->gift_type] ?? $dash).'<',
         ];
 
         $svg = str_replace(array_keys($replacements), array_values($replacements), $svg);

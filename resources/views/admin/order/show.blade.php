@@ -2385,37 +2385,6 @@
                     this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> جاري النسخ...';
                     this.disabled = true;
 
-                    // ── Diagnostic logging ──────────────────────────────────────
-                    console.group('🔍 SVG Copy Diagnostics');
-                    console.log('SVG string length:', window.finalDesignSvg.length);
-
-                    try {
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(window.finalDesignSvg, 'image/svg+xml');
-                        const parseError = doc.querySelector('parsererror');
-                        if (parseError) {
-                            console.error('❌ SVG parse error:', parseError.textContent);
-                        } else {
-                            console.log('✅ SVG parsed OK');
-                            const textEls = doc.querySelectorAll('text');
-                            console.log(`Found ${textEls.length} <text> element(s):`);
-                            textEls.forEach((el, i) => {
-                                console.log(`  [${i}] class="${el.getAttribute('class')}"`, {
-                                    direction:    el.getAttribute('direction')    ?? '(not set)',
-                                    'unicode-bidi': el.getAttribute('unicode-bidi') ?? '(not set)',
-                                    transform:    el.getAttribute('transform')   ?? '(not set)',
-                                    text:         el.textContent.trim(),
-                                });
-                            });
-                        }
-                    } catch (diagErr) {
-                        console.warn('Diagnostics failed:', diagErr);
-                    }
-
-                    console.log('Full SVG string:\n', window.finalDesignSvg);
-                    console.groupEnd();
-                    // ────────────────────────────────────────────────────────────
-
                     try {
                         await navigator.clipboard.writeText(window.finalDesignSvg);
                         this.innerHTML = '<i class="fas fa-check me-1"></i> تم نسخ SVG!';

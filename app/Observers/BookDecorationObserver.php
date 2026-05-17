@@ -7,12 +7,12 @@ use Illuminate\Support\Facades\Cache;
 
 class BookDecorationObserver
 {
-    public function saved(BookDecoration $bookDecoration): void
+    public function saved(BookDecoration $_bookDecoration): void
     {
         Cache::forget('book_decorations');
     }
 
-    public function deleted(BookDecoration $bookDecoration): void
+    public function deleted(BookDecoration $_bookDecoration): void
     {
         Cache::forget('book_decorations');
     }

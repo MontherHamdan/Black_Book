@@ -7,12 +7,12 @@ use Illuminate\Support\Facades\Cache;
 
 class GovernorateObserver
 {
-    public function saved(Governorate $governorate): void
+    public function saved(Governorate $_governorate): void
     {
         Cache::forget('location_governorates');
     }
 
-    public function deleted(Governorate $governorate): void
+    public function deleted(Governorate $_governorate): void
     {
         Cache::forget('location_governorates');
     }

@@ -7,13 +7,17 @@ use Illuminate\Support\Facades\Cache;
 
 class BookDesignObserver
 {
-    // Incrementing the version orphans all paginated cache combos instantly
-    public function saved(BookDesign $bookDesign): void
+    public function saved(BookDesign $_bookDesign): void
     {
         Cache::increment('book_designs_version');
     }
 
-    public function deleted(BookDesign $bookDesign): void
+    public function deleted(BookDesign $_bookDesign): void
+    {
+        Cache::increment('book_designs_version');
+    }
+
+    public function restored(BookDesign $_bookDesign): void
     {
         Cache::increment('book_designs_version');
     }

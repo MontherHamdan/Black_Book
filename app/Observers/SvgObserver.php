@@ -7,12 +7,12 @@ use Illuminate\Support\Facades\Cache;
 
 class SvgObserver
 {
-    public function saved(Svg $svg): void
+    public function saved(Svg $_svg): void
     {
         Cache::forget('svg_categories');
     }
 
-    public function deleted(Svg $svg): void
+    public function deleted(Svg $_svg): void
     {
         Cache::forget('svg_categories');
     }

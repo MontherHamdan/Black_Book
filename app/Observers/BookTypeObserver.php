@@ -7,12 +7,17 @@ use Illuminate\Support\Facades\Cache;
 
 class BookTypeObserver
 {
-    public function saved(BookType $bookType): void
+    public function saved(BookType $_bookType): void
     {
         Cache::forget('book_types');
     }
 
-    public function deleted(BookType $bookType): void
+    public function deleted(BookType $_bookType): void
+    {
+        Cache::forget('book_types');
+    }
+
+    public function restored(BookType $_bookType): void
     {
         Cache::forget('book_types');
     }

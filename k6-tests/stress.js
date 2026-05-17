@@ -5,16 +5,19 @@ import { FormData } from 'https://jslib.k6.io/formdata/0.0.2/index.js';
 const BASE = 'https://admin.blackbook-forgraduation.com/api/v1';
 const HEADERS = { 'Accept': 'application/json' };
 
+// open() must be in the init stage (global scope)
+const imgData = open('./sample.jpg', 'b');
+
 export const options = {
   stages: [
-    { duration: '2m', target: 20  }, // warm up
-    { duration: '2m', target: 50  }, // medium load
-    { duration: '2m', target: 100 }, // heavy load
-    { duration: '2m', target: 0   }, // cool down
+    { duration: '2m', target: 20  },
+    { duration: '2m', target: 50  },
+    { duration: '2m', target: 100 },
+    { duration: '2m', target: 0   },
   ],
   thresholds: {
-    http_req_failed:   ['rate<0.05'],   // allow up to 5% errors (stress test)
-    http_req_duration: ['p(95)<5000'],  // 95% under 5s under stress
+    http_req_failed:   ['rate<0.05'],
+    http_req_duration: ['p(95)<5000'],
   },
 };
 
@@ -42,7 +45,7 @@ export default function () {
   check(http.get(`${BASE}/universities`, { headers: HEADERS }),
     { 'universities 200': r => r.status === 200 });
 
-  check(http.get(`${BASE}/universities/1/majors`, { headers: HEADERS }),
+  check(http.get(`${BASE}/universities/10/majors`, { headers: HEADERS }),
     { 'majors 200': r => r.status === 200 });
 
   check(http.get(`${BASE}/diplomas`, { headers: HEADERS }),
@@ -57,13 +60,12 @@ export default function () {
   check(http.get(`${BASE}/locations/cities/1`, { headers: HEADERS }),
     { 'cities 200': r => r.status === 200 });
 
-  check(http.get(`${BASE}/locations/areas/1`, { headers: HEADERS }),
+  check(http.get(`${BASE}/locations/areas/18`, { headers: HEADERS }),
     { 'areas 200': r => r.status === 200 });
 
   sleep(1);
 
   // ── 4. Upload front image ─────────────────────────────────────
-  const imgData = open('./sample.jpg', 'b');
   const fd = new FormData();
   fd.append('image', http.file(imgData, 'sample.jpg', 'image/jpeg'));
 

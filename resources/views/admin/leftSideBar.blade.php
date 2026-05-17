@@ -83,6 +83,16 @@
                     </a>
                 </li>
 
+                {{-- Trashed Orders: Admin only --}}
+                @if(auth()->user()->isAdmin())
+                    <li>
+                        <a href="{{ route('orders.trashed') }}">
+                            <i class="mdi mdi-trash-can-outline"></i>
+                            <span> Trashed Orders </span>
+                        </a>
+                    </li>
+                @endif
+
 
 
                 {{-- 3. Notebook Binding: متاح للآدمن، المشرف، والطابع --}}

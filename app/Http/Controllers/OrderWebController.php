@@ -888,7 +888,6 @@ class OrderWebController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
-        // 🛡️ Only admins can delete orders
         if (! $user->isAdmin()) {
             return response()->json([
                 'success' => false,
@@ -897,24 +896,22 @@ class OrderWebController extends Controller
         }
 
         $order = Order::findOrFail($id);
-        $this->deleteOrderAndRelatedData($order);
+        $order->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'تم حذف الطلب بنجاح!',
+            'message' => 'تم إرسال الطلب إلى سلة المحذوفات!',
         ]);
     }
 
     /**
-     * Bulk delete multiple orders.
-     * Only admins can perform bulk delete.
+     * Bulk soft-delete multiple orders (admin only).
      */
     public function bulkDelete(Request $request)
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
-        // 🛡️ Only admins can bulk delete
         if (! $user->isAdmin()) {
             return response()->json([
                 'success' => false,
@@ -928,30 +925,136 @@ class OrderWebController extends Controller
         ]);
 
         $orderIds = $request->input('order_ids', []);
-        $orders = Order::whereIn('id', $orderIds)->get();
-
-        $deletedCount = 0;
-        $errors = [];
-
-        foreach ($orders as $order) {
-            try {
-                $this->deleteOrderAndRelatedData($order);
-                $deletedCount++;
-            } catch (\Exception $e) {
-                $errors[] = "فشل حذف الطلب #{$order->id}: ".$e->getMessage();
-                Log::error('Bulk delete order failed', [
-                    'order_id' => $order->id,
-                    'error' => $e->getMessage(),
-                ]);
-            }
-        }
+        Order::whereIn('id', $orderIds)->get()->each(fn ($o) => $o->delete());
 
         return response()->json([
             'success' => true,
-            'message' => "تم حذف {$deletedCount} طلب بنجاح.",
-            'deleted_count' => $deletedCount,
-            'errors' => $errors,
+            'message' => 'تم إرسال '.count($orderIds).' طلب إلى سلة المحذوفات.',
+            'deleted_count' => count($orderIds),
         ]);
+    }
+
+    /**
+     * Show the trashed orders page (admin only).
+     */
+    public function trashedOrders()
+    {
+        return view('admin.order.trashed');
+    }
+
+    /**
+     * AJAX data source for the trashed orders DataTable (admin only).
+     */
+    public function fetchTrashedOrders(Request $request)
+    {
+        if (! auth()->user()->isAdmin()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $perPage = $request->input('length', 10);
+        $page    = ($request->input('start', 0) / max($perPage, 1)) + 1;
+        $search  = $request->input('search.value');
+
+        $query = Order::onlyTrashed()->with(['bookType', 'designer']);
+
+        if (! empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', "%{$search}%")
+                  ->orWhere('username_ar', 'like', "%{$search}%")
+                  ->orWhere('username_en', 'like', "%{$search}%")
+                  ->orWhere('user_phone_number', 'like', "%{$search}%");
+            });
+        }
+
+        $orders = $query->orderBy('deleted_at', 'desc')->paginate($perPage, ['*'], 'page', $page);
+
+        $data = $orders->getCollection()->map(function ($order) {
+            return [
+                'id'         => $order->id,
+                'username'   => $order->username_ar,
+                'phone'      => $order->user_phone_number,
+                'order_type' => $order->bookType?->name_ar ?? '—',
+                'status'     => $order->status,
+                'designer'   => $order->designer?->name ?? 'غير معيّن',
+                'created_at' => $order->created_at?->timezone('Asia/Amman')->format('d-m-Y'),
+                'deleted_at' => $order->deleted_at?->timezone('Asia/Amman')->format('d-m-Y, h:i A'),
+                'price'      => $order->final_price_with_discount,
+            ];
+        });
+
+        return response()->json([
+            'draw'            => (int) $request->input('draw'),
+            'recordsTotal'    => $orders->total(),
+            'recordsFiltered' => $orders->total(),
+            'data'            => $data,
+        ]);
+    }
+
+    /**
+     * Restore a single soft-deleted order (admin only).
+     */
+    public function restore($id)
+    {
+        if (! auth()->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'غير مصرح لك.'], 403);
+        }
+
+        $order = Order::onlyTrashed()->findOrFail($id);
+        $order->restore();
+
+        return response()->json(['success' => true, 'message' => 'تم استعادة الطلب #'.$id.' بنجاح!']);
+    }
+
+    /**
+     * Permanently delete a single trashed order (admin only).
+     */
+    public function forceDestroy($id)
+    {
+        if (! auth()->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'غير مصرح لك.'], 403);
+        }
+
+        $order = Order::onlyTrashed()->findOrFail($id);
+        $this->cleanupOrderRelatedData($order);
+        $order->forceDelete();
+
+        return response()->json(['success' => true, 'message' => 'تم الحذف النهائي للطلب #'.$id.'!']);
+    }
+
+    /**
+     * Bulk restore trashed orders (admin only).
+     */
+    public function bulkRestore(Request $request)
+    {
+        if (! auth()->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'غير مصرح لك.'], 403);
+        }
+
+        $request->validate(['order_ids' => 'required|array', 'order_ids.*' => 'integer']);
+
+        $count = Order::onlyTrashed()->whereIn('id', $request->order_ids)->restore();
+
+        return response()->json(['success' => true, 'message' => "تم استعادة {$count} طلب بنجاح!"]);
+    }
+
+    /**
+     * Bulk permanently delete trashed orders (admin only).
+     */
+    public function bulkForceDelete(Request $request)
+    {
+        if (! auth()->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'غير مصرح لك.'], 403);
+        }
+
+        $request->validate(['order_ids' => 'required|array', 'order_ids.*' => 'integer']);
+
+        $orders = Order::onlyTrashed()->whereIn('id', $request->order_ids)->get();
+        foreach ($orders as $order) {
+            $this->cleanupOrderRelatedData($order);
+            $order->forceDelete();
+        }
+
+        return response()->json(['success' => true, 'message' => "تم الحذف النهائي لـ {$orders->count()} طلب!"]);
     }
 
     /**
@@ -1086,13 +1189,20 @@ class OrderWebController extends Controller
     }
 
     /**
-     * Comprehensive method to delete an order and all its related data:
-     * - Notes (cascade delete via foreign key)
-     * - UserImage records (front, transparent, internal, back, additional, custom)
-     * - Physical image files from storage
-     * - The order itself (soft delete)
+     * Deletes an order's related files, images, and notes — then soft-deletes the order.
+     * Used by PurgeTestOrders command and legacy callers.
      */
     private function deleteOrderAndRelatedData(Order $order): void
+    {
+        $this->cleanupOrderRelatedData($order);
+        $order->delete();
+    }
+
+    /**
+     * Cleans up all files, images, and notes tied to an order without deleting the order row.
+     * Called before both soft-delete (deleteOrderAndRelatedData) and forceDelete (forceDestroy).
+     */
+    private function cleanupOrderRelatedData(Order $order): void
     {
         // Collect all UserImage IDs referenced by this order
         $imageIdsToCheck = array_unique(array_filter(array_merge(
@@ -1103,10 +1213,8 @@ class OrderWebController extends Controller
         )));
 
         if (! empty($imageIdsToCheck)) {
-            // Delete physical files
             UserImage::whereIn('id', $imageIdsToCheck)->get()->each(fn ($img) => $this->deleteUserImageFile($img));
 
-            // Only delete UserImage DB records not referenced by any other order
             $usedByOthers = Order::where('id', '!=', $order->id)
                 ->whereIn('front_image_id', $imageIdsToCheck)
                 ->pluck('front_image_id')
@@ -1124,7 +1232,6 @@ class OrderWebController extends Controller
             }
         }
 
-        // Delete designer upload files (stored as paths directly on the order)
         $designerSingleFields = ['designer_design_file', 'designer_decoration_file', 'designer_gift_file'];
         foreach ($designerSingleFields as $field) {
             $path = $order->$field;
@@ -1146,7 +1253,6 @@ class OrderWebController extends Controller
         }
 
         $order->notes()->delete();
-        $order->delete();
     }
 
     private function decodeJsonIds(mixed $value): array

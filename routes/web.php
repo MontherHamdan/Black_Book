@@ -50,7 +50,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('orders/add-note', [OrderWebController::class, 'addNote'])->name('orders.addNote');
     Route::get('/orders/{order}/notes', [OrderWebController::class, 'getNotes'])->name('orders.getNotes');
     Route::put('/orders/{order}/update-notebook-followup', [OrderWebController::class, 'updateNotebookFollowup'])->name('orders.updateNotebookFollowup');
-    Route::get('/orders/{id}', [OrderWebController::class, 'show'])->name('orders.show');
+    Route::get('/orders/trashed', [OrderWebController::class, 'trashedOrders'])->name('orders.trashed')->middleware('admin');
+    Route::get('/orders/trashed/fetch', [OrderWebController::class, 'fetchTrashedOrders'])->name('orders.trashed.fetch')->middleware('admin');
+    Route::get('/orders/{id}', [OrderWebController::class, 'show'])->name('orders.show')->where('id', '[0-9]+');
     Route::delete('/orders/{order}/delete-image', [OrderWebController::class, 'deleteImage'])->name('orders.deleteImage');
     Route::get('/orders/{order}/back-images/download', [OrderWebController::class, 'downloadAllBackImages'])->name('orders.backImages.download');
     Route::get('/orders-export/excel', [OrderWebController::class, 'exportExcel'])->name('orders.exportExcel');
@@ -98,9 +100,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::resource('users', UserController::class);
 
-    // Order deletion (Admin strictly)
+    // Order deletion & trash management (Admin strictly)
     Route::delete('/orders/{id}', [OrderWebController::class, 'destroy'])->name('orders.destroy');
     Route::post('/orders/bulk-delete', [OrderWebController::class, 'bulkDelete'])->name('orders.bulkDelete');
+    Route::post('/orders/{id}/restore', [OrderWebController::class, 'restore'])->name('orders.restore');
+    Route::delete('/orders/{id}/force-delete', [OrderWebController::class, 'forceDestroy'])->name('orders.forceDestroy');
+    Route::post('/orders/bulk-restore', [OrderWebController::class, 'bulkRestore'])->name('orders.bulkRestore');
+    Route::post('/orders/bulk-force-delete', [OrderWebController::class, 'bulkForceDelete'])->name('orders.bulkForceDelete');
     Route::post('/orders/print-awbs', [OrderWebController::class, 'printAWBs'])->name('orders.printAWBs');
     // Penalty System (Admin / Supervisor strictly via Controller gates, placed in admin for extra measure or explicitly handled)
     Route::post('/admin/settings/update-penalty-threshold', [DashboardController::class, 'updatePenaltyThreshold'])->name('admin.settings.update-penalty-threshold');

@@ -19,6 +19,7 @@ use App\Traits\LogesTechsIntegration;
 use ArPHP\I18N\Arabic;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Excel as ExcelFormat;
 use Maatwebsite\Excel\Facades\Excel;
@@ -1093,118 +1094,67 @@ class OrderWebController extends Controller
      */
     private function deleteOrderAndRelatedData(Order $order): void
     {
-        // 📸 Collect all UserImage IDs that need to be checked/deleted
-        $imageIdsToCheck = [];
+        // Collect all UserImage IDs referenced by this order
+        $imageIdsToCheck = array_unique(array_filter(array_merge(
+            array_filter([$order->front_image_id, $order->transparent_printing_id, $order->internal_image_id ?? null]),
+            $this->decodeJsonIds($order->back_image_ids),
+            $this->decodeJsonIds($order->additional_image_id),
+            $this->decodeJsonIds($order->custom_design_image_id),
+        )));
 
-        // Front image
-        if ($order->front_image_id) {
-            $imageIdsToCheck[] = $order->front_image_id;
-        }
-
-        // Transparent printing image
-        if ($order->transparent_printing_id) {
-            $imageIdsToCheck[] = $order->transparent_printing_id;
-        }
-
-        // Internal image
-        if ($order->internal_image_id) {
-            $imageIdsToCheck[] = $order->internal_image_id;
-        }
-
-        // Back images (from JSON array)
-        $backImageIds = $order->back_image_ids;
-        if (is_string($backImageIds)) {
-            $backImageIds = json_decode($backImageIds, true);
-        }
-        if (is_array($backImageIds) && ! empty($backImageIds)) {
-            $imageIdsToCheck = array_merge($imageIdsToCheck, $backImageIds);
-        }
-
-        // Additional images (from JSON array)
-        $additionalImageIds = $order->additional_image_id;
-        if (is_string($additionalImageIds)) {
-            $additionalImageIds = json_decode($additionalImageIds, true);
-        }
-        if (is_array($additionalImageIds) && ! empty($additionalImageIds)) {
-            $imageIdsToCheck = array_merge($imageIdsToCheck, $additionalImageIds);
-        }
-
-        // Custom design images (from JSON array)
-        $customDesignImageIds = $order->custom_design_image_id;
-        if (is_string($customDesignImageIds)) {
-            $customDesignImageIds = json_decode($customDesignImageIds, true);
-        }
-        if (is_array($customDesignImageIds) && ! empty($customDesignImageIds)) {
-            $imageIdsToCheck = array_merge($imageIdsToCheck, $customDesignImageIds);
-        }
-
-        // Remove duplicates
-        $imageIdsToCheck = array_unique(array_filter($imageIdsToCheck));
-
-        // 🗑️ Delete physical image files and UserImage records
         if (! empty($imageIdsToCheck)) {
-            $userImages = UserImage::whereIn('id', $imageIdsToCheck)->get();
+            // Delete physical files
+            UserImage::whereIn('id', $imageIdsToCheck)->get()->each(fn ($img) => $this->deleteUserImageFile($img));
 
-            foreach ($userImages as $userImage) {
-                $this->deleteUserImageFile($userImage);
+            // Only delete UserImage DB records not referenced by any other order
+            $usedByOthers = Order::where('id', '!=', $order->id)
+                ->whereIn('front_image_id', $imageIdsToCheck)
+                ->pluck('front_image_id')
+                ->merge(
+                    Order::where('id', '!=', $order->id)
+                        ->whereIn('transparent_printing_id', $imageIdsToCheck)
+                        ->pluck('transparent_printing_id')
+                )
+                ->unique()
+                ->toArray();
+
+            $safeToDelete = array_diff($imageIdsToCheck, $usedByOthers);
+            if (! empty($safeToDelete)) {
+                UserImage::whereIn('id', $safeToDelete)->delete();
             }
+        }
 
-            // Check if these images are used by other orders before deleting
-            // We only delete UserImage records if they're not used elsewhere
-            foreach ($imageIdsToCheck as $imageId) {
-                // Get all other orders and check if they use this image
-                $otherOrders = Order::where('id', '!=', $order->id)->get();
-                $isUsedElsewhere = false;
+        // Delete designer upload files (stored as paths directly on the order)
+        $designerSingleFields = ['designer_design_file', 'designer_decoration_file', 'designer_gift_file'];
+        foreach ($designerSingleFields as $field) {
+            $path = $order->$field;
+            if ($path && Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
+        }
 
-                foreach ($otherOrders as $otherOrder) {
-                    // Check direct foreign key columns
-                    if (
-                        $otherOrder->front_image_id == $imageId ||
-                        $otherOrder->transparent_printing_id == $imageId ||
-                        $otherOrder->internal_image_id == $imageId
-                    ) {
-                        $isUsedElsewhere = true;
-                        break;
-                    }
-
-                    // Check JSON array columns
-                    $backIds = is_string($otherOrder->back_image_ids)
-                        ? json_decode($otherOrder->back_image_ids, true)
-                        : $otherOrder->back_image_ids;
-                    if (is_array($backIds) && in_array($imageId, $backIds)) {
-                        $isUsedElsewhere = true;
-                        break;
-                    }
-
-                    $additionalIds = is_string($otherOrder->additional_image_id)
-                        ? json_decode($otherOrder->additional_image_id, true)
-                        : $otherOrder->additional_image_id;
-                    if (is_array($additionalIds) && in_array($imageId, $additionalIds)) {
-                        $isUsedElsewhere = true;
-                        break;
-                    }
-
-                    $customIds = is_string($otherOrder->custom_design_image_id)
-                        ? json_decode($otherOrder->custom_design_image_id, true)
-                        : $otherOrder->custom_design_image_id;
-                    if (is_array($customIds) && in_array($imageId, $customIds)) {
-                        $isUsedElsewhere = true;
-                        break;
-                    }
-                }
-
-                if (! $isUsedElsewhere) {
-                    UserImage::where('id', $imageId)->delete();
+        $internalFiles = $order->designer_internal_files;
+        if (is_string($internalFiles)) {
+            $internalFiles = json_decode($internalFiles, true);
+        }
+        if (is_array($internalFiles)) {
+            foreach ($internalFiles as $path) {
+                if ($path && Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->delete($path);
                 }
             }
         }
 
-        // 📝 Notes will be automatically deleted via foreign key cascade
-        // But we can explicitly delete them for clarity
         $order->notes()->delete();
-
-        // 🗑️ Soft delete the order
         $order->delete();
+    }
+
+    private function decodeJsonIds(mixed $value): array
+    {
+        if (is_string($value)) {
+            $value = json_decode($value, true);
+        }
+        return is_array($value) ? $value : [];
     }
 
     /**

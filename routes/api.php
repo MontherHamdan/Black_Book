@@ -65,10 +65,10 @@ Route::prefix('v1')->name('api.')->group(function () {
     Route::get('/discount_codes/check', [DiscountCodeController::class, 'check']);
 
     // *******************User Upload Image ******************************************
-    Route::post('/user_upload_image', [UserImageController::class, 'store']);
+    Route::post('/user_upload_image', [UserImageController::class, 'store'])->middleware('throttle:20,1');
 
     // create orders
-    Route::resource('orders', OrderController::class)->only(['store']);
+    Route::resource('orders', OrderController::class)->only(['store'])->middleware('throttle:10,1');
 
     // Diplomas Routes
     Route::resource('diplomas', DiplomaController::class);
@@ -78,8 +78,6 @@ Route::prefix('v1')->name('api.')->group(function () {
         'diplomas/{diploma_id}/majors',
         [DiplomaMajorController::class, 'index']
     );
-
-    Route::resource('orders', OrderController::class)->only(['store']);
 
     // Videos
     Route::apiResource('videos', VideoController::class)->only(['index', 'show']);

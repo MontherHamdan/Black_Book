@@ -65,12 +65,9 @@ Route::prefix('v1')->name('api.')->group(function () {
     Route::get('/discount_codes/check', [DiscountCodeController::class, 'check']);
 
     // *******************User Upload Image ******************************************
-    Route::post('/user_upload_image', [UserImageController::class, 'store'])->middleware('throttle:200,1');
-    // Route::post('/user_upload_image', [UserImageController::class, 'store'])->middleware('throttle:20,1');
-
-    // create orders — throttle raised temporarily for load testing, revert to throttle:10,1 before go-live
-    Route::resource('orders', OrderController::class)->only(['store'])->middleware('throttle:200,1');
-    // Route::resource('orders', OrderController::class)->only(['store'])->middleware('throttle:10,1');
+    // PRODUCTION values: throttle:20,1 for upload, throttle:10,1 for orders — raised for load testing only
+    Route::post('/user_upload_image', [UserImageController::class, 'store'])->middleware('throttle:2000,1');
+    Route::resource('orders', OrderController::class)->only(['store'])->middleware('throttle:2000,1');
 
     // Diplomas Routes
     Route::resource('diplomas', DiplomaController::class);

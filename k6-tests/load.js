@@ -1,6 +1,5 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { FormData } from 'https://jslib.k6.io/formdata/0.0.2/index.js';
 
 const BASE = 'https://admin.blackbook-forgraduation.com/api/v1';
 const HEADERS = { 'Accept': 'application/json' };
@@ -65,12 +64,11 @@ export default function () {
   sleep(1);
 
   // ── 4. Upload front image ─────────────────────────────────────
-  const fd = new FormData();
-  fd.append('image', http.file(imgData, 'sample.jpg', 'image/jpeg'));
-
-  const uploadRes = http.post(`${BASE}/user_upload_image`, fd.body(), {
-    headers: Object.assign({}, HEADERS, { 'Content-Type': fd.contentType }),
-  });
+  const uploadRes = http.post(
+    `${BASE}/user_upload_image`,
+    { image: http.file(imgData, 'sample.jpg', 'image/jpeg') },
+    { headers: HEADERS }
+  );
   check(uploadRes, { 'upload 200': r => r.status === 200 });
 
   const imageId = uploadRes.json('data.image_id');

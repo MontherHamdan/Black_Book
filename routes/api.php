@@ -32,27 +32,27 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::prefix('v1')->name('api.')->group(function () {
     // *******************book type **********************************
-    Route::resource('/book_type', BookTypeController::class);
+    Route::resource('/book_type', BookTypeController::class)->only(['index', 'show']);
 
     // *******************book_design **********************************
-    Route::resource('/book_design', BookDesignController::class)->only(['index', 'store']);
+    Route::resource('/book_design', BookDesignController::class)->only(['index']);
     Route::get('/book_design/all', [BookDesignController::class, 'all'])->name('book_design.all');
 
     // *******************book_design_categoriese **********************************
-    Route::resource('/book_design_categories', BookDesginCategoryController::class);
+    Route::resource('/book_design_categories', BookDesginCategoryController::class)->only(['index', 'show']);
 
     // *******************book_design_subCategories **********************************
-    Route::resource('/book_design_subCategories', BookDesginSubCategoryController::class);
+    Route::resource('/book_design_subCategories', BookDesginSubCategoryController::class)->only(['index', 'show']);
 
     // *******************phone_numbers **********************************
     Route::resource('/phone_numbers', PhoneNumbersConroller::class);
 
     // *******************svgs ********************************************
-    Route::resource('/svgs', SvgController::class);
+    Route::resource('/svgs', SvgController::class)->only(['index', 'show']);
     Route::get('svg-categories', [SvgController::class, 'getCategoriesWithSvgs']);
     // *******************Universities and majors **********************************
-    Route::resource('universities', UniversityController::class);
-    Route::resource('/universities/{university_id}/majors', MajorController::class);
+    Route::resource('universities', UniversityController::class)->only(['index', 'show']);
+    Route::resource('/universities/{university_id}/majors', MajorController::class)->only(['index']);
 
     // *******************Book Decorations **********************************
     Route::resource('/book_decorations', BookDecorationController::class)->only(['index']);
@@ -62,14 +62,14 @@ Route::prefix('v1')->name('api.')->group(function () {
     Route::get('/governorates/{id}/addresses', [AddressController::class, 'getAddressesByGovernorate']);
 
     // ******************* Discount Codes **********************************
-    Route::get('/discount_codes/check', [DiscountCodeController::class, 'check']);
+    Route::get('/discount_codes/check', [DiscountCodeController::class, 'check'])->middleware('throttle:10,1');
 
     // *******************User Upload Image ******************************************
     Route::post('/user_upload_image', [UserImageController::class, 'store'])->middleware('throttle:20,1');
     Route::resource('orders', OrderController::class)->only(['store'])->middleware('throttle:10,1');
 
     // Diplomas Routes
-    Route::resource('diplomas', DiplomaController::class);
+    Route::resource('diplomas', DiplomaController::class)->only(['index', 'show']);
 
     // Diploma Majors Routes
     Route::get(

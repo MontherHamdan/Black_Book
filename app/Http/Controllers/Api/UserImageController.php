@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\UserImage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
 
 class UserImageController extends Controller
@@ -18,8 +19,8 @@ class UserImageController extends Controller
         // لو كانت SINGLE
         if ($request->hasFile('image')) {
             $imageFile = $request->file('image');
-            $imageName = time() . '_' . $imageFile->getClientOriginalName();
-            $imagePath = $imageFile->storeAs('user_images', $imageName, 'public');
+            $imageName = Str::uuid() . '.' . $imageFile->getClientOriginalExtension();
+            $imageFile->storeAs('user_images', $imageName, 'public');
 
             $userImage = UserImage::create([
                 'image_path' => $imageName
@@ -41,7 +42,7 @@ class UserImageController extends Controller
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $img) {
-                $imageName = time() . '_' . $img->getClientOriginalName();
+                $imageName = Str::uuid() . '.' . $img->getClientOriginalExtension();
                 $img->storeAs('user_images', $imageName, 'public');
 
                 $userImage = UserImage::create([

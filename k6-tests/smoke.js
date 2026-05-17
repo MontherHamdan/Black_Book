@@ -66,7 +66,6 @@ export default function () {
     { image: http.file(imgData, 'sample.jpg', 'image/jpeg') },
     { headers: HEADERS }
   );
-  console.log('upload status:', uploadRes.status, '| body:', uploadRes.body.substring(0, 200));
   check(uploadRes, { 'upload 200': r => r.status === 200 });
 
   const imageId = uploadRes.json('data.image_id');
@@ -99,7 +98,6 @@ export default function () {
     headers: Object.assign({}, HEADERS, { 'Content-Type': 'application/json' }),
   });
 
-  console.log('order status:', order.status, '| body:', order.body.substring(0, 200));
   check(order, {
     'order 201': r => r.status === 201,
     'no 500':    r => r.status !== 500,

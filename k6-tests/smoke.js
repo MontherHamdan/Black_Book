@@ -68,6 +68,7 @@ export default function () {
   const uploadRes = http.post(`${BASE}/user_upload_image`, fd.body(), {
     headers: Object.assign({}, HEADERS, { 'Content-Type': fd.contentType }),
   });
+  console.log('upload status:', uploadRes.status, '| body:', uploadRes.body.substring(0, 300));
   check(uploadRes, { 'upload 200': r => r.status === 200 });
 
   const imageId = uploadRes.json('data.image_id');

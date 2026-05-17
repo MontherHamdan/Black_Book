@@ -1,0 +1,21 @@
+<?php
+
+namespace App\Observers;
+
+use App\Models\City;
+use Illuminate\Support\Facades\Cache;
+
+class CityObserver
+{
+    public function saved(City $city): void
+    {
+        Cache::forget('location_governorates');
+        Cache::forget("cities_{$city->governorate_id}");
+    }
+
+    public function deleted(City $city): void
+    {
+        Cache::forget('location_governorates');
+        Cache::forget("cities_{$city->governorate_id}");
+    }
+}

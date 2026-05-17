@@ -8,47 +8,55 @@ use App\Models\City;
 use App\Models\Country;
 use App\Models\Governorate;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class LocationController extends Controller
 {
     public function getCountries()
     {
-        $countries = Country::where('is_active', true)
-            ->get(['id', 'name', 'code', 'dial_code', 'flag_image']);
+        $countries = Cache::remember('countries', 86400, function () {
+            return Country::where('is_active', true)->get(['id', 'name', 'code', 'dial_code', 'flag_image']);
+        });
 
         return response()->json(['success' => true, 'data' => $countries]);
     }
 
     public function getGovernorates(Request $request)
     {
-        $query = Governorate::whereNotNull('logestechs_id')
-            ->where('is_active', true);
+        $countryId = $request->input('country_id');
+        $cacheKey = $countryId ? "location_governorates_{$countryId}" : 'location_governorates';
 
-        if ($request->has('country_id')) {
-            $query->where('country_id', $request->country_id);
-        }
-
-        $governorates = $query->get(['id', 'name_ar', 'name_en', 'country_id']);
+        $governorates = Cache::remember($cacheKey, 86400, function () use ($countryId) {
+            $query = Governorate::whereNotNull('logestechs_id')->where('is_active', true);
+            if ($countryId) {
+                $query->where('country_id', $countryId);
+            }
+            return $query->get(['id', 'name_ar', 'name_en', 'country_id']);
+        });
 
         return response()->json(['success' => true, 'data' => $governorates]);
     }
 
-    public function getCities($governorateId)
+    public function getCities(int $governorateId)
     {
-        $cities = City::where('governorate_id', $governorateId)
-            ->whereNotNull('logestechs_id')
-            ->where('is_active', true)
-            ->get(['id', 'name_ar', 'name_en']);
+        $cities = Cache::remember("cities_{$governorateId}", 86400, function () use ($governorateId) {
+            return City::where('governorate_id', $governorateId)
+                ->whereNotNull('logestechs_id')
+                ->where('is_active', true)
+                ->get(['id', 'name_ar', 'name_en']);
+        });
 
         return response()->json(['success' => true, 'data' => $cities]);
     }
 
-    public function getAreas($cityId)
+    public function getAreas(int $cityId)
     {
-        $areas = Area::where('city_id', $cityId)
-            ->whereNotNull('logestechs_id')
-            ->where('is_active', true)
-            ->get(['id', 'name_ar', 'name_en']);
+        $areas = Cache::remember("areas_{$cityId}", 86400, function () use ($cityId) {
+            return Area::where('city_id', $cityId)
+                ->whereNotNull('logestechs_id')
+                ->where('is_active', true)
+                ->get(['id', 'name_ar', 'name_en']);
+        });
 
         return response()->json(['success' => true, 'data' => $areas]);
     }

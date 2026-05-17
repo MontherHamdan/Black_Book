@@ -3,15 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Major;
-
+use Illuminate\Support\Facades\Cache;
 
 class MajorController extends Controller
 {
-    public function index($universityId)
+    public function index(int $universityId)
     {
-        $majors = Major::where('university_id', $universityId)->get();
+        $majors = Cache::remember("majors_{$universityId}", 3600, function () use ($universityId) {
+            return Major::where('university_id', $universityId)->get();
+        });
 
         if ($majors->isEmpty()) {
             return response()->json(['error' => 'No majors found for this university'], 404);

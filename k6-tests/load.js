@@ -1,0 +1,110 @@
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+import { FormData } from 'https://jslib.k6.io/formdata/0.0.2/index.js';
+
+const BASE = 'https://admin.blackbook-forgraduation.com/api/v1';
+const HEADERS = { 'Accept': 'application/json' };
+
+export const options = {
+  stages: [
+    { duration: '1m', target: 10 }, // ramp up
+    { duration: '3m', target: 20 }, // hold peak
+    { duration: '1m', target: 0  }, // cool down
+  ],
+  thresholds: {
+    http_req_failed:   ['rate<0.01'],   // <1% errors
+    http_req_duration: ['p(95)<2000'],  // 95% of requests under 2s
+  },
+};
+
+export default function () {
+
+  // ── 1. App startup calls ──────────────────────────────────────
+  check(http.get(`${BASE}/book_type`, { headers: HEADERS }),
+    { 'book_type 200': r => r.status === 200 });
+
+  check(http.get(`${BASE}/book_design`, { headers: HEADERS }),
+    { 'book_design 200': r => r.status === 200 });
+
+  check(http.get(`${BASE}/book_design_categories`, { headers: HEADERS }),
+    { 'categories 200': r => r.status === 200 });
+
+  check(http.get(`${BASE}/svg-categories`, { headers: HEADERS }),
+    { 'svg-categories 200': r => r.status === 200 });
+
+  check(http.get(`${BASE}/book_decorations`, { headers: HEADERS }),
+    { 'decorations 200': r => r.status === 200 });
+
+  sleep(1);
+
+  // ── 2. User selects university / diploma ──────────────────────
+  check(http.get(`${BASE}/universities`, { headers: HEADERS }),
+    { 'universities 200': r => r.status === 200 });
+
+  check(http.get(`${BASE}/universities/1/majors`, { headers: HEADERS }),
+    { 'majors 200': r => r.status === 200 });
+
+  check(http.get(`${BASE}/diplomas`, { headers: HEADERS }),
+    { 'diplomas 200': r => r.status === 200 });
+
+  sleep(1);
+
+  // ── 3. Delivery location ──────────────────────────────────────
+  check(http.get(`${BASE}/locations/governorates`, { headers: HEADERS }),
+    { 'governorates 200': r => r.status === 200 });
+
+  check(http.get(`${BASE}/locations/cities/1`, { headers: HEADERS }),
+    { 'cities 200': r => r.status === 200 });
+
+  check(http.get(`${BASE}/locations/areas/1`, { headers: HEADERS }),
+    { 'areas 200': r => r.status === 200 });
+
+  sleep(1);
+
+  // ── 4. Upload front image ─────────────────────────────────────
+  const imgData = open('./sample.jpg', 'b');
+  const fd = new FormData();
+  fd.append('image', http.file(imgData, 'sample.jpg', 'image/jpeg'));
+
+  const uploadRes = http.post(`${BASE}/user_upload_image`, fd.body(), {
+    headers: Object.assign({}, HEADERS, { 'Content-Type': fd.contentType }),
+  });
+  check(uploadRes, { 'upload 200': r => r.status === 200 });
+
+  const imageId = uploadRes.json('data.image_id');
+  sleep(1);
+
+  // ── 5. Submit order ───────────────────────────────────────────
+  const order = http.post(`${BASE}/orders`, JSON.stringify({
+    user_gender: 'male',
+    book_type_id: 1,
+    book_design_id: 1,
+    front_image_id: imageId || null,
+    user_type: 'university',
+    university_id: 1,
+    university_major_id: 1,
+    username_ar: 'اختبار تحميل',
+    username_en: 'Load Test',
+    user_phone_number: '0501234567',
+    is_sponge: false,
+    pages_number: 100,
+    delivery_number_one: '0501234567',
+    delivery_target: 'home',
+    governorate_id: 1,
+    city_id: 1,
+    area_id: 1,
+    gift_type: 'none',
+    back_image_ids: [],
+    additional_image_id: [],
+    custom_design_image_id: [],
+  }), {
+    headers: Object.assign({}, HEADERS, { 'Content-Type': 'application/json' }),
+  });
+
+  check(order, {
+    'order 201': r => r.status === 201,
+    'no 500':    r => r.status !== 500,
+  });
+
+  sleep(2);
+}

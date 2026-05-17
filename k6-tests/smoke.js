@@ -1,6 +1,5 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { FormData } from 'https://jslib.k6.io/formdata/0.0.2/index.js';
 
 const BASE = 'https://admin.blackbook-forgraduation.com/api/v1';
 const HEADERS = { 'Accept': 'application/json' };
@@ -61,14 +60,13 @@ export default function () {
 
   sleep(1);
 
-  // ── 4. Upload front image ─────────────────────────────────────
-  const fd = new FormData();
-  fd.append('image', http.file(imgData, 'sample.jpg', 'image/jpeg'));
-
-  const uploadRes = http.post(`${BASE}/user_upload_image`, fd.body(), {
-    headers: Object.assign({}, HEADERS, { 'Content-Type': fd.contentType }),
-  });
-  console.log('upload status:', uploadRes.status, '| body:', uploadRes.body.substring(0, 300));
+  // ── 4. Upload front image (k6 native multipart — no jslib needed) ─
+  const uploadRes = http.post(
+    `${BASE}/user_upload_image`,
+    { image: http.file(imgData, 'sample.jpg', 'image/jpeg') },
+    { headers: HEADERS }
+  );
+  console.log('upload status:', uploadRes.status, '| body:', uploadRes.body.substring(0, 200));
   check(uploadRes, { 'upload 200': r => r.status === 200 });
 
   const imageId = uploadRes.json('data.image_id');
@@ -101,6 +99,7 @@ export default function () {
     headers: Object.assign({}, HEADERS, { 'Content-Type': 'application/json' }),
   });
 
+  console.log('order status:', order.status, '| body:', order.body.substring(0, 200));
   check(order, {
     'order 201': r => r.status === 201,
     'no 500':    r => r.status !== 500,

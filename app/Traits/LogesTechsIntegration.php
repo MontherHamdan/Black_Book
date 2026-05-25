@@ -27,17 +27,7 @@ trait LogesTechsIntegration
             $city = $order->university?->city;
             $area = $order->university?->area;
         } else {
-            if ($order->delivery_target === 'university' && $order->university_id) {
-                $order->load(['university.governorate', 'university.city', 'university.area']);
-                $governorate = $order->university?->governorate;
-                $city = $order->university?->city;
-                $area = $order->university?->area;
-            } else {
-                $order->load(['governorate', 'city', 'area']);
-                $governorate = $order->governorate;
-                $city = $order->city;
-                $area = $order->area;
-            }
+            $order->load(['governorate', 'city', 'area']);
             $governorate = $order->governorate;
             $city = $order->city;
             $area = $order->area;
@@ -57,6 +47,20 @@ trait LogesTechsIntegration
                 $cod += (float) ($gOrder->final_price_with_discount ?? $gOrder->final_price ?? 0);
             }
             $description = 'طلب مجموعة (عدد الدفاتر: '.$quantity.')';
+        }
+
+        if (! optional($governorate)->logestechs_id || ! optional($city)->logestechs_id || ! optional($area)->logestechs_id) {
+            Log::error('LogesTechs Dispatch Blocked: Missing logestechs_id', [
+                'order_id' => $order->id,
+                'gov_id' => optional($governorate)->logestechs_id,
+                'city_id' => optional($city)->logestechs_id,
+                'area_id' => optional($area)->logestechs_id,
+            ]);
+
+            return [
+                'success' => false,
+                'message' => "الطلب #{$order->id}: بيانات التوصيل (المنطقة/المدينة/المحافظة) غير مرتبطة بنظام شركة التوصيل. يرجى تشغيل أمر المزامنة.",
+            ];
         }
         // 2. Prepare the order data (Payload) as required by the API
         $payload = [
@@ -115,7 +119,15 @@ trait LogesTechsIntegration
 
             // In case the request failed (wrong data or from their side)
             $errorBody = $response->body();
-            Log::error('LogesTechs Integration Failed: '.$errorBody);
+            Log::error('LogesTechs Integration Failed', [
+                'status' => $response->status(),
+                'body' => $errorBody,
+                'order_id' => $order->id,
+                'area_logestechs_id' => optional($area)->logestechs_id,
+                'city_logestechs_id' => optional($city)->logestechs_id,
+                'gov_logestechs_id' => optional($governorate)->logestechs_id,
+                'receiver_phone' => $order->delivery_number_one,
+            ]);
 
             return [
                 'success' => false,

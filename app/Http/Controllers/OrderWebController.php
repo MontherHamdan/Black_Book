@@ -89,6 +89,15 @@ class OrderWebController extends Controller
         $areas = $order->city_id
             ? \App\Models\Area::where('city_id', $order->city_id)->get(['id', 'name_ar', 'name_en'])
             : collect();
+        $governorates = Governorate::where('is_active', true)->get(['id', 'name_ar', 'name_en']);
+
+        $cities = $order->governorate_id
+            ? \App\Models\City::where('governorate_id', $order->governorate_id)->get(['id', 'name_ar', 'name_en'])
+            : collect();
+
+        $areas = $order->city_id
+            ? \App\Models\Area::where('city_id', $order->city_id)->get(['id', 'name_ar', 'name_en'])
+            : collect();
 
         // 🔹 فلاغات عامة عن المستخدم
         $isAdmin = $authUser->isAdmin();
@@ -364,7 +373,6 @@ class OrderWebController extends Controller
 
             'governorates' => $governorates,
             'cities' => $cities,
-            'areas' => $areas,            'cities' => $cities,
             'areas' => $areas,
             'groupWarning' => $groupWarning,
             'finalDesignSvg' => $finalDesignSvg,

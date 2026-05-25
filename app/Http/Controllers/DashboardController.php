@@ -34,6 +34,7 @@ class DashboardController extends Controller
             'needs_modification',
             'Pending',
             'Completed',
+            'Printed',
             'preparing',
             'Received',
             'out_for_delivery',
@@ -49,8 +50,9 @@ class DashboardController extends Controller
         $newOrderCount = $statusCounts['new_order'];
         $needsModificationCount = $statusCounts['needs_modification'];
         $pendingCount = $statusCounts['Pending'];
-        $preparingCount = $statusCounts['preparing'];
         $completedCount = $statusCounts['Completed'];
+        $printedCount = $statusCounts['Printed'];
+        $preparingCount = $statusCounts['preparing'];
         $outForDeliveryCount = $statusCounts['out_for_delivery'];
         $returnedCount = $statusCounts['returned'] ?? 0;
         $receivedCount = $statusCounts['Received'];
@@ -58,11 +60,8 @@ class DashboardController extends Controller
 
         $totalOrders = (clone $ordersQuery)->count();
 
-        $orderStatuses = (clone $ordersQuery)
-            ->whereNotIn('status', ['Printed', 'out_for_delivery'])
-            ->select('status', DB::raw('count(*) as count'))
-            ->groupBy('status')
-            ->pluck('count', 'status');
+        // Use the exact statuses from the cards for the chart, ensuring missing statuses (count = 0) are shown
+        $orderStatuses = collect($statusCounts)->except(['out_for_delivery'])->toArray();
 
         $ordersWithAdditives = (clone $ordersQuery)->where('is_with_additives', 1)->count();
         $ordersWithoutAdditives = (clone $ordersQuery)->where('is_with_additives', 0)->count();
@@ -188,10 +187,11 @@ class DashboardController extends Controller
             'newOrderCount',
             'needsModificationCount',
             'pendingCount',
+            'completedCount',
+            'printedCount',
             'preparingCount',
             'outForDeliveryCount',
             'returnedCount',
-            'completedCount',
             'receivedCount',
             'canceledCount',
             'orderStatuses',

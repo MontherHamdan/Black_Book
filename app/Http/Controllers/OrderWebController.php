@@ -81,7 +81,15 @@ class OrderWebController extends Controller
         $discountCodes = DiscountCode::orderBy('discount_code')->get(['id', 'discount_code', 'code_name']);
         $universities = University::with('majors')->orderBy('name')->get(['id', 'name']);
         $diplomas = Diploma::with('majors')->orderBy('name')->get(['id', 'name']);
-        $governorates = Governorate::whereNotNull('logestechs_id')->get(['id', 'name_ar', 'name_en']);
+        $governorates = Governorate::where('is_active', true)->get(['id', 'name_ar', 'name_en']);
+
+        $cities = $order->governorate_id
+            ? \App\Models\City::where('governorate_id', $order->governorate_id)->get(['id', 'name_ar', 'name_en'])
+            : collect();
+
+        $areas = $order->city_id
+            ? \App\Models\Area::where('city_id', $order->city_id)->get(['id', 'name_ar', 'name_en'])
+            : collect();
 
         // 🔹 فلاغات عامة عن المستخدم
         $isAdmin = $authUser->isAdmin();
@@ -161,7 +169,7 @@ class OrderWebController extends Controller
         if (! $svgRecord && $order->svg_title) {
             $svgRecord = \App\Models\Svg::where('title', $order->svg_title)->first();
             if (! $svgRecord) {
-                $svgRecord = \App\Models\Svg::where('svg_code', 'LIKE', '%'.$order->svg_title.'%')->first();
+                $svgRecord = \App\Models\Svg::where('svg_code', 'LIKE', '%' . $order->svg_title . '%')->first();
             }
         }
         $hasSvg = (bool) ($svgRecord && $svgRecord->svg_code);
@@ -267,14 +275,14 @@ class OrderWebController extends Controller
 
                     // ✅ 4. نص عرض الخصم
                     $discountDisplay = $dc->discount_value
-                        .($dc->discount_type === 'percentage' ? '%' : ' دينار');
+                        . ($dc->discount_type === 'percentage' ? '%' : ' دينار');
 
                     $groupWarning = [
                         'original_price' => $originalPrice,
                         'discount_amount' => $discountAmount,
                         'discount_display' => $discountDisplay,
                         'applied_price' => $appliedPrice,
-                        'applied_plan' => $appliedPlan->title ?? ('Plan '.$appliedPlan->id),
+                        'applied_plan' => $appliedPlan->title ?? ('Plan ' . $appliedPlan->id),
                         'current_count' => $groupOrdersCount,
                         'required_count' => $appliedPlan->person_number,
                     ];
@@ -356,7 +364,8 @@ class OrderWebController extends Controller
             'customDesignImages' => $customDesignImages,
 
             'governorates' => $governorates,
-
+            'cities' => $cities,
+            'areas' => $areas,
             'groupWarning' => $groupWarning,
             'finalDesignSvg' => $finalDesignSvg,
             'decorationDesignSvg' => $decorationDesignSvg,
@@ -618,7 +627,7 @@ class OrderWebController extends Controller
                             : (float) ($plan->book_price + $plan->discount_price);
                         $planAppliedPrice = max(0, $planOriginalPrice - $planDiscountAmount);
                         $planDiscountDisplay = $dc->discount_value
-                            .($dc->discount_type === 'percentage' ? '%' : ' دينار');
+                            . ($dc->discount_type === 'percentage' ? '%' : ' دينار');
                     }
                 }
 
@@ -719,7 +728,7 @@ class OrderWebController extends Controller
                 $missingFiles[] = 'صورة تصميم الدفتر النهائي';
             }
 
-            if (! $order->designer_decoration_file) {
+            if (! empty($order->book_decorations_id) && ! $order->designer_decoration_file) {
                 $missingFiles[] = 'صورة الزخرفة';
             }
 
@@ -740,7 +749,7 @@ class OrderWebController extends Controller
             if (! empty($missingFiles)) {
                 return response()->json([
                     'success' => false,
-                    'message' => "عذراً، لا يمكنك تغيير الحالة إلى 'قيد التجهيز'. يرجى رفع الملفات التالية في تبويب تجليد الدفتر:\n- ".implode("\n- ", $missingFiles),
+                    'message' => "عذراً، لا يمكنك تغيير الحالة إلى 'قيد التجهيز'. يرجى رفع الملفات التالية في تبويب تجليد الدفتر:\n- " . implode("\n- ", $missingFiles),
                 ], 422);
             }
         }
@@ -797,7 +806,7 @@ class OrderWebController extends Controller
                     if (! $logestechsResponse['success']) {
                         return response()->json([
                             'success' => false,
-                            'message' => "رفضت شركة التوصيل الطلب، ولم يتم تغيير الحالة.\nالسبب: ".$logestechsResponse['message'],
+                            'message' => "رفضت شركة التوصيل الطلب، ولم يتم تغيير الحالة.\nالسبب: " . $logestechsResponse['message'],
                         ], 422);
                     }
 
@@ -1097,7 +1106,7 @@ class OrderWebController extends Controller
                 if (! $cancelResponse['success']) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'تعذر إلغاء الشحنة ('.$shipmentId.') لدى شركة التوصيل! لم يتم تغيير الحالة. السبب: '.$cancelResponse['message'],
+                        'message' => 'تعذر إلغاء الشحنة (' . $shipmentId . ') لدى شركة التوصيل! لم يتم تغيير الحالة. السبب: ' . $cancelResponse['message'],
                     ], 422);
                 }
             }
@@ -1154,7 +1163,7 @@ class OrderWebController extends Controller
                 if (! $logestechsResponse['success']) {
                     return response()->json([
                         'success' => false,
-                        'message' => "فشل ترحيل الطلب #{$order->id}: ".$logestechsResponse['message'],
+                        'message' => "فشل ترحيل الطلب #{$order->id}: " . $logestechsResponse['message'],
                     ], 422);
                 }
 
@@ -1176,7 +1185,7 @@ class OrderWebController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'تم ترحيل '.count($orderIds).' طلب بنجاح.',
+                'message' => 'تم ترحيل ' . count($orderIds) . ' طلب بنجاح.',
             ]);
         }
 
@@ -1184,7 +1193,7 @@ class OrderWebController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'تم تحديث حالة '.count($orderIds).' طلب بنجاح',
+            'message' => 'تم تحديث حالة ' . count($orderIds) . ' طلب بنجاح',
         ]);
     }
 
@@ -1284,12 +1293,12 @@ class OrderWebController extends Controller
 
         if (Str::startsWith($path, ['/storage/'])) {
             $relative = ltrim(str_replace('/storage/', '', $path), '/');
-            $filePath = storage_path('app/public/'.$relative);
+            $filePath = storage_path('app/public/' . $relative);
         } elseif (Str::startsWith($path, ['user_images/'])) {
-            $filePath = storage_path('app/public/'.ltrim($path, '/'));
+            $filePath = storage_path('app/public/' . ltrim($path, '/'));
         } else {
             // Assume it's just a filename in user_images directory
-            $filePath = storage_path('app/public/user_images/'.ltrim($path, '/'));
+            $filePath = storage_path('app/public/user_images/' . ltrim($path, '/'));
         }
 
         // Delete the file if it exists
@@ -1356,8 +1365,8 @@ class OrderWebController extends Controller
         }
 
         // 🟢 2) تحضير مسار ملف الـ ZIP داخل storage/app
-        $zipFileName = 'back_images_'.$orderId.'.zip';
-        $zipFilePath = storage_path('app/'.$zipFileName);
+        $zipFileName = 'back_images_' . $orderId . '.zip';
+        $zipFilePath = storage_path('app/' . $zipFileName);
 
         $zipDir = dirname($zipFilePath);
         if (! is_dir($zipDir)) {
@@ -1395,14 +1404,14 @@ class OrderWebController extends Controller
                     continue;
                 }
 
-                $fileName = basename(parse_url($path, PHP_URL_PATH)) ?: ('image_'.$img->id.'.jpg');
+                $fileName = basename(parse_url($path, PHP_URL_PATH)) ?: ('image_' . $img->id . '.jpg');
 
                 $tmpDir = storage_path('app/tmp');
                 if (! is_dir($tmpDir)) {
                     mkdir($tmpDir, 0755, true);
                 }
 
-                $tempPath = $tmpDir.'/'.uniqid('img_', true).'_'.$fileName;
+                $tempPath = $tmpDir . '/' . uniqid('img_', true) . '_' . $fileName;
 
                 file_put_contents($tempPath, $imageContent);
 
@@ -1417,14 +1426,14 @@ class OrderWebController extends Controller
 
                 if (Str::startsWith($path, ['/storage/'])) {
                     $relative = ltrim(str_replace('/storage/', '', $path), '/');
-                    $localPath = storage_path('app/public/'.$relative);
+                    $localPath = storage_path('app/public/' . $relative);
                 } else {
                     // فقط اسم ملف → نضيف له user_images/
                     if (! Str::contains($path, '/')) {
-                        $path = 'user_images/'.ltrim($path, '/');
+                        $path = 'user_images/' . ltrim($path, '/');
                     }
 
-                    $localPath = storage_path('app/public/'.ltrim($path, '/'));
+                    $localPath = storage_path('app/public/' . ltrim($path, '/'));
                 }
 
                 if (! file_exists($localPath)) {
@@ -1471,7 +1480,7 @@ class OrderWebController extends Controller
             'date_to' => $request->get('date_to'),
         ];
 
-        $fileName = 'orders-'.now()->format('Y-m-d_H-i-s').'.csv';
+        $fileName = 'orders-' . now()->format('Y-m-d_H-i-s') . '.csv';
 
         return Excel::download(
             new OrdersExport($filters),
@@ -1496,8 +1505,8 @@ class OrderWebController extends Controller
         }
 
         $zip = new \ZipArchive;
-        $zipFileName = 'additional_images_'.$orderId.'.zip';
-        $zipFilePath = storage_path('app/public/'.$zipFileName);
+        $zipFileName = 'additional_images_' . $orderId . '.zip';
+        $zipFilePath = storage_path('app/public/' . $zipFileName);
 
         // نتأكد من وجود فولدر storage/app/public
         $zipDir = dirname($zipFilePath);
@@ -1527,8 +1536,8 @@ class OrderWebController extends Controller
                             continue;
                         }
 
-                        $fileName = basename(parse_url($path, PHP_URL_PATH)) ?: ('image_'.$img->id.'.jpg');
-                        $tempPath = storage_path('app/tmp_'.$fileName);
+                        $fileName = basename(parse_url($path, PHP_URL_PATH)) ?: ('image_' . $img->id . '.jpg');
+                        $tempPath = storage_path('app/tmp_' . $fileName);
 
                         // نخزنها مؤقتًا
                         file_put_contents($tempPath, $contents);
@@ -1544,12 +1553,12 @@ class OrderWebController extends Controller
                     // نفس المنطق اللي مستخدمه في backImages
                     if (Str::startsWith($path, ['/storage/'])) {
                         $relative = ltrim(str_replace('/storage/', '', $path), '/');
-                        $localPath = storage_path('app/public/'.$relative);
+                        $localPath = storage_path('app/public/' . $relative);
                     } elseif (Str::startsWith($path, ['user_images/'])) {
-                        $localPath = storage_path('app/public/'.ltrim($path, '/'));
+                        $localPath = storage_path('app/public/' . ltrim($path, '/'));
                     } else {
                         // اعتبره اسم ملف عادي داخل user_images
-                        $localPath = storage_path('app/public/user_images/'.ltrim($path, '/'));
+                        $localPath = storage_path('app/public/user_images/' . ltrim($path, '/'));
                     }
 
                     if (file_exists($localPath)) {
@@ -1671,7 +1680,7 @@ class OrderWebController extends Controller
 
             $timestamp = time();
             $original = $file->getClientOriginalName();
-            $imageName = $timestamp.'_'.$original;
+            $imageName = $timestamp . '_' . $original;
 
             $file->storeAs('user_images', $imageName, 'public');
 
@@ -1688,7 +1697,7 @@ class OrderWebController extends Controller
 
             $timestamp = time();
             $original = $file->getClientOriginalName();
-            $imageName = $timestamp.'_'.$original;
+            $imageName = $timestamp . '_' . $original;
 
             $file->storeAs('user_images', $imageName, 'public');
 
@@ -1709,7 +1718,7 @@ class OrderWebController extends Controller
             if (empty($order->binding_followup_note)) {
                 $order->binding_followup_note = $formattedNote;
             } else {
-                $order->binding_followup_note = $order->binding_followup_note."\n\n".$formattedNote;
+                $order->binding_followup_note = $order->binding_followup_note . "\n\n" . $formattedNote;
             }
 
             // عشان تبين عند المصمم كـ غير مقروءة
@@ -1773,7 +1782,7 @@ class OrderWebController extends Controller
             if (empty($order->delivery_followup_note)) {
                 $order->delivery_followup_note = $formattedNote;
             } else {
-                $order->delivery_followup_note = $order->delivery_followup_note."\n\n".$formattedNote;
+                $order->delivery_followup_note = $order->delivery_followup_note . "\n\n" . $formattedNote;
             }
         }
         $order->save();
@@ -1826,7 +1835,7 @@ class OrderWebController extends Controller
             if (empty($order->design_followup_note)) {
                 $order->design_followup_note = $formattedNote;
             } else {
-                $order->design_followup_note = $order->design_followup_note."\n\n".$formattedNote;
+                $order->design_followup_note = $order->design_followup_note . "\n\n" . $formattedNote;
             }
 
             $order->designer_read_notes = false;
@@ -1862,7 +1871,7 @@ class OrderWebController extends Controller
         }
 
         if (Str::startsWith($path, ['user_images/'])) {
-            return asset('storage/'.ltrim($path, '/'));
+            return asset('storage/' . ltrim($path, '/'));
         }
 
         if (Str::startsWith($path, ['/storage/'])) {
@@ -1870,7 +1879,7 @@ class OrderWebController extends Controller
         }
 
         // افتراضياً نخزنه في storage/user_images
-        return asset('storage/user_images/'.ltrim($path, '/'));
+        return asset('storage/user_images/' . ltrim($path, '/'));
     }
 
     /**
@@ -1900,8 +1909,8 @@ class OrderWebController extends Controller
             }
 
             // 2. اسم ملف فريد (بدون استخدام ?v= في الرابط لأن الفوتوشوب يكرهها)
-            $fileName = 'name_'.$orderId.'_'.uniqid().'.svg';
-            $filePath = $svgDir.'/'.$fileName;
+            $fileName = 'name_' . $orderId . '_' . uniqid() . '.svg';
+            $filePath = $svgDir . '/' . $fileName;
 
             // 3. تنظيف وتجهيز كود الـ SVG
             $svgCode = trim($svgNameRow->svg_code);
@@ -1911,7 +1920,7 @@ class OrderWebController extends Controller
 
             // إذا لم يكن يحتوي على <svg> أصلاً (عبارة عن مسارات فقط)
             if (! preg_match('/<svg/i', $svgCode)) {
-                $svgCode = '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 1000 1000" width="1000" height="1000">'."\n".$svgCode."\n".'</svg>';
+                $svgCode = '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 1000 1000" width="1000" height="1000">' . "\n" . $svgCode . "\n" . '</svg>';
             } else {
                 // التأكد من وجود xmlns والأبعاد الثابتة
                 if (! preg_match('/xmlns=/i', $svgCode)) {
@@ -1922,14 +1931,14 @@ class OrderWebController extends Controller
             }
 
             // إضافة الترويسة الرسمية كأول سطر
-            $svgCode = '<?xml version="1.0" encoding="utf-8"?>'."\n".trim($svgCode);
+            $svgCode = '<?xml version="1.0" encoding="utf-8"?>' . "\n" . trim($svgCode);
 
             // 4. الحفظ والإرجاع
             file_put_contents($filePath, $svgCode);
 
             return [
                 'code' => $svgCode,
-                'url' => asset('storage/temp_svgs/'.$fileName), // 👈 رابط نظيف 100% بدون استعلامات
+                'url' => asset('storage/temp_svgs/' . $fileName), // 👈 رابط نظيف 100% بدون استعلامات
             ];
         }
 
@@ -1995,7 +2004,7 @@ class OrderWebController extends Controller
             if (empty($order->notebook_followup_note)) {
                 $order->notebook_followup_note = $formattedNote;
             } else {
-                $order->notebook_followup_note = $order->notebook_followup_note."\n\n".$formattedNote;
+                $order->notebook_followup_note = $order->notebook_followup_note . "\n\n" . $formattedNote;
             }
 
             $order->designer_read_notes = false;
@@ -2103,7 +2112,7 @@ class OrderWebController extends Controller
         // 🖼️ Front Image upload
         if ($request->hasFile('front_image')) {
             $file = $request->file('front_image');
-            $imageName = time().'_'.$file->getClientOriginalName();
+            $imageName = time() . '_' . $file->getClientOriginalName();
             $file->storeAs('user_images', $imageName, 'public');
             $userImage = UserImage::create(['image_path' => $imageName]);
             $order->front_image_id = $userImage->id;
@@ -2113,7 +2122,7 @@ class OrderWebController extends Controller
         if ($request->hasFile('back_images')) {
             $backIds = [];
             foreach ($request->file('back_images') as $file) {
-                $imageName = time().'_'.$file->getClientOriginalName();
+                $imageName = time() . '_' . $file->getClientOriginalName();
                 $file->storeAs('user_images', $imageName, 'public');
                 $userImage = UserImage::create(['image_path' => $imageName]);
                 $backIds[] = $userImage->id;
@@ -2130,7 +2139,7 @@ class OrderWebController extends Controller
         if ($request->hasFile('custom_design_images')) {
             $customIds = [];
             foreach ($request->file('custom_design_images') as $file) {
-                $imageName = time().'_'.$file->getClientOriginalName();
+                $imageName = time() . '_' . $file->getClientOriginalName();
                 $file->storeAs('user_images', $imageName, 'public');
                 $userImage = UserImage::create(['image_path' => $imageName]);
                 $customIds[] = $userImage->id;
@@ -2209,7 +2218,7 @@ class OrderWebController extends Controller
             $path = $request->file('decoration_image')->store('user_images', 'public');
             $decoration = \App\Models\BookDecoration::create([
                 'name' => '',
-                'image' => asset('storage/'.$path),
+                'image' => asset('storage/' . $path),
             ]);
             $order->book_decorations_id = $decoration->id;
         }
@@ -2232,10 +2241,14 @@ class OrderWebController extends Controller
             'pages_number' => 'nullable|integer',
             'is_sponge' => 'nullable|boolean',
             'new_svg' => 'nullable|file|mimes:svg,txt|max:512',
-            'designer_design_file' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
-            'designer_decoration_file' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
-            'designer_internal_files.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
-            'designer_gift_file' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'designer_design_file' => 'nullable|array',
+            'designer_design_file.*' => 'nullable|file|max:102400',
+            'designer_decoration_file' => 'nullable|array',
+            'designer_decoration_file.*' => 'nullable|file|max:102400',
+            'designer_internal_files' => 'nullable|array',
+            'designer_internal_files.*' => 'nullable|file|max:102400',
+            'designer_gift_file' => 'nullable|array',
+            'designer_gift_file.*' => 'nullable|file|max:102400',
         ]);
 
         if (array_key_exists('book_decorations_id', $validated)) {
@@ -2257,20 +2270,27 @@ class OrderWebController extends Controller
         }
 
         if ($request->hasFile('designer_design_file')) {
-            $order->designer_design_file = $request->file('designer_design_file')->store('designer_uploads', 'public');
+            $files = $request->file('designer_design_file');
+            $file = is_array($files) ? $files[0] : $files;
+            $order->designer_design_file = $file->store('designer_uploads', 'public');
         }
         if ($request->hasFile('designer_decoration_file')) {
-            $order->designer_decoration_file = $request->file('designer_decoration_file')->store('designer_uploads', 'public');
+            $files = $request->file('designer_decoration_file');
+            $file = is_array($files) ? $files[0] : $files;
+            $order->designer_decoration_file = $file->store('designer_uploads', 'public');
         }
         if ($request->hasFile('designer_gift_file')) {
-            $order->designer_gift_file = $request->file('designer_gift_file')->store('designer_uploads', 'public');
+            $files = $request->file('designer_gift_file');
+            $file = is_array($files) ? $files[0] : $files;
+            $order->designer_gift_file = $file->store('designer_uploads', 'public');
         }
         if ($request->hasFile('designer_internal_files')) {
-            $internalPaths = [];
+            $existing = is_array($order->designer_internal_files) ? $order->designer_internal_files : [];
+            $newPaths = [];
             foreach ($request->file('designer_internal_files') as $file) {
-                $internalPaths[] = $file->store('designer_uploads', 'public');
+                $newPaths[] = $file->store('designer_uploads', 'public');
             }
-            $order->designer_internal_files = $internalPaths; // Overwrite
+            $order->designer_internal_files = array_merge($existing, $newPaths);
         }
 
         $order->designer_commission = $this->calculateDesignerCommission($order);
@@ -2281,27 +2301,48 @@ class OrderWebController extends Controller
 
     public function updateDeliveryInfo(Request $request, Order $order)
     {
-        $request->validate([
-            'delivery_number_one' => 'required|string|max:20',
-            'delivery_number_two' => 'nullable|string|max:20',
-            'governorate_id' => 'required|exists:governorates,id',
-            'city_id' => 'required|exists:cities,id',
-            'area_id' => 'required|exists:areas,id',
-            'address' => 'required|string|max:1000',
-        ]);
+        $isHome = $request->input('delivery_target') === 'home';
+
+      $request->validate([
+    'delivery_target'        => 'required|in:home,university',
+    'delivery_number_one'    => 'required|string|max:20',
+    'delivery_number_two'    => 'nullable|string|max:20',
+    'governorate_id'         => 'nullable|exists:governorates,id',
+    'city_id'                => 'nullable|exists:cities,id',
+    'area_id'                => 'nullable|exists:areas,id',
+    'address'                => 'nullable|string|max:1000',
+    'delivery_university_id' => 'nullable|exists:universities,id',
+]);
 
         $order->update([
-            'delivery_number_one' => $request->delivery_number_one,
-            'delivery_number_two' => $request->delivery_number_two,
-            'governorate_id' => $request->governorate_id,
-            'city_id' => $request->city_id,
-            'area_id' => $request->area_id,
-            'address' => $request->address,
+            'delivery_target'        => $request->delivery_target,
+            'delivery_number_one'    => $request->delivery_number_one,
+            'delivery_number_two'    => $request->delivery_number_two,
+            'governorate_id'         => $isHome ? $request->governorate_id : null,
+            'city_id'                => $isHome ? $request->city_id        : null,
+            'area_id'                => $isHome ? $request->area_id        : null,
+            'address'                => $request->address,
+            'delivery_university_id' => !$isHome ? $request->delivery_university_id : null,
         ]);
 
         return back()->with('success', 'تم تحديث معلومات التوصيل بنجاح.');
     }
 
+    public function adminGetCities($governorateId)
+    {
+        return response()->json(
+            \App\Models\City::where('governorate_id', $governorateId)
+                ->get(['id', 'name_ar', 'name_en'])
+        );
+    }
+
+    public function adminGetAreas($cityId)
+    {
+        return response()->json(
+            \App\Models\Area::where('city_id', $cityId)
+                ->get(['id', 'name_ar', 'name_en'])
+        );
+    }
     public function deleteImage(Request $request, $id)
     {
         $user = $request->user();
@@ -2414,7 +2455,7 @@ class OrderWebController extends Controller
 
             return response()->json(['success' => true, 'message' => 'تم حذف الصورة بنجاح.']);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'حدث خطأ: '.$e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => 'حدث خطأ: ' . $e->getMessage()], 500);
         }
     }
 
@@ -2434,7 +2475,7 @@ class OrderWebController extends Controller
 
             // Create a new BookDesign for this order
             $design = \App\Models\BookDesign::create([
-                'image' => asset('storage/'.$path),
+                'image' => asset('storage/' . $path),
                 'is_uploaded_by_user' => false,
             ]);
 
@@ -2497,25 +2538,33 @@ class OrderWebController extends Controller
         ];
 
         $arabicDigits = [
-            '0' => '٠', '1' => '١', '2' => '٢', '3' => '٣', '4' => '٤',
-            '5' => '٥', '6' => '٦', '7' => '٧', '8' => '٨', '9' => '٩',
+            '0' => '٠',
+            '1' => '١',
+            '2' => '٢',
+            '3' => '٣',
+            '4' => '٤',
+            '5' => '٥',
+            '6' => '٦',
+            '7' => '٧',
+            '8' => '٨',
+            '9' => '٩',
         ];
 
-        $toArabicNumerals = fn ($num) => strtr((string) $num, $arabicDigits);
+        $toArabicNumerals = fn($num) => strtr((string) $num, $arabicDigits);
 
         // Convert Arabic logical-order text to visual-order presentation forms so that
         // Illustrator (which always renders text LTR) displays Arabic correctly without
         // requiring any preference changes. $hindo=false preserves Arabic-Indic numerals.
         $ar = new Arabic;
-        $shape = fn (string $text): string => $ar->utf8Glyphs($text, 500, false);
+        $shape = fn(string $text): string => $ar->utf8Glyphs($text, 500, false);
 
         $replacements = [
-            '>الاسفنج<' => '>'.e($shape($order->is_sponge ? 'مع اسفنج' : $dash)).'<',
-            '>الاسم<' => '>'.e($shape(! empty($order->username_ar) ? $order->username_ar : $dash)).'<',
-            '>مزخرف<' => '>'.e($shape($order->book_decorations_id ? 'مزخرف' : $dash)).'<',
-            '>صور<' => '>'.e($shape($internalImagesCount > 0 ? 'مع صور ('.$toArabicNumerals($internalImagesCount).')' : $dash)).'<',
-            '>عدد الورق<' => '>'.e($order->pages_number ? $toArabicNumerals($order->pages_number) : $shape($dash)).'<',
-            '>عبارة مخصصة<' => '>'.e($shape($giftMap[$order->gift_type] ?? $dash)).'<',
+            '>الاسفنج<' => '>' . e($shape($order->is_sponge ? 'مع اسفنج' : $dash)) . '<',
+            '>الاسم<' => '>' . e($shape(! empty($order->username_ar) ? $order->username_ar : $dash)) . '<',
+            '>مزخرف<' => '>' . e($shape($order->book_decorations_id ? 'مزخرف' : $dash)) . '<',
+            '>صور<' => '>' . e($shape($internalImagesCount > 0 ? 'مع صور (' . $toArabicNumerals($internalImagesCount) . ')' : $dash)) . '<',
+            '>عدد الورق<' => '>' . e($order->pages_number ? $toArabicNumerals($order->pages_number) : $shape($dash)) . '<',
+            '>عبارة مخصصة<' => '>' . e($shape($giftMap[$order->gift_type] ?? $dash)) . '<',
         ];
 
         $svg = str_replace(array_keys($replacements), array_values($replacements), $svg);
@@ -2548,24 +2597,32 @@ class OrderWebController extends Controller
         ];
 
         $arabicDigits = [
-            '0' => '٠', '1' => '١', '2' => '٢', '3' => '٣', '4' => '٤',
-            '5' => '٥', '6' => '٦', '7' => '٧', '8' => '٨', '9' => '٩',
+            '0' => '٠',
+            '1' => '١',
+            '2' => '٢',
+            '3' => '٣',
+            '4' => '٤',
+            '5' => '٥',
+            '6' => '٦',
+            '7' => '٧',
+            '8' => '٨',
+            '9' => '٩',
         ];
 
-        $toArabicNumerals = fn ($num) => strtr((string) $num, $arabicDigits);
+        $toArabicNumerals = fn($num) => strtr((string) $num, $arabicDigits);
 
         $ar = new Arabic;
-        $shape = fn (string $text): string => $ar->utf8Glyphs($text, 500, false);
+        $shape = fn(string $text): string => $ar->utf8Glyphs($text, 500, false);
 
         // هنا حطينا المتغيرات تتطابق "بالحرف" مع اللي موجودة في ملف الـ SVG الجديد
         $replacements = [
-            '>الاسم<' => '>'.e($shape(! empty($order->username_ar) ? $order->username_ar : $dash)).'<',
-            '>اهداء مخصص<' => '>'.e($shape($giftMap[$order->gift_type] ?? $dash)).'<',
-            '>عدد الورق<' => '>'.e($order->pages_number ? $toArabicNumerals($order->pages_number) : $shape($dash)).'<',
-            '>عدد الصور<' => '>'.e($shape($internalImagesCount > 0 ? 'مع صور ('.$toArabicNumerals($internalImagesCount).')' : $dash)).'<',
-            '>مع زخرفة<' => '>'.e($shape($order->book_decorations_id ? 'مزخرف' : $dash)).'<',
+            '>الاسم<' => '>' . e($shape(! empty($order->username_ar) ? $order->username_ar : $dash)) . '<',
+            '>اهداء مخصص<' => '>' . e($shape($giftMap[$order->gift_type] ?? $dash)) . '<',
+            '>عدد الورق<' => '>' . e($order->pages_number ? $toArabicNumerals($order->pages_number) : $shape($dash)) . '<',
+            '>عدد الصور<' => '>' . e($shape($internalImagesCount > 0 ? 'مع صور (' . $toArabicNumerals($internalImagesCount) . ')' : $dash)) . '<',
+            '>مع زخرفة<' => '>' . e($shape($order->book_decorations_id ? 'مزخرف' : $dash)) . '<',
         ];
 
-        return str_replace(array_keys($replacements), array_values($replacements), $svg); 
+        return str_replace(array_keys($replacements), array_values($replacements), $svg);
     }
 }

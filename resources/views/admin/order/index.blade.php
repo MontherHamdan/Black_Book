@@ -48,6 +48,11 @@
             border: none;
         }
 
+        #orders-table .dropdown-menu {
+            white-space: normal;
+            min-width: 140px;
+        }
+
         .btn-pill-action:hover {
             transform: translateY(-2px);
         }
@@ -424,11 +429,10 @@
             </div>
         </div>
         <div class="col-md-4 text-start mt-3 mt-md-0 d-flex gap-2 justify-content-md-end">
-            @if(auth()->user()->isAdmin())
+            @if (auth()->user()->isAdmin())
                 <button id="bulkDeleteBtn" class="btn btn-pill-action btn-pill-danger" disabled style="display: none;">
                     <i class="fas fa-trash"></i> حذف المحدد (<span id="selectedCount">0</span>)
                 </button>
-
             @endif
             <button id="openAdvancedSearch" class="btn btn-pill-action btn-pill-primary" data-bs-toggle="modal"
                 data-bs-target="#advancedSearchModal">
@@ -448,7 +452,7 @@
                     <table id="orders-table" class="table table-hover table-borderless align-middle w-100 mb-0">
                         <thead>
                             <tr>
-                                @if(auth()->user()->isAdmin())
+                                @if (auth()->user()->isAdmin())
                                     <th width="40" class="text-center">
                                         <input type="checkbox" id="selectAllOrders" title="تحديد الكل"
                                             class="form-check-input shadow-sm">
@@ -494,8 +498,7 @@
                                 <input type="hidden" id="noteOrderId">
                                 <div class="mb-3">
                                     <label for="noteContent" class="form-label fw-bold text-dark">أضف تعليقاً جديداً</label>
-                                    <textarea class="form-control bg-light border-0" id="noteContent" rows="3"
-                                        placeholder="اكتب ملاحظاتك هنا..."
+                                    <textarea class="form-control bg-light border-0" id="noteContent" rows="3" placeholder="اكتب ملاحظاتك هنا..."
                                         style="border-radius: 1rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); padding: 1rem; resize: none;"></textarea>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center">
@@ -825,7 +828,7 @@
     </style>
 
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
 
             // مصفوفة المصممين + صلاحيات المستخدم الحالي
             const DESIGNERS = @json($designers);
@@ -841,18 +844,21 @@
                 $.ajax({
                     url: '/orders/' + orderId + '/notes',
                     method: 'GET',
-                    success: function (response) {
+                    success: function(response) {
                         const notes = response.notes || [];
                         const $list = $('#notesList');
                         $list.empty();
 
                         if (notes.length === 0) {
-                            $list.append('<li class="text-muted text-center py-4"><i class="fas fa-inbox fa-2x mb-3 opacity-25"></i><br>لا يوجد تعليقات بعد</li>');
+                            $list.append(
+                                '<li class="text-muted text-center py-4"><i class="fas fa-inbox fa-2x mb-3 opacity-25"></i><br>لا يوجد تعليقات بعد</li>'
+                                );
                             return;
                         }
 
-                        notes.forEach(function (note) {
-                            const itemHtml = `
+                        notes.forEach(function(note) {
+                            const itemHtml =
+                                `
                                                                                                                                                                                                                                                                                                                     <li class="chat-message">
                                                                                                                                                                                                                                                                                                                         <div class="chat-header">
                                                                                                                                                                                                                                                                                                                             <span class="chat-author"><i class="fas fa-user-circle me-1"></i>${note.user_name}</span>
@@ -864,8 +870,10 @@
                             $list.append(itemHtml);
                         });
                     },
-                    error: function () {
-                        $('#notesList').html('<li class="text-danger text-center py-4"><i class="fas fa-exclamation-triangle fa-2x mb-3 opacity-50"></i><br>فشل في تحميل التعليقات.</li>');
+                    error: function() {
+                        $('#notesList').html(
+                            '<li class="text-danger text-center py-4"><i class="fas fa-exclamation-triangle fa-2x mb-3 opacity-50"></i><br>فشل في تحميل التعليقات.</li>'
+                            );
                     }
                 });
             }
@@ -887,8 +895,8 @@
                     [0, 'desc']
                 ],
                 ajax: {
-                    url: '{{ route('orders.fetch')}}',
-                    data: function (d) {
+                    url: '{{ route('orders.fetch') }}',
+                    data: function(d) {
                         d.status = $('#statusFilter').val();
                         d.additives = $('#additivesFilter').val();
                         d.date_from = $('#dateFrom').val();
@@ -896,13 +904,14 @@
                         d.designer_id = $('#designerFilter').val();
                         d.code_name = selectedGroupName;
                     },
-                    error: function (xhr) {
+                    error: function(xhr) {
                         console.error('DataTables AJAX error:', xhr);
                         console.error('Response text:', xhr.responseText);
 
                         Swal.fire({
                             title: 'خطأ في جلب البيانات',
-                            text: 'الكود: ' + xhr.status + ' — افتحي Console / Network عشان تشوفي التفاصيل.',
+                            text: 'الكود: ' + xhr.status +
+                                ' — افتحي Console / Network عشان تشوفي التفاصيل.',
                             icon: 'error',
                             confirmButtonColor: '#dc2626'
                         });
@@ -911,23 +920,24 @@
                 lengthMenu: [10, 25, 50, 100],
                 pageLength: 10,
                 columns: [
-                    @if(auth()->user()->isAdmin()) {
+                    @if (auth()->user()->isAdmin())
+                        {
                             data: null,
                             name: 'checkbox',
                             orderable: false,
                             searchable: false,
                             responsivePriority: 1,
                             width: '40px',
-                            render: function (data, type, row) {
+                            render: function(data, type, row) {
                                 return `<input type="checkbox" class="order-checkbox" value="${row.id}" data-order-id="${row.id}">`;
                             }
                         },
-                    @endif{
+                    @endif {
                         data: 'id',
                         name: 'id',
                         responsivePriority: 1,
                         width: '70px',
-                        render: function (data, type, row) {
+                        render: function(data, type, row) {
                             return `<a href="/orders/${data}" class="btn btn-primary btn-sm px-2 py-1" style="font-size:0.78rem;">${data}</a>`;
                         },
                         orderable: true,
@@ -946,7 +956,7 @@
                         name: 'status',
                         orderable: false,
                         responsivePriority: 2,
-                        render: function (data, type, row) {
+                        render: function(data, type, row) {
 
                             const statusConfig = {
                                 new_order: {
@@ -1024,10 +1034,10 @@
 
                             // لو عنده صلاحية → Dropdown + المدة تحت
                             const dropdownItems = allStatuses
-                                .filter(function (status) {
+                                .filter(function(status) {
                                     return status !== data;
                                 })
-                                .map(function (status) {
+                                .map(function(status) {
                                     const cfg = statusConfig[status] || defaultConfig;
                                     return `
                                                                                                                                                                                                                                                                                                             <li>
@@ -1069,14 +1079,16 @@
                         className: 'text-nowrap',
                         width: '150px',
                         searchable: false,
-                        render: function (data, type, row) {
+                        render: function(data, type, row) {
                             const currentDesignerId = (data && data.id) ? data.id : null;
 
                             let optionsHtml = '';
 
-                            DESIGNERS.forEach(function (designer) {
-                                const selected = (currentDesignerId === designer.id) ? 'selected' : '';
-                                optionsHtml += `<option value="${designer.id}" ${selected}>${designer.name}</option>`;
+                            DESIGNERS.forEach(function(designer) {
+                                const selected = (currentDesignerId === designer.id) ?
+                                    'selected' : '';
+                                optionsHtml +=
+                                    `<option value="${designer.id}" ${selected}>${designer.name}</option>`;
                             });
 
                             const notAssignedOption = '<option value="">غير معيّن</option>';
@@ -1120,10 +1132,13 @@
                         title: 'المنطقة',
                         orderable: false,
                         responsivePriority: 6,
-                        render: function (data, type, row) {
-                            const gov = (data && data.name_ar) ? data.name_ar
-                                : (typeof data === 'string' ? data : '<span class="text-muted small">غير محدد</span>');
-                            const city = row.city ? `<div class="text-muted" style="font-size:0.75rem;">${row.city}</div>` : '';
+                        render: function(data, type, row) {
+                            const gov = (data && data.name_ar) ? data.name_ar :
+                                (typeof data === 'string' ? data :
+                                    '<span class="text-muted small">غير محدد</span>');
+                            const city = row.city ?
+                                `<div class="text-muted" style="font-size:0.75rem;">${row.city}</div>` :
+                                '';
                             return `<div class="text-nowrap">${gov}${city}</div>`;
                         }
                     },
@@ -1132,7 +1147,7 @@
                         name: 'school_name',
                         orderable: false,
                         responsivePriority: 10,
-                        render: function (data, type, row) {
+                        render: function(data, type, row) {
                             if (row.delivery_target === 'university' && data) {
                                 return `<div class="text-nowrap"><i class="fas fa-university text-muted me-1" style="font-size:0.75rem;"></i>${data}</div>`;
                             }
@@ -1146,18 +1161,20 @@
                         title: 'الهاتف',
                         orderable: false,
                         responsivePriority: 5,
-                        render: function (data, type, row) {
+                        render: function(data, type, row) {
                             let phone1Html = '';
                             if (data) {
                                 let cleaned = String(data).replace(/\D/g, '');
                                 let waNumber = cleaned;
                                 if (waNumber.startsWith('00')) waNumber = waNumber.substring(2);
-                                else if (waNumber.startsWith('0')) waNumber = '962' + waNumber.replace(/^0+/, '');
-                                phone1Html = `<div class="text-nowrap">${data} <a href="https://wa.me/${waNumber}" target="_blank" class="ms-1 text-success" title="WhatsApp"><i class="fab fa-whatsapp"></i></a></div>`;
+                                else if (waNumber.startsWith('0')) waNumber = '962' + waNumber
+                                    .replace(/^0+/, '');
+                                phone1Html =
+                                    `<div class="text-nowrap">${data} <a href="https://wa.me/${waNumber}" target="_blank" class="ms-1 text-success" title="WhatsApp"><i class="fab fa-whatsapp"></i></a></div>`;
                             }
-                            const phone2Html = row.phone2
-                                ? `<div class="text-nowrap text-muted" style="font-size:0.78rem;">${row.phone2}</div>`
-                                : '';
+                            const phone2Html = row.phone2 ?
+                                `<div class="text-nowrap text-muted" style="font-size:0.78rem;">${row.phone2}</div>` :
+                                '';
                             return phone1Html + phone2Html;
                         }
                     },
@@ -1167,10 +1184,12 @@
                         name: 'price',
                         orderable: false,
                         responsivePriority: 7,
-                        render: function (data, type, row) {
+                        render: function(data, type, row) {
                             // لو طلب مجموعة وعنده سعر مطبق محسوب → اعرضه
-                            if (row.discount_info && row.discount_info.is_group && row.discount_info.applied_price !== null) {
-                                const applied = parseFloat(row.discount_info.applied_price).toFixed(2);
+                            if (row.discount_info && row.discount_info.is_group && row.discount_info
+                                .applied_price !== null) {
+                                const applied = parseFloat(row.discount_info.applied_price).toFixed(
+                                    2);
                                 return `<span class="fw-bold text-success">${applied} <small class="text-muted">JOD</small></span>`;
                             }
                             if (data) {
@@ -1186,7 +1205,7 @@
                         orderable: false,
                         searchable: false,
                         responsivePriority: 7,
-                        render: function (data, type, row) {
+                        render: function(data, type, row) {
                             if (!data) {
                                 return '<span class="no-discount">—</span>';
                             }
@@ -1240,7 +1259,7 @@
                 language: {
                     search: "Search Orders:"
                 },
-                rowCallback: function (row, data) {
+                rowCallback: function(row, data) {
                     $(row).removeClass('order-has-notes order-duplicate order-with-additives');
 
                     // 🔴 تلوين السطر بالأحمر إذا كان الاسم أو الرقم مكرر فقط
@@ -1249,9 +1268,10 @@
                     }
                 },
 
-                initComplete: function () {
+                initComplete: function() {
                     // 1. فلتر الحالة
-                    const statusDropdown = $(`
+                    const statusDropdown = $(
+                        `
                                                                                                                                                                                                                                                                                                     <select id="statusFilter" class="form-select" style="width: 230px;height:34px; margin-left: 15px;">
                                                                                                                                                                                                                                                                                                         <option value="">تصفية حسب الحالة</option>
                                                                                                                                                                                                                                                                                                         <option value="new_order">طلب جديد</option>
@@ -1265,16 +1285,19 @@
                                                                                                                                                                                                                                                                                                         <option value="returned">مرتجع</option>
                                                                                                                                                                                                                                                                                                         <option value="Canceled">رفض الإستلام</option>
                                                                                                                                                                                                                                                                                                     </select>
-                                                                                                                                                                                                                                                                                                `);
+                                                                                                                                                                                                                                                                                                `
+                        );
 
                     // 2. فلتر الإضافات
-                    const additivesDropdown = $(`
+                    const additivesDropdown = $(
+                        `
                                                                                                                                                                                                                                                                                                     <select id="additivesFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
                                                                                                                                                                                                                                                                                                         <option value="">تصفية حسب الإضافات</option>
                                                                                                                                                                                                                                                                                                         <option value="with_additives">مع إضافات</option>
                                                                                                                                                                                                                                                                                                         <option value="with_out_additives">بدون إضافات</option>
                                                                                                                                                                                                                                                                                                     </select>
-                                                                                                                                                                                                                                                                                                `);
+                                                                                                                                                                                                                                                                                                `
+                        );
 
                     // 3. فلتر المصمم (هاد اللي كان ناقص عندك)
                     let designerOptions = '<option value="">تصفية حسب المصمم</option>';
@@ -1282,21 +1305,24 @@
 
                     // جلب المصممين من المصفوفة اللي تم تمريرها من الكونترولر
                     if (typeof DESIGNERS !== 'undefined') {
-                        DESIGNERS.forEach(function (designer) {
-                            designerOptions += `<option value="${designer.id}">${designer.name}</option>`;
+                        DESIGNERS.forEach(function(designer) {
+                            designerOptions +=
+                                `<option value="${designer.id}">${designer.name}</option>`;
                         });
                     }
 
-                    const designerDropdown = $(`
+                    const designerDropdown = $(
+                        `
                                                                                                                                                                                                                                                                                                     <select id="designerFilter" class="form-select" style="width: 175px;height:34px; margin-left: 15px;">
                                                                                                                                                                                                                                                                                                         ${designerOptions}
                                                                                                                                                                                                                                                                                                     </select>
-                                                                                                                                                                                                                                                                                                `);
+                                                                                                                                                                                                                                                                                                `
+                        );
                     // --- Group Autocomplete Widget ---
                     let allGroupNames = [];
 
                     if (typeof DISCOUNT_CODES !== 'undefined') {
-                        DISCOUNT_CODES.forEach(function (code) {
+                        DISCOUNT_CODES.forEach(function(code) {
                             let name = code.code_name ? code.code_name : code.discount_code;
                             if (name) allGroupNames.push(name);
                         });
@@ -1329,13 +1355,17 @@
                     function renderGroupList(filter) {
                         const $list = $('#groupDropdownList');
                         $list.empty();
-                        const matches = allGroupNames.filter(n => n.toLowerCase().includes(filter.toLowerCase()));
+                        const matches = allGroupNames.filter(n => n.toLowerCase().includes(filter
+                            .toLowerCase()));
                         if (matches.length === 0) {
-                            $list.append('<li class="group-no-results"><i class="fas fa-search me-1"></i>لا توجد نتائج</li>');
+                            $list.append(
+                                '<li class="group-no-results"><i class="fas fa-search me-1"></i>لا توجد نتائج</li>'
+                                );
                         } else {
-                            matches.slice(0, 30).forEach(function (name) {
-                                const $li = $('<li>').html(`<i class="fas fa-tag"></i>${name}`).attr('data-value', name);
-                                $li.on('mousedown', function (e) {
+                            matches.slice(0, 30).forEach(function(name) {
+                                const $li = $('<li>').html(`<i class="fas fa-tag"></i>${name}`)
+                                    .attr('data-value', name);
+                                $li.on('mousedown', function(e) {
                                     e.preventDefault();
                                     selectGroup(name);
                                 });
@@ -1350,7 +1380,8 @@
                         $('#groupSearchInput').val('').attr('placeholder', '').hide();
                         const $wrap = $('#groupSearchWrapper .group-search-input-wrap');
                         $wrap.find('.group-badge-active').remove();
-                        const $badge = $(`
+                        const $badge = $(
+                            `
                                                                                                                     <span class="group-badge-active">
                                                                                                                         <i class="fas fa-tag" style="font-size:10px;"></i>
                                                                                                                         ${name}
@@ -1372,12 +1403,12 @@
 
                     $(document).on('click', '#removeBadgeBtn', clearGroup);
 
-                    $('#groupSearchInput').on('focus', function () {
+                    $('#groupSearchInput').on('focus', function() {
                         renderGroupList($(this).val());
-                    }).on('input', function () {
+                    }).on('input', function() {
                         renderGroupList($(this).val());
-                    }).on('blur', function () {
-                        setTimeout(function () {
+                    }).on('blur', function() {
+                        setTimeout(function() {
                             $('#groupDropdownList').hide();
                         }, 150);
                     });
@@ -1386,15 +1417,48 @@
                     // (already wired via d.code_name below — update the DataTable data fn)
 
                     // 5. تفعيل التحديث التلقائي عند تغيير أي فلتر
-                    $('#statusFilter, #additivesFilter, #designerFilter').on('change', function () {
+                    $('#statusFilter, #additivesFilter, #designerFilter').on('change', function() {
                         table.ajax.reload();
                     });
 
                 }
             }); // ← نهاية DataTable config
+            // Fix: dropdown clipped by overflow:auto in .table-responsive on mobile
+            $(document).on('show.bs.dropdown', '#orders-table .dropdown', function() {
+                $(this).find('.dropdown-menu').css({
+                    position: 'fixed',
+                    zIndex: 1060,
+                    transform: 'none'
+                });
+            }).on('shown.bs.dropdown', '#orders-table .dropdown', function() {
+                const $toggle = $(this).find('[data-bs-toggle="dropdown"]');
+                const $menu = $(this).find('.dropdown-menu');
+                const rect = $toggle[0].getBoundingClientRect();
+                const menuW = $menu.outerWidth();
+                const menuH = $menu.outerHeight();
+                const winH = window.innerHeight;
+                const winW = window.innerWidth;
 
+                const top = (rect.bottom + menuH > winH) ? rect.top - menuH : rect.bottom;
+                let left = rect.left;
+                if (left + menuW > winW) left = winW - menuW - 8;
+                if (left < 8) left = 8;
+
+                $menu.css({
+                    top: top + 'px',
+                    left: left + 'px'
+                });
+            }).on('hidden.bs.dropdown', '#orders-table .dropdown', function() {
+                $(this).find('.dropdown-menu').css({
+                    position: '',
+                    top: '',
+                    left: '',
+                    zIndex: '',
+                    transform: ''
+                });
+            });
             // Export CSV
-            $('#exportExcelBtn').on('click', function () {
+            $('#exportExcelBtn').on('click', function() {
                 const status = $('#statusFilter').val() || '';
                 const additives = $('#additivesFilter').val() || '';
                 const search = $('.dataTables_filter input[type="search"]').val() || '';
@@ -1409,25 +1473,25 @@
                     date_to: dateTo
                 });
 
-                window.location.href = '{{ route('orders.exportExcel')}}' + '?' + params.toString();
+                window.location.href = '{{ route('orders.exportExcel') }}' + '?' + params.toString();
             });
 
             // تغيير الحالة
-            $(document).on('click', '.change-status-item', function (e) {
+            $(document).on('click', '.change-status-item', function(e) {
                 e.preventDefault();
 
                 const orderId = $(this).data('order-id');
                 const newStatus = $(this).data('new-status');
 
                 $.ajax({
-                    url: '{{ route('orders.updateStatus')}}',
+                    url: '{{ route('orders.updateStatus') }}',
                     method: 'POST',
                     data: {
                         _token: '{{ csrf_token() }}',
                         id: orderId,
                         status: newStatus
                     },
-                    success: function (response) {
+                    success: function(response) {
                         if (response.success) {
                             table.ajax.reload(null, false);
                         } else {
@@ -1439,7 +1503,7 @@
                             });
                         }
                     },
-                    error: function (xhr) {
+                    error: function(xhr) {
                         let msg = 'حدث خطأ أثناء تحديث الحالة.';
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             msg = xhr.responseJSON.message;
@@ -1455,21 +1519,21 @@
             });
 
             // تغيير المصمم
-            $(document).on('change', '.order-designer-select', function () {
+            $(document).on('change', '.order-designer-select', function() {
                 const select = $(this);
                 const orderId = select.data('order-id');
                 const previousDesignerId = select.data('current-designer-id') || '';
                 const newDesignerId = select.val();
 
                 $.ajax({
-                    url: '{{ route('orders.updateDesigner')}}',
+                    url: '{{ route('orders.updateDesigner') }}',
                     method: 'POST',
                     data: {
                         _token: '{{ csrf_token() }}',
                         order_id: orderId,
                         designer_id: newDesignerId || null
                     },
-                    success: function (response) {
+                    success: function(response) {
                         if (!response.success) {
                             Swal.fire({
                                 title: 'خطأ',
@@ -1484,7 +1548,7 @@
                         select.data('current-designer-id', newDesignerId || '');
                         table.ajax.reload(null, false);
                     },
-                    error: function (xhr) {
+                    error: function(xhr) {
                         let msg = 'حدث خطأ أثناء تحديث المصمم.';
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             msg = xhr.responseJSON.message;
@@ -1501,7 +1565,7 @@
             });
 
             // فتح مودال النوتس
-            $(document).on('click', '.btn-add-note', function (e) {
+            $(document).on('click', '.btn-add-note', function(e) {
                 e.preventDefault();
                 const orderId = $(this).data('order-id');
 
@@ -1512,7 +1576,7 @@
             });
 
             // حفظ النوت
-            $('#addNoteForm').on('submit', function (e) {
+            $('#addNoteForm').on('submit', function(e) {
                 e.preventDefault();
 
                 const orderId = $('#noteOrderId').val();
@@ -1529,18 +1593,19 @@
                 }
 
                 $.ajax({
-                    url: '{{ route('orders.addNote')}}',
+                    url: '{{ route('orders.addNote') }}',
                     method: 'POST',
                     data: {
                         _token: '{{ csrf_token() }}',
                         order_id: orderId,
                         note: content
                     },
-                    success: function (response) {
+                    success: function(response) {
                         if (response.success) {
                             $('#noteContent').val('');
                             const note = response.note;
-                            const newItem = `
+                            const newItem =
+                                `
                                                                                                                                                                                                                                                                                                             <li class="chat-message">
                                                                                                                                                                                                                                                                                                                 <div class="chat-header">
                                                                                                                                                                                                                                                                                                                     <span class="chat-author"><i class="fas fa-user-circle me-1"></i>${note.user_name}</span>
@@ -1562,7 +1627,7 @@
                             });
                         }
                     },
-                    error: function () {
+                    error: function() {
                         Swal.fire({
                             title: 'خطأ',
                             text: 'حدث خطأ أثناء حفظ الملاحظة.',
@@ -1574,24 +1639,24 @@
             });
 
             // زر مسح محتوى النوت
-            $('#clearNoteBtn').on('click', function () {
+            $('#clearNoteBtn').on('click', function() {
                 $('#noteContent').val('');
             });
 
             // البحث المتقدم - تطبيق الفلاتر
-            $('#applyFiltersBtn').on('click', function () {
+            $('#applyFiltersBtn').on('click', function() {
                 table.ajax.reload();
                 $('#advancedSearchModal').modal('hide');
             });
 
             // البحث المتقدم - مسح الفلاتر
-            $('#clearFiltersBtn').on('click', function () {
+            $('#clearFiltersBtn').on('click', function() {
                 $('#dateFrom').val('');
                 $('#dateTo').val('');
                 table.ajax.reload();
             });
 
-            @if(auth()->user()->isAdmin())
+            @if (auth()->user()->isAdmin())
                 // ============================================
                 // Bulk Delete Functionality (Admin Only)
                 // ============================================
@@ -1604,7 +1669,8 @@
 
                     const $btn = $('#bulkDeleteBtn');
                     if (count > 0) {
-                        $btn.html('<i class="fas fa-trash me-1"></i> حذف المحدد (<span id="selectedCount">' + count + '</span>)');
+                        $btn.html('<i class="fas fa-trash me-1"></i> حذف المحدد (<span id="selectedCount">' +
+                            count + '</span>)');
                         $btn.prop('disabled', false).show();
                     } else {
                         $btn.prop('disabled', true).hide();
@@ -1612,14 +1678,14 @@
                 }
 
                 // Select/Deselect all orders
-                $('#selectAllOrders').on('change', function () {
+                $('#selectAllOrders').on('change', function() {
                     const isChecked = $(this).prop('checked');
                     $('.order-checkbox').prop('checked', isChecked);
                     updateBulkDeleteButton();
                 });
 
                 // Handle individual checkbox changes
-                $(document).on('change', '.order-checkbox', function () {
+                $(document).on('change', '.order-checkbox', function() {
                     updateBulkDeleteButton();
 
                     // Update "select all" checkbox state
@@ -1629,9 +1695,9 @@
                 });
 
                 // Bulk delete handler
-                $('#bulkDeleteBtn').on('click', function () {
+                $('#bulkDeleteBtn').on('click', function() {
                     const checkedBoxes = $('.order-checkbox:checked');
-                    const orderIds = checkedBoxes.map(function () {
+                    const orderIds = checkedBoxes.map(function() {
                         return $(this).val();
                     }).get();
 
@@ -1659,16 +1725,17 @@
                         if (!result.isConfirmed) return;
 
                         const $btn = $('#bulkDeleteBtn');
-                        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> جاري الحذف...');
+                        $btn.prop('disabled', true).html(
+                            '<i class="fas fa-spinner fa-spin me-1"></i> جاري الحذف...');
 
                         $.ajax({
-                            url: '{{ route('orders.bulkDelete')}}',
+                            url: '{{ route('orders.bulkDelete') }}',
                             method: 'POST',
                             data: {
                                 _token: '{{ csrf_token() }}',
                                 order_ids: orderIds
                             },
-                            success: function (response) {
+                            success: function(response) {
                                 if (response.success) {
                                     Swal.fire({
                                         toast: true,
@@ -1686,19 +1753,23 @@
                                 } else {
                                     Swal.fire({
                                         title: 'خطأ',
-                                        text: response.message || 'حدث خطأ أثناء حذف الطلبات.',
+                                        text: response.message ||
+                                            'حدث خطأ أثناء حذف الطلبات.',
                                         icon: 'error',
                                         confirmButtonColor: '#dc2626'
                                     });
-                                    const remainingCount = $('.order-checkbox:checked').length;
+                                    const remainingCount = $('.order-checkbox:checked')
+                                        .length;
                                     if (remainingCount > 0) {
-                                        $btn.prop('disabled', false).html('<i class="fas fa-trash me-1"></i> حذف المحدد (<span id="selectedCount">' + remainingCount + '</span>)');
+                                        $btn.prop('disabled', false).html(
+                                            '<i class="fas fa-trash me-1"></i> حذف المحدد (<span id="selectedCount">' +
+                                            remainingCount + '</span>)');
                                     } else {
                                         updateBulkDeleteButton();
                                     }
                                 }
                             },
-                            error: function (xhr) {
+                            error: function(xhr) {
                                 let message = 'حدث خطأ أثناء حذف الطلبات.';
                                 if (xhr.responseJSON && xhr.responseJSON.message) {
                                     message = xhr.responseJSON.message;
@@ -1709,9 +1780,12 @@
                                     icon: 'error',
                                     confirmButtonColor: '#dc2626'
                                 });
-                                const remainingCount = $('.order-checkbox:checked').length;
+                                const remainingCount = $('.order-checkbox:checked')
+                                    .length;
                                 if (remainingCount > 0) {
-                                    $btn.prop('disabled', false).html('<i class="fas fa-trash me-1"></i> حذف المحدد (<span id="selectedCount">' + remainingCount + '</span>)');
+                                    $btn.prop('disabled', false).html(
+                                        '<i class="fas fa-trash me-1"></i> حذف المحدد (<span id="selectedCount">' +
+                                        remainingCount + '</span>)');
                                 } else {
                                     updateBulkDeleteButton();
                                 }
@@ -1721,7 +1795,7 @@
                 });
 
                 // Handle single order delete
-                $(document).on('click', '.delete-order', function (e) {
+                $(document).on('click', '.delete-order', function(e) {
                     e.preventDefault();
                     const orderId = $(this).data('id');
 
@@ -1744,7 +1818,7 @@
                             data: {
                                 _token: '{{ csrf_token() }}'
                             },
-                            success: function (response) {
+                            success: function(response) {
                                 if (response.success) {
                                     Swal.fire({
                                         toast: true,
@@ -1759,13 +1833,14 @@
                                 } else {
                                     Swal.fire({
                                         title: 'خطأ',
-                                        text: response.message || 'فشل حذف الطلب.',
+                                        text: response.message ||
+                                            'فشل حذف الطلب.',
                                         icon: 'error',
                                         confirmButtonColor: '#dc2626'
                                     });
                                 }
                             },
-                            error: function (xhr) {
+                            error: function(xhr) {
                                 let message = 'حدث خطأ أثناء حذف الطلب.';
                                 if (xhr.responseJSON && xhr.responseJSON.message) {
                                     message = xhr.responseJSON.message;
@@ -1782,13 +1857,13 @@
                 });
 
                 // Update bulk delete button on table draw
-                table.on('draw', function () {
+                table.on('draw', function() {
                     updateBulkDeleteButton();
                     $('#selectAllOrders').prop('checked', false);
                 });
             @endif
             // فتح مودال تنبيه المجموعة وتعبئة بياناته
-            $(document).on('click', '.js-show-group-warning', function () {
+            $(document).on('click', '.js-show-group-warning', function() {
                 const plan = $(this).data('plan');
                 const current = parseInt($(this).data('current')) || 0;
                 const required = parseInt($(this).data('required')) || 0;
@@ -1815,5 +1890,4 @@
             });
         }); // ← نهاية $(document).ready()
     </script>
-
 @endsection

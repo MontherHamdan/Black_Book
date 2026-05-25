@@ -222,8 +222,7 @@ class OrderController extends Controller
         $data['back_image_ids'] = json_encode($data['back_image_ids'] ?? []);
         $data['transparent_printing_ids'] = json_encode($data['transparent_printing_ids'] ?? []);
 
-        $data['additional_image_id'] = $data['additional_images'] ?? [];
-        unset($data['additional_images']);
+        
 
         $data['address'] = $data['address'] ?? '';
 

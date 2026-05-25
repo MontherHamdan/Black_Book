@@ -262,6 +262,11 @@ class Order extends Model
     {
         $this->is_with_additives = $this->calculateIsWithAdditives();
     }
+
+    public function getIsWithAdditivesAttribute($value): bool
+    {
+        return $this->calculateIsWithAdditives();
+    }
     public function university()
     {
         return $this->belongsTo(University::class, 'university_id');
@@ -332,9 +337,18 @@ class Order extends Model
         return UserImage::whereIn('id', $ids)->get();
     }
 
-    public function governorate() { return $this->belongsTo(Governorate::class); }
-    public function city() { return $this->belongsTo(City::class); }
-    public function area() { return $this->belongsTo(Area::class); }
+    public function governorate()
+    {
+        return $this->belongsTo(Governorate::class);
+    }
+    public function city()
+    {
+        return $this->belongsTo(City::class);
+    }
+    public function area()
+    {
+        return $this->belongsTo(Area::class);
+    }
 
     /**
      * جامعة التوصيل (تختلف عن university_id الخاص بمعلومات الخريج)

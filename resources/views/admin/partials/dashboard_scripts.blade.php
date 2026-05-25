@@ -21,9 +21,10 @@
                 "needs_modification": "يوجد تعديل",
                 "Pending": "تم التصميم",
                 "Completed": "تم الاعتماد",
+                "Printed": "تمت الطباعة",
                 "preparing": "قيد التجهيز",
                 "Received": "تم التسليم",
-                "Out for Delivery": "مرتجع",
+                "returned": "مرتجع",
                 "Canceled": "رفض الاستلام"
             };
 
@@ -34,14 +35,15 @@
 
             // 5) خريطة الألوان (نفس ألوان الحالات)
             const statusColorMap = {
-         "new_order": "#0d6efd",           // أزرق (Primary)
+                "new_order": "#0d6efd",           // أزرق (Primary)
                 "needs_modification": "#dc3545",  // أحمر (Danger)
                 "Pending": "#ffc107",             // أصفر (Warning)
                 "Completed": "#0dcaf0",           // سماوي (Info)
+                "Printed": "#6c757d",             // رمادي (Secondary)
                 "preparing": "#6f42c1",           // بنفسجي (Purple)
                 "Received": "#198754",            // أخضر (Success)
-                "Out for Delivery": "#fd7e14",    // برتقالي (Orange)
-                "Canceled": "#800000"
+                "returned": "#fd7e14",            // برتقالي (Orange)
+                "Canceled": "#800000"             // عنابي
             };
 
             // 6) ألوان الهفر (ممكن نخليها نفس اللون)

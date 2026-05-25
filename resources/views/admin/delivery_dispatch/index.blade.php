@@ -193,19 +193,21 @@
                                             @endif
                                             <div class="d-flex flex-wrap gap-3 mt-1">
                                                 @if($masterPhoneOne)
-                                                    <a href="{{ $ordersGroup->first()->whatsapp_link }}" target="_blank"
-                                                        class="contact-link text-decoration-none fw-bold d-flex align-items-center gap-1">
-                                                        <i class="fab fa-whatsapp text-success fs-5"></i>
-                                                        <span dir="ltr">{{ $masterPhoneOne }}</span>
-                                                    </a>
-                                                @endif
-                                                @if($masterPhoneTwo)
-                                                    <a href="{{ $ordersGroup->first()->whatsapp_link_two }}" target="_blank"
-                                                        class="contact-link text-decoration-none fw-bold d-flex align-items-center gap-1">
-                                                        <i class="fab fa-whatsapp text-success fs-5"></i>
-                                                        <span dir="ltr">{{ $masterPhoneTwo }}</span>
-                                                    </a>
-                                                @endif
+                                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $masterPhoneOne) }}"
+                                                    target="_blank" rel="noopener noreferrer"
+                                                    class="contact-link text-decoration-none fw-bold d-flex align-items-center gap-1">
+                                                    <i class="fab fa-whatsapp text-success fs-5"></i>
+                                                    <span dir="ltr">{{ $masterPhoneOne }}</span>
+                                                </a>
+                                            @endif
+                                            @if($masterPhoneTwo)
+                                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $masterPhoneTwo) }}"
+                                                    target="_blank" rel="noopener noreferrer"
+                                                    class="contact-link text-decoration-none fw-bold d-flex align-items-center gap-1">
+                                                    <i class="fab fa-whatsapp text-success fs-5"></i>
+                                                    <span dir="ltr">{{ $masterPhoneTwo }}</span>
+                                                </a>
+                                            @endif
                                             </div>
                                         </div>
                                     </td>
@@ -284,8 +286,9 @@
                                                                     {{-- 🌟 داتا العمود الجديد (أرقام الهواتف مع الواتساب) 🌟 --}}
                                                                     <td class="py-3">
                                                                         <div class="d-flex flex-column gap-1">
-                                                                            @if($order->delivery_number_one)
-                                                                                <a href="{{ $order->whatsapp_link }}" target="_blank"
+                                                                          @if($order->delivery_number_one)
+                                                                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $order->delivery_number_one) }}"
+                                                                                    target="_blank" rel="noopener noreferrer"
                                                                                     class="contact-link text-decoration-none fw-bold d-flex align-items-center gap-1"
                                                                                     style="font-size: 0.85rem;">
                                                                                     <i class="fab fa-whatsapp text-success fs-6"></i>
@@ -293,7 +296,8 @@
                                                                                 </a>
                                                                             @endif
                                                                             @if($order->delivery_number_two)
-                                                                                <a href="{{ $order->whatsapp_link_two }}" target="_blank"
+                                                                                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $order->delivery_number_two) }}"
+                                                                                    target="_blank" rel="noopener noreferrer"
                                                                                     class="contact-link text-decoration-none fw-bold d-flex align-items-center gap-1"
                                                                                     style="font-size: 0.85rem;">
                                                                                     <i class="fab fa-whatsapp text-success fs-6"></i>

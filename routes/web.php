@@ -66,7 +66,8 @@ Route::middleware(['auth'])->group(function () {
         OrderWebController::class,
         'updateDeliveryFollowup',
     ])->name('orders.updateDeliveryFollowup');
-
+Route::get('/admin/cities/{governorate_id}', [OrderWebController::class, 'adminGetCities'])->middleware('auth');
+Route::get('/admin/areas/{city_id}', [OrderWebController::class, 'adminGetAreas'])->middleware('auth');
     Route::put('/orders/{order}/design-followup', [OrderWebController::class, 'updateDesignFollowup'])
         ->name('orders.updateDesignFollowup');
 

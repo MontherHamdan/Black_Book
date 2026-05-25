@@ -1,8 +1,12 @@
 <style>
   .status-card {
-    /* 8 كروت بالكامل */
-    flex: 0 0 calc(100% / 8 - 10px);
+    /* 9 كروت بالكامل */
+    flex: 0 0 calc(100% / 9 - 10px);
     margin-right: 10px;
+  }
+  .status-card .card-title {
+    white-space: nowrap;
+    font-size: 14px; /* Slightly smaller to fit better */
   }
 
   @media (max-width: 992px) {
@@ -82,7 +86,22 @@
     </div>
   </div>
 
-  {{-- 5. قيد التجهيز --}}
+  {{-- 5. تمت الطباعة --}}
+  <div class="status-card">
+    <div class="card card-enhanced">
+      <div class="card-body d-flex align-items-center p-2">
+        <div class="icon-circle bg-secondary text-white me-2">
+          <i class="mdi mdi-printer" style="font-size:18px;"></i>
+        </div>
+        <div>
+          <div class="card-title mb-0">تمت الطباعة</div>
+          <div class="card-count">{{ $printedCount ?? 0 }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{-- 6. قيد التجهيز --}}
   <div class="status-card">
     <div class="card card-enhanced">
       <div class="card-body d-flex align-items-center p-2">
@@ -97,7 +116,7 @@
     </div>
   </div>
 
-  {{-- 6. تم التسليم --}}
+  {{-- 7. تم التسليم --}}
   <div class="status-card">
     <div class="card card-enhanced">
       <div class="card-body d-flex align-items-center p-2">
@@ -112,7 +131,7 @@
     </div>
   </div>
 
-  {{-- 7. مرتجع --}}
+  {{-- 8. مرتجع --}}
   <div class="status-card">
     <div class="card card-enhanced">
       <div class="card-body d-flex align-items-center p-2">
@@ -127,7 +146,7 @@
     </div>
   </div>
 
-  {{-- 8. رفض الاستلام --}}
+  {{-- 9. رفض الاستلام --}}
   <div class="status-card">
     <div class="card card-enhanced">
       <div class="card-body d-flex align-items-center p-2">

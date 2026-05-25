@@ -99,7 +99,7 @@ trait LogesTechsIntegration
 
         try {
             // 3. Send the request to the delivery company
-            $response = Http::withHeaders([
+            $response = Http::timeout(15)->withHeaders([
                 'company-id' => $companyId,
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
@@ -119,6 +119,38 @@ trait LogesTechsIntegration
 
             // In case the request failed (wrong data or from their side)
             $errorBody = $response->body();
+            $errorData = json_decode($errorBody, true);
+
+            // الشحنة موجودة مسبقاً (timeout سبق حفظ الـ ID) — نجلبها
+            if ($response->status() === 403 && str_contains($errorBody, 'موجود مسبقا')) {
+                $searchResponse = Http::timeout(15)->withHeaders([
+                    'company-id' => $companyId,
+                    'Accept' => 'application/json',
+                ])->get("https://apisv2.logestechs.com/api/guests/{$companyId}/packages", [
+                    'reference_number' => 'ORD-'.$order->id,
+                    'email' => $email,
+                    'password' => $password,
+                ]);
+
+                if ($searchResponse->successful()) {
+                    $packages = $searchResponse->json();
+                    $existingId = $packages['data'][0]['id'] ?? ($packages[0]['id'] ?? null);
+
+                    if ($existingId) {
+                        $order->update(['logestechs_order_id' => $existingId]);
+
+                        return ['success' => true, 'data' => ['id' => $existingId]];
+                    }
+                }
+
+                // الـ search API مش شغال أو الـ endpoint مختلف — نعيد الـ ID من الـ error body لو موجود
+                $existingId = $errorData['id'] ?? $errorData['package_id'] ?? null;
+                if ($existingId) {
+                    $order->update(['logestechs_order_id' => $existingId]);
+
+                    return ['success' => true, 'data' => ['id' => $existingId]];
+                }
+            }
             Log::error('LogesTechs Integration Failed', [
                 'status' => $response->status(),
                 'body' => $errorBody,
@@ -139,7 +171,7 @@ trait LogesTechsIntegration
 
             return [
                 'success' => false,
-                'message' => 'An error occurred while connecting to the delivery company servers.',
+                'message' => 'تعذر الاتصال بشركة التوصيل: '.$e->getMessage(),
             ];
         }
     }

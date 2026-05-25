@@ -60,7 +60,7 @@ class SyncLogestechsApi extends Command
 
          
                 $govAr = $this->translateName($village['regionName']);
-                $governorate = Governorate::firstOrCreate(
+                $governorate = Governorate::updateOrCreate(
                     ['logestechs_id' => $village['regionId']],
                     [
                         'country_id' => $jordan->id,
@@ -80,7 +80,7 @@ class SyncLogestechsApi extends Command
                     }
                 }
 
-                $city = City::firstOrCreate(
+                $city = City::updateOrCreate(
                     ['logestechs_id' => $village['cityId']],
                     [
                         'governorate_id' => $governorate->id,
@@ -89,7 +89,7 @@ class SyncLogestechsApi extends Command
                         'is_active' => true,
                     ]
                 );
-                Area::firstOrCreate(
+                Area::updateOrCreate(
                     ['logestechs_id' => $village['id']],
                     [
                         'city_id' => $city->id,

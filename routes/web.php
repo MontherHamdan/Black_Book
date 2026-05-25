@@ -94,6 +94,11 @@ Route::get('/admin/areas/{city_id}', [OrderWebController::class, 'adminGetAreas'
     Route::post('/notebook-binding/bulk-mark-downloaded', [NotebookBindingController::class, 'bulkMarkDownloaded'])
         ->name('notebook-binding.bulk-mark-downloaded');
 
+    Route::post('/notebook-binding/mark-printed', [NotebookBindingController::class, 'markPrinted'])
+        ->name('notebook-binding.mark-printed');
+    Route::post('/notebook-binding/bulk-mark-printed', [NotebookBindingController::class, 'bulkMarkPrinted'])
+        ->name('notebook-binding.bulk-mark-printed');
+
 });
 
 // Admin-only routes (إعدادات النظام)

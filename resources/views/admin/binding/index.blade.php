@@ -1260,14 +1260,14 @@
                 btn.disabled = true;
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحديث...';
 
-                fetch('{{ route("orders.updateStatus") }}', {
+                fetch('{{ route("notebook-binding.mark-printed") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': NB_CSRF,
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify({ id: orderId, status: 'Printed' })
+                    body: JSON.stringify({ order_id: orderId })
                 })
                     .then(r => r.json())
                     .then(data => {
@@ -1313,6 +1313,62 @@
                 },
                 body: JSON.stringify({ order_id: orderId, file_type: fileType })
             }).catch(() => { }); // silent — download already triggered
+        }
+
+                function nbBulkMarkPrinted() {
+            const cards = document.querySelectorAll('.nb-card');
+            const orderIds = Array.from(cards).map(c => parseInt(c.dataset.orderId));
+
+            if (orderIds.length === 0) {
+                Swal.fire({ title: 'تنبيه', text: 'لا يوجد طلبات في هذه الصفحة لنقلها.', icon: 'info' });
+                return;
+            }
+
+            Swal.fire({
+                title: 'نقل إلى التوصيل',
+                html: `هل أنت متأكد من تحويل جميع طلبات الصفحة (<b>${orderIds.length}</b> طلبات) إلى "تم الطباعة" ونقلهم إلى التوصيل؟`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'نعم، نقل الجميع',
+                cancelButtonText: 'إلغاء'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('{{ route("notebook-binding.bulk-mark-printed") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': NB_CSRF,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ order_ids: orderIds })
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            cards.forEach(card => {
+                                card.style.transition = 'all 0.5s ease';
+                                card.style.opacity = '0';
+                                card.style.transform = 'scale(0.9) translateY(-20px)';
+                            });
+                            setTimeout(() => {
+                                cards.forEach(card => card.remove());
+                                Swal.fire({
+                                    title: 'تم النقل بنجاح',
+                                    text: 'تم نقل جميع الطلبات في هذه الصفحة إلى التوصيل.',
+                                    icon: 'success',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => location.reload());
+                            }, 500);
+                        } else {
+                            Swal.fire('خطأ', 'حدث خطأ أثناء نقل الطلبات.', 'error');
+                        }
+                    })
+                    .catch(() => Swal.fire('خطأ', 'تعذر الاتصال بالخادم.', 'error'));
+                }
+            });
         }
 
         // ═══════════ Bulk Download (All on Page) ═══════════

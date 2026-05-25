@@ -955,10 +955,10 @@ class OrderWebController extends Controller
         }
 
         return response()->json([
-            'success' => true,
-            'message' => "تم حذف {$deletedCount} طلب بنجاح.",
-            'deleted_count' => $deletedCount,
-            'errors' => $errors,
+            'draw'            => (int) $request->input('draw'),
+            'recordsTotal'    => $orders->total(),
+            'recordsFiltered' => $orders->total(),
+            'data'            => $data,
         ]);
     }
 

@@ -43,9 +43,15 @@ class SyncLogestechsLocations extends Command
             array_shift($rows);
         }
 
-        DB::beginTransaction();
+       DB::beginTransaction();
 
         try {
+            $this->info("🗑️ Clearing existing data...");
+            DB::table('areas')->delete();
+            DB::table('cities')->delete();
+            DB::table('governorates')->delete();
+            $this->info("✅ Tables cleared.");
+
             $count = 0;
             foreach ($rows as $row) {
                 // Skip empty rows

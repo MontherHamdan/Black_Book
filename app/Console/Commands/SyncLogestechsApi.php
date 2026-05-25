@@ -58,7 +58,7 @@ class SyncLogestechsApi extends Command
 
             foreach ($villages as $village) {
 
-                $governorate = Governorate::updateOrCreate(
+                $governorate = Governorate::firstOrCreate(
                     ['logestechs_id' => $village['regionId']],
                     [
                         'country_id' => $jordan->id,
@@ -68,7 +68,7 @@ class SyncLogestechsApi extends Command
                     ]
                 );
 
-                $city = City::updateOrCreate(
+                $city = City::firstOrCreate(
                     ['logestechs_id' => $village['cityId']],
                     [
                         'governorate_id' => $governorate->id,
@@ -78,7 +78,7 @@ class SyncLogestechsApi extends Command
                     ]
                 );
 
-                Area::updateOrCreate(
+                Area::firstOrCreate(
                     ['logestechs_id' => $village['id']],
                     [
                         'city_id' => $city->id,

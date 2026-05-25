@@ -80,7 +80,15 @@ class OrderWebController extends Controller
         $discountCodes = DiscountCode::orderBy('discount_code')->get(['id', 'discount_code', 'code_name']);
         $universities = University::with('majors')->orderBy('name')->get(['id', 'name']);
         $diplomas = Diploma::with('majors')->orderBy('name')->get(['id', 'name']);
-        $governorates = Governorate::whereNotNull('logestechs_id')->get(['id', 'name_ar', 'name_en']);
+        $governorates = Governorate::where('is_active', true)->get(['id', 'name_ar', 'name_en']);
+
+        $cities = $order->governorate_id
+            ? \App\Models\City::where('governorate_id', $order->governorate_id)->get(['id', 'name_ar', 'name_en'])
+            : collect();
+
+        $areas = $order->city_id
+            ? \App\Models\Area::where('city_id', $order->city_id)->get(['id', 'name_ar', 'name_en'])
+            : collect();
 
         // 🔹 فلاغات عامة عن المستخدم
         $isAdmin = $authUser->isAdmin();
@@ -954,6 +962,72 @@ class OrderWebController extends Controller
         ]);
     }
 
+    /**
+     * Restore a single soft-deleted order (admin only).
+     */
+    public function restore($id)
+    {
+        if (! auth()->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'غير مصرح لك.'], 403);
+        }
+
+        $order = Order::onlyTrashed()->findOrFail($id);
+        $order->restore();
+
+        return response()->json(['success' => true, 'message' => 'تم استعادة الطلب #'.$id.' بنجاح!']);
+    }
+
+    /**
+     * Permanently delete a single trashed order (admin only).
+     */
+    public function forceDestroy($id)
+    {
+        if (! auth()->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'غير مصرح لك.'], 403);
+        }
+
+        $order = Order::onlyTrashed()->findOrFail($id);
+        $this->cleanupOrderRelatedData($order);
+        $order->forceDelete();
+
+        return response()->json(['success' => true, 'message' => 'تم الحذف النهائي للطلب #'.$id.'!']);
+    }
+
+    /**
+     * Bulk restore trashed orders (admin only).
+     */
+    public function bulkRestore(Request $request)
+    {
+        if (! auth()->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'غير مصرح لك.'], 403);
+        }
+
+        $request->validate(['order_ids' => 'required|array', 'order_ids.*' => 'integer']);
+
+        $count = Order::onlyTrashed()->whereIn('id', $request->order_ids)->restore();
+
+        return response()->json(['success' => true, 'message' => "تم استعادة {$count} طلب بنجاح!"]);
+    }
+
+    /**
+     * Bulk permanently delete trashed orders (admin only).
+     */
+    public function bulkForceDelete(Request $request)
+    {
+        if (! auth()->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'غير مصرح لك.'], 403);
+        }
+
+        $request->validate(['order_ids' => 'required|array', 'order_ids.*' => 'integer']);
+
+        $orders = Order::onlyTrashed()->whereIn('id', $request->order_ids)->get();
+        foreach ($orders as $order) {
+            $this->cleanupOrderRelatedData($order);
+            $order->forceDelete();
+        }
+
+        return response()->json(['success' => true, 'message' => "تم الحذف النهائي لـ {$orders->count()} طلب!"]);
+    }
     /**
      * Bulk update status for multiple orders.
      */

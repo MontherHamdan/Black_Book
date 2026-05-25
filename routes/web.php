@@ -200,8 +200,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // Countries
     Route::resource('countries', CountryController::class);
-    Route::post('/locations/sync', function () {
+      Route::post('/locations/sync', function () {
         try {
+            \Illuminate\Support\Facades\Artisan::call('logestechs:sync');
             \Illuminate\Support\Facades\Artisan::call('logestechs:sync-api');
 
             return back()->with('success', 'تم مزامنة المناطق مع شركة التوصيل بنجاح!');

@@ -55,7 +55,7 @@
                                 <th>اسم المحافظة (EN)</th>
                                 <th>اسم المحافظة (AR)</th>
                                 <th width="12%">حالة التفعيل</th>
-                                {{-- <th width="15%">إجراءات</th> --}}
+                                <th width="10%">إجراءات</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -87,17 +87,14 @@
                                         </div>
                                     </td>
 
-                                    {{-- <td>
+                                     <td>
                                         <div class="d-flex justify-content-center gap-2">
-                                            <a href="{{ route('governorates.edit', $governorate->id) }}" class="btn btn-sm btn-outline-warning rounded-pill px-3">
-                                                <i class="fas fa-edit me-1"></i> تعديل
-                                            </a>
                                             <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3"
                                                 data-bs-toggle="modal" data-bs-target="#deleteGovModal{{ $governorate->id }}">
                                                 <i class="fas fa-trash me-1"></i> حذف
                                             </button>
                                         </div>
-                                    </td> --}}
+                                    </td>
                                 </tr>
 
                                 <div class="modal fade modal-creative" id="deleteGovModal{{ $governorate->id }}" tabindex="-1" aria-hidden="true">

@@ -26,6 +26,7 @@ class SyncLogestechsApi extends Command
             $response = Http::withHeaders([
                 'company-id' => $companyId,
                 'Accept' => 'application/json',
+                'Accept-Language' => 'ar',
             ])->get($url);
 
             if (! $response->successful()) {
@@ -43,7 +44,6 @@ class SyncLogestechsApi extends Command
             }
 
             $this->info('Found '.count($villages).' villages. Syncing databases...');
-
             $jordan = Country::firstOrCreate(
                 ['code' => 'JO'],
                 [
@@ -58,32 +58,43 @@ class SyncLogestechsApi extends Command
 
             foreach ($villages as $village) {
 
+         
+                $govAr = $this->translateName($village['regionName']);
                 $governorate = Governorate::firstOrCreate(
                     ['logestechs_id' => $village['regionId']],
                     [
                         'country_id' => $jordan->id,
+                        'name_ar' => $govAr,
                         'name_en' => $village['regionName'],
-                        'name_ar' => $village['regionName'],
                         'is_active' => true,
                     ]
                 );
+
+                $cityAr = $village['cityArabicName'];
+                if (!$cityAr) {
+                    $engName = $village['englishName'] ?? $village['name'];
+                    if ($engName && strtolower(trim($village['cityName'])) === strtolower(trim($engName))) {
+                        $cityAr = $village['arabicName'];
+                    } else {
+                        $cityAr = $this->translateName($village['cityName']);
+                    }
+                }
 
                 $city = City::firstOrCreate(
                     ['logestechs_id' => $village['cityId']],
                     [
                         'governorate_id' => $governorate->id,
+                        'name_ar' => $cityAr ?: $village['cityName'],
                         'name_en' => $village['cityName'],
-                        'name_ar' => $village['cityName'],
                         'is_active' => true,
                     ]
                 );
-
                 Area::firstOrCreate(
                     ['logestechs_id' => $village['id']],
                     [
                         'city_id' => $city->id,
-                        'name_en' => $village['name'],
                         'name_ar' => $village['arabicName'] ?? $village['name'],
+                        'name_en' => $village['englishName'] ?? $village['name'],
                         'is_active' => true,
                     ]
                 );
@@ -98,5 +109,38 @@ class SyncLogestechsApi extends Command
         } catch (\Exception $e) {
             $this->error('Error: '.$e->getMessage());
         }
+    }
+
+    private function translateName($name)
+    {
+        if (!$name) return $name;
+        
+        $map = [
+            'amman' => 'عمان',
+            'zarqa\'' => 'الزرقاء',
+            'zarqa' => 'الزرقاء',
+            'new zarqa' => 'الزرقاء الجديدة',
+            'irbid' => 'إربد',
+            'aqaba' => 'العقبة',
+            'mafraq' => 'المفرق',
+            'jerash' => 'جرش',
+            'ajloun' => 'عجلون',
+            'balqa\'' => 'البلقاء',
+            'balqaa\'' => 'البلقاء',
+            'balqa' => 'البلقاء',
+            'madaba' => 'مأدبا',
+            'karak' => 'الكرك',
+            'tafilah' => 'الطفيلة',
+            'ma\'an' => 'معان',
+            'maan' => 'معان',
+            'petra' => 'البتراء',
+            'ramtha' => 'الرمثا',
+            'salt' => 'السلط',
+            'dead sea' => 'البحر الميت',
+            'russeifa' => 'الرصيفة',
+        ];
+
+        $lowerName = strtolower(trim($name));
+        return $map[$lowerName] ?? $name;
     }
 }

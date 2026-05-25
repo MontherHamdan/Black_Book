@@ -98,11 +98,16 @@ class GovernorateController extends Controller
      */
     public function destroy(Governorate $governorate)
     {
-        // إذا كان هناك مدن مرتبطة بهذه المحافظة، يفضل حذفها أو منع الحذف
-        // $governorate->cities()->delete(); // في حال أردت تفعيل الحذف المتسلسل مستقبلاً
+        \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
+        foreach ($governorate->cities as $city) {
+            $city->areas()->delete();
+        }
+        $governorate->cities()->delete();
         $governorate->delete();
 
-        return redirect()->route('governorates.index')->with('success', 'تم حذف المحافظة بنجاح.');
+        \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+        return redirect()->route('governorates.index')->with('success', 'تم حذف المحافظة وجميع مدنها ومناطقها بنجاح.');
     }
 }

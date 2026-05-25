@@ -419,45 +419,87 @@
                     loadingIcon.id = 'status-spinner';
                     selectElement.parentNode.appendChild(loadingIcon);
 
-                    fetch('{{ route("orders.bulkUpdateStatus") }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        },
-                        body: JSON.stringify({ order_ids: groupIdsArray, status: newStatus })
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire({
-                                    title: 'تم بنجاح!',
-                                    text: 'تم تحديث الحالات بنجاح.',
-                                    icon: 'success',
-                                    confirmButtonColor: '#10b981',
-                                    confirmButtonText: 'إغلاق'
-                                }).then(() => location.reload());
-                            } else {
-                                Swal.fire('خطأ', data.message || 'حدث خطأ أثناء التحديث.', 'error');
-                                // Revert back to original value
-                                selectElement.value = originalValue;
-                                selectElement.disabled = false;
-                                document.getElementById('status-spinner').remove();
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            Swal.fire('خطأ اتصال', 'يرجى التحقق من اتصال الإنترنت والمحاولة مجدداً.', 'error');
-                            // Revert back to original value
-                            selectElement.value = originalValue;
-                            selectElement.disabled = false;
-                            document.getElementById('status-spinner').remove();
-                        });
+                    sendStatusUpdate(selectElement, groupIdsArray, newStatus, originalValue, false);
                 } else {
                     // If user cancels, revert the dropdown to its previous value
                     selectElement.value = originalValue;
                 }
             });
+        }
+
+        function sendStatusUpdate(selectElement, groupIdsArray, newStatus, originalValue, skipLogestechs) {
+            fetch('{{ route("orders.bulkUpdateStatus") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    order_ids: groupIdsArray,
+                    status: newStatus,
+                    skip_logestechs: skipLogestechs
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'تم بنجاح!',
+                            text: 'تم تحديث الحالات بنجاح.',
+                            icon: 'success',
+                            confirmButtonColor: '#10b981',
+                            confirmButtonText: 'إغلاق'
+                        }).then(() => location.reload());
+                    } else {
+                        // إزالة الـ spinner أولاً
+                        const spinner = document.getElementById('status-spinner');
+                        if (spinner) spinner.remove();
+                        selectElement.disabled = false;
+
+                        // 🔑 هل الأدمن يقدر يتجاوز شركة التوصيل؟
+                        if (data.can_skip) {
+                            Swal.fire({
+                                title: 'فشل الاتصال بشركة التوصيل',
+                                html: `<div class="text-start" dir="rtl">
+                                    <p class="text-danger fw-bold">${data.message}</p>
+                                    <hr>
+                                    <p class="text-muted small">هل تريد تحديث الحالة في النظام <strong>بدون</strong> إرسال لشركة التوصيل؟<br>يمكنك إضافة بوليصة الشحن يدوياً لاحقاً.</p>
+                                </div>`,
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonText: '⚡ نعم، تجاوز شركة التوصيل',
+                                cancelButtonText: 'إلغاء',
+                                confirmButtonColor: '#f59e0b',
+                                cancelButtonColor: '#94a3b8',
+                                reverseButtons: true
+                            }).then((bypassResult) => {
+                                if (bypassResult.isConfirmed) {
+                                    // أضف الـ spinner مجدداً
+                                    const newSpinner = document.createElement('i');
+                                    newSpinner.className = 'fas fa-spinner fa-spin ms-2 text-warning';
+                                    newSpinner.id = 'status-spinner';
+                                    selectElement.parentNode.appendChild(newSpinner);
+                                    selectElement.disabled = true;
+
+                                    sendStatusUpdate(selectElement, groupIdsArray, newStatus, originalValue, true);
+                                } else {
+                                    selectElement.value = originalValue;
+                                }
+                            });
+                        } else {
+                            Swal.fire('خطأ', data.message || 'حدث خطأ أثناء التحديث.', 'error');
+                            selectElement.value = originalValue;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    const spinner = document.getElementById('status-spinner');
+                    if (spinner) spinner.remove();
+                    Swal.fire('خطأ اتصال', 'يرجى التحقق من اتصال الإنترنت والمحاولة مجدداً.', 'error');
+                    selectElement.value = originalValue;
+                    selectElement.disabled = false;
+                });
         }
 
         document.addEventListener('DOMContentLoaded', function () {

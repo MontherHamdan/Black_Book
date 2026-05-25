@@ -1080,13 +1080,20 @@ class OrderWebController extends Controller
         }
 
         $request->validate([
-            'order_ids' => 'required|array',
-            'order_ids.*' => 'required|exists:orders,id',
-            'status' => 'required|string',
+            'order_ids'        => 'required|array',
+            'order_ids.*'      => 'required|exists:orders,id',
+            'status'           => 'required|string',
+            'skip_logestechs'  => 'sometimes|boolean',
         ]);
 
-        $status = $request->input('status');
-        $orderIds = $request->input('order_ids', []);
+        $status          = $request->input('status');
+        $orderIds        = $request->input('order_ids', []);
+        $skipLogestechs  = (bool) $request->input('skip_logestechs', false);
+
+        // فقط الأدمن يقدر يتجاوز شركة التوصيل
+        if ($skipLogestechs && ! $user->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'فقط المدير يمكنه تجاوز شركة التوصيل.'], 403);
+        }
 
         // Validate if the user is allowed to set this specific status
         $allowed = $this->getAllowedStatuses($user);
@@ -1097,7 +1104,7 @@ class OrderWebController extends Controller
         // 🚀 إضافة اللوجيك الخاص بإلغاء الشحنة من شركة التوصيل
         if ($status === 'Canceled') {
             // جلب أرقام بوليصات الشحن الفريدة للطلبات المحددة
-            $ordersToCancel = Order::whereIn('id', $orderIds)->whereNotNull('logestechs_order_id')->get();
+            $ordersToCancel    = Order::whereIn('id', $orderIds)->whereNotNull('logestechs_order_id')->get();
             $uniqueShipmentIds = $ordersToCancel->pluck('logestechs_order_id')->unique()->filter();
 
             foreach ($uniqueShipmentIds as $shipmentId) {
@@ -1117,7 +1124,20 @@ class OrderWebController extends Controller
             $orders = Order::whereIn('id', $orderIds)->get();
 
             foreach ($orders as $order) {
+                // إذا الطلب عنده logestechs_order_id مسبقاً — تجاوز الـ API وحدّث مباشرة
                 if (! empty($order->logestechs_order_id)) {
+                    $order->status       = $status;
+                    $order->dispatched_at = now();
+                    $order->save();
+                    continue;
+                }
+
+                // 🚪 Admin bypass: تجاوز شركة التوصيل بالكامل
+                if ($skipLogestechs) {
+                    $order->status       = $status;
+                    $order->dispatched_at = now();
+                    $order->save();
+                    Log::info('LogesTechs Bypassed by admin', ['order_id' => $order->id, 'admin_id' => $user->id]);
                     continue;
                 }
 
@@ -1149,8 +1169,8 @@ class OrderWebController extends Controller
 
                     if ($sibling) {
                         $order->logestechs_order_id = $sibling->logestechs_order_id;
-                        $order->status = $status;
-                        $order->dispatched_at = now();
+                        $order->status              = $status;
+                        $order->dispatched_at       = now();
                         $order->save();
 
                         continue;
@@ -1162,14 +1182,16 @@ class OrderWebController extends Controller
 
                 if (! $logestechsResponse['success']) {
                     return response()->json([
-                        'success' => false,
-                        'message' => "فشل ترحيل الطلب #{$order->id}: " . $logestechsResponse['message'],
+                        'success'          => false,
+                        'message'          => "فشل ترحيل الطلب #{$order->id}: " . $logestechsResponse['message'],
+                        'can_skip'         => $user->isAdmin(),  // 🔑 علّم الـ frontend إنه في bypass
+                        'failed_order_ids' => $orderIds,
                     ], 422);
                 }
 
                 $order->logestechs_order_id = $logestechsResponse['data']['id'] ?? null;
-                $order->status = $status;
-                $order->dispatched_at = now();
+                $order->status              = $status;
+                $order->dispatched_at       = now();
                 $order->save();
 
                 if ($isGroupOrder && $order->logestechs_order_id) {
@@ -1177,8 +1199,8 @@ class OrderWebController extends Controller
                         ->where('id', '!=', $order->id)
                         ->update([
                             'logestechs_order_id' => $order->logestechs_order_id,
-                            'status' => $status,
-                            'dispatched_at' => now(),
+                            'status'              => $status,
+                            'dispatched_at'       => now(),
                         ]);
                 }
             }

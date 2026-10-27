@@ -6,6 +6,7 @@ use App\Http\Controllers\BookDecorationController;
 use App\Http\Controllers\BookDesignCategoryController;
 use App\Http\Controllers\BookDesignController;
 use App\Http\Controllers\BookDesignSubCategoryController;
+use App\Http\Controllers\BookTypeColorController;
 use App\Http\Controllers\BookTypeController;
 use App\Http\Controllers\BookTypeSubMediaController;
 use App\Http\Controllers\CountryController;
@@ -77,6 +78,7 @@ Route::get('/admin/areas/{city_id}', [OrderWebController::class, 'adminGetAreas'
     Route::put('/orders/{order}/internal-book', [OrderWebController::class, 'updateInternalBook'])->name('orders.updateInternalBook');
     Route::put('/orders/{order}/binding-tab', [OrderWebController::class, 'updateBindingTab'])->name('orders.updateBindingTab');
     Route::put('/orders/{order}/design-image', [OrderWebController::class, 'updateDesignImage'])->name('orders.updateDesignImage');
+    Route::put('/orders/{order}/custom-design-image', [OrderWebController::class, 'updateCustomDesignImage'])->name('orders.updateCustomDesignImage');
     Route::put('/orders/{order}/delivery-info', [OrderWebController::class, 'updateDeliveryInfo'])->name('orders.updateDeliveryInfo');
 
     Route::put('/orders/{order}/dismiss-notes', [OrderWebController::class, 'dismissNotes'])->name('orders.dismissNotes');
@@ -119,6 +121,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/admin/designers/{user}/penalty', [DashboardController::class, 'applyDesignerPenalty'])->name('admin.designers.penalty');
 
     // book design
+    Route::post('book-designs/update-order', [BookDesignController::class, 'updateOrder'])->name('book-designs.update-order');
     Route::resource('book-designs', BookDesignController::class);
 
     // Categories
@@ -133,6 +136,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // book type sub media
     Route::post('book-type-sub-media', [BookTypeSubMediaController::class, 'store'])->name('book-type-sub-media.store');
     Route::delete('book-type-sub-media/{subMedia}', [BookTypeSubMediaController::class, 'destroy'])->name('book-type-sub-media.destroy');
+
+    // book type colors
+    Route::post('book-type-colors', [BookTypeColorController::class, 'store'])->name('book-type-colors.store');
+    Route::put('book-type-colors/{bookTypeColor}', [BookTypeColorController::class, 'update'])->name('book-type-colors.update');
+    Route::delete('book-type-colors/{bookTypeColor}', [BookTypeColorController::class, 'destroy'])->name('book-type-colors.destroy');
 
     // Book Decorations
     Route::resource('book-decorations', BookDecorationController::class);

@@ -28,8 +28,10 @@ class BookDesignController extends Controller
             $query->where('sub_category_id', $request->input('sub_category_id'));
         }
 
-        // Include relationships
-        return $query->with(['category', 'subcategory']);
+        // Include relationships and order by display order
+        return $query->with(['category', 'subcategory'])
+            ->orderBy('order_display', 'asc')
+            ->orderBy('id', 'desc');
     }
 
     /**

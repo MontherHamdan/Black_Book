@@ -23,15 +23,26 @@
                         <!-- Section Title -->
                         <h4 class="mb-4 text-primary">Create Book Design</h4>
 
-                        <!-- Book Design Image -->
-                        <div class="form-group mb-4">
-                            <label for="design_name" class="form-label fw-bold">Design Name (Optional)</label>
-                            <input type="text" name="design_name" id="design_name"
-                                class="form-control @error('design_name') is-invalid @enderror"
-                                value="{{ old('design_name') }}" placeholder="Enter a distinctive name for this design...">
-                            @error('design_name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="design_name" class="form-label fw-bold">Design Name (Optional)</label>
+                                <input type="text" name="design_name" id="design_name"
+                                    class="form-control @error('design_name') is-invalid @enderror"
+                                    value="{{ old('design_name') }}" placeholder="Enter a distinctive name for this design...">
+                                @error('design_name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="col-md-6">
+                                <label for="order_display" class="form-label fw-bold">Order Display / ترتيب الظهور</label>
+                                <input type="number" name="order_display" id="order_display"
+                                    class="form-control @error('order_display') is-invalid @enderror"
+                                    value="{{ old('order_display', 0) }}" min="0" placeholder="0, 1, 2...">
+                                <small class="text-muted">الأرقام الأصغر تظهر أولاً (مثلاً: 1 يظهر قبل 2)</small>
+                                @error('order_display')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
 
                         <div class="form-group mb-4">

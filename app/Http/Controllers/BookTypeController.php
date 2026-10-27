@@ -12,7 +12,7 @@ class BookTypeController extends Controller
      */
     public function index()
     {
-        $bookTypes = BookType::all();
+        $bookTypes = BookType::with(['colors', 'subMedia'])->get();
         return view('admin.book_types.index', compact('bookTypes'));
     }
 
@@ -68,6 +68,7 @@ class BookTypeController extends Controller
      */
     public function edit(BookType $bookType)
     {
+        $bookType->load(['colors', 'subMedia']);
         return view('admin.book_types.edit', compact('bookType'));
     }
 

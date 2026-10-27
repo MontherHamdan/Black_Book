@@ -12,7 +12,7 @@ class BookTypeController extends Controller
     public function index()
     {
         $bookTypes = Cache::remember('book_types', 3600, function () {
-            return BookType::with('subMedia')->get();
+            return BookType::with(['subMedia', 'colors'])->get();
         });
 
         return BookTypeResource::collection($bookTypes);

@@ -31,6 +31,7 @@ class OrderController extends Controller
             'user_gender' => 'required|in:male,female,group',
             'discount_code_id' => 'nullable|exists:discount_codes,id',
             'book_type_id' => 'required|exists:book_types,id',
+            'book_color_id' => 'nullable|exists:book_type_colors,id',
 
             // تصميم
             'book_design_id' => 'nullable|exists:book_designs,id',

@@ -18,4 +18,9 @@ class BookType extends Model
     {
         return $this->hasMany(BookTypeSubMedia::class);
     }
+
+    public function colors()
+    {
+        return $this->hasMany(BookTypeColor::class)->orderBy('order_display');
+    }
 }

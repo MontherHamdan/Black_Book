@@ -15,7 +15,10 @@ class BookDesignController extends Controller
      */
     public function index()
     {
-        $bookDesigns = BookDesign::with(['category', 'subCategory'])->get();
+        $bookDesigns = BookDesign::with(['category', 'subCategory'])
+            ->orderBy('order_display', 'asc')
+            ->orderBy('id', 'desc')
+            ->get();
 
         return view('admin.bookDesign.index', compact('bookDesigns'));
     }
@@ -38,6 +41,7 @@ class BookDesignController extends Controller
         // Validate incoming request
         $validated = $request->validate([
             'design_name' => 'nullable|string|max:255',
+            'order_display' => 'nullable|integer|min:0',
             'image' => 'required|image|mimes:jpeg,png,gif,webp|max:20480',
             'category_id' => 'required|exists:book_design_categories,id',
             'sub_category_id' => 'nullable|exists:book_design_sub_categories,id',
@@ -60,6 +64,7 @@ class BookDesignController extends Controller
         // Save the image URL and other data in the database
         BookDesign::create([
             'design_name' => $validated['design_name'] ?? null,
+            'order_display' => $validated['order_display'] ?? 0,
             'image' => $imageUrl, // Store the full URL instead of just the path
             'category_id' => $validated['category_id'],
             'sub_category_id' => $subCategoryId,
@@ -101,6 +106,7 @@ class BookDesignController extends Controller
         // Validate the input
         $validated = $request->validate([
             'design_name' => 'nullable|string|max:255',
+            'order_display' => 'nullable|integer|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,gif,webp|max:20480',
             'category_id' => 'required|exists:book_design_categories,id',
             'sub_category_id' => 'nullable|exists:book_design_sub_categories,id',
@@ -127,6 +133,7 @@ class BookDesignController extends Controller
         // Update the BookDesign record
         $bookDesign->update([
             'design_name' => $validated['design_name'] ?? $bookDesign->design_name,
+            'order_display' => $request->has('order_display') ? (int) $request->input('order_display') : $bookDesign->order_display,
             'image' => $validated['image'] ?? $bookDesign->image,
             'category_id' => $validated['category_id'],
             'sub_category_id' => $validated['sub_category_id'] ?? null,
@@ -145,5 +152,27 @@ class BookDesignController extends Controller
         $bookDesign->delete();
 
         return redirect()->route('book-designs.index')->with('success', 'Book Design moved to trash successfully.');
+    }
+
+    /**
+     * Update order of book designs via drag-and-drop.
+     */
+    public function updateOrder(Request $request)
+    {
+        $request->validate([
+            'order' => 'required|array',
+            'order.*' => 'exists:book_designs,id',
+        ]);
+
+        \DB::transaction(function () use ($request) {
+            foreach ($request->order as $index => $id) {
+                BookDesign::where('id', $id)->update(['order_display' => $index + 1]);
+            }
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم حفظ ترتيب ظهور التصاميم بنجاح.',
+        ]);
     }
 }

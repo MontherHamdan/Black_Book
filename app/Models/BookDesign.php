@@ -13,7 +13,21 @@ class BookDesign extends Model
 
     protected $table = 'book_designs';
 
-    protected $fillable = ['design_name', 'image', 'category_id', 'sub_category_id', 'is_uploaded_by_user', 'is_image_required'];
+    protected $fillable = [
+        'design_name',
+        'order_display',
+        'image',
+        'category_id',
+        'sub_category_id',
+        'is_uploaded_by_user',
+        'is_image_required',
+    ];
+
+    protected $casts = [
+        'order_display' => 'integer',
+        'is_uploaded_by_user' => 'boolean',
+        'is_image_required' => 'boolean',
+    ];
 
     public function category()
     {

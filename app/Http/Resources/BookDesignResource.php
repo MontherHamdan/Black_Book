@@ -19,6 +19,7 @@ class BookDesignResource extends JsonResource
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
             'is_image_required' => (bool) $this->is_image_required,
+            'order_display' => (int) ($this->order_display ?? 0),
         ];
     }
 }

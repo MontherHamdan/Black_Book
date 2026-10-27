@@ -23,6 +23,7 @@ class BookTypeResource extends JsonResource
             'description_en' => $this->description_en,
             'description_ar' => $this->description_ar,
             'sub_media' => BookTypeSubMediaResource::collection($this->subMedia),
+            'colors' => BookTypeColorResource::collection($this->colors),
         ];
     }
 }

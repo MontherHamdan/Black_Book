@@ -404,15 +404,49 @@
                                 <span>{{ $order->bookType->name_ar ?? 'غير متوفر' }}</span>
                             </div>
 
+                            @if ($order->bookColor || ($order->bookType && $order->bookType->colors && $order->bookType->colors->isNotEmpty()))
+                                <div class="info-row">
+                                    <strong>لون المنتج:</strong>
+                                    <span>
+                                        @if ($order->bookColor)
+                                            <span class="d-inline-flex align-items-center gap-2">
+                                                @if ($order->bookColor->color_code)
+                                                    <span class="rounded-circle d-inline-block border shadow-sm"
+                                                        style="width: 18px; height: 18px; background-color: {{ $order->bookColor->color_code }}; vertical-align: middle;"></span>
+                                                @endif
+                                                <span class="fw-bold">{{ $order->bookColor->name_ar }}</span>
+                                                @if ($order->bookColor->name_en)
+                                                    <small class="text-muted">({{ $order->bookColor->name_en }})</small>
+                                                @endif
+                                            </span>
+                                        @else
+                                            <span class="text-muted">اللون الافتراضي (بدون تحديد)</span>
+                                        @endif
+                                    </span>
+                                </div>
+                            @endif
+
                             <div class="section-separator"></div>
 
                             <div class="mb-3">
-                                <div class="section-label">صورة المنتج:</div>
+                                <div class="section-label">
+                                    {{ $order->bookColor ? 'صورة المنتج (باللون المختار):' : 'صورة المنتج:' }}
+                                </div>
                                 <div class="d-flex justify-content-start">
-                                    @if ($order->bookType && $order->bookType->image)
-                                        <img class="unified-image mb-2"
-                                            style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
-                                            src="{{ $order->bookType->image }}" alt="صورة التصميم">
+                                    @php
+                                        $displayProductImage = $order->bookColor && $order->bookColor->image
+                                            ? $order->bookColor->image
+                                            : ($order->bookType ? $order->bookType->image : null);
+                                    @endphp
+                                    @if ($displayProductImage)
+                                        <div class="text-center mx-auto">
+                                            <img class="unified-image mb-2"
+                                                style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
+                                                src="{{ $displayProductImage }}" alt="صورة المنتج">
+                                            @if ($order->bookColor)
+                                                <span class="badge bg-secondary mt-1">اللون المختار: {{ $order->bookColor->name_ar }}</span>
+                                            @endif
+                                        </div>
                                     @else
                                         <span class="text-muted">لا يوجد تصميم متوفر</span>
                                     @endif
@@ -1578,10 +1612,14 @@
                                             {{ $order->user_phone_number ?? 'غير متوفر' }}
                                         </span>
                                         @if (!empty($order->user_phone_number))
-                                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $order->user_phone_number) }}"
-                                                target="_blank" class="ms-2" style="color: #25D366; font-size: 22px;">
-                                                <i class="fab fa-whatsapp"></i>
-                                            </a>
+                                            <button type="button"
+                                                class="btn btn-sm btn-light border ms-2 p-0 d-inline-flex align-items-center justify-content-center shadow-sm copy-text-btn"
+                                                style="width: 28px; height: 28px; border-radius: 6px; transition: all 0.2s;"
+                                                onclick="copyPhoneNumber(this, '{{ addslashes($order->user_phone_number) }}')"
+                                                data-clipboard-text="{{ $order->user_phone_number }}"
+                                                title="نسخ الرقم">
+                                                <i class="far fa-copy text-secondary" style="font-size: 13px;"></i>
+                                            </button>
                                         @endif
                                     </div>
                                 </div>
@@ -1700,16 +1738,16 @@
                                         </p>
                                     @endif
 
-                                    <div class="design-image-wrapper position-relative text-center"
-                                        style="display: inline-block; width: 100%;">
-                                        <img src="{{ $designImagePath }}" class="unified-image mb-2"
-                                            style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
+                                    <div class="design-image-wrapper position-relative text-center mx-auto"
+                                        style="max-width: 550px; width: 100%; display: block;">
+                                        <img src="{{ $designImagePath }}" class="mb-2"
+                                            style="width: 100%; max-width: 100%; height: auto; border-radius: 12px; display: block; margin: 0 auto;"
                                             alt="صورة التصميم المختارة">
 
                                         @if ($isAdmin || $isDesigner)
                                             <button type="button"
                                                 class="btn btn-sm btn-light position-absolute shadow-sm"
-                                                style="top: 10px; right: 50%; transform: translateX(165px); border-radius: 50%; width: 35px; height: 35px; padding: 0; z-index: 10;"
+                                                style="top: 10px; right: 10px; border-radius: 50%; width: 35px; height: 35px; padding: 0; z-index: 10;"
                                                 title="تعديل"
                                                 onclick="document.getElementById('direct_upload_book_design').click();">
                                                 <i class="fas fa-pencil-alt text-primary"></i>
@@ -1769,46 +1807,49 @@
 
                                 @if ($customDesignImages && $customDesignImages->isNotEmpty())
                                     {{-- ✅ تم حذف ה- div الزائد (another-carousel-wrap) ليتطابق مع الصور الخلفية --}}
-                                    <div id="anotherDesignCarousel" class="carousel slide mb-3" data-bs-ride="false">
+                                    <div id="anotherDesignCarousel" class="carousel slide mb-3" data-bs-ride="false"
+                                        style="max-width: 550px !important;">
 
                                         <div class="carousel-inner text-center">
                                             @foreach ($customDesignImages as $index => $img)
                                                 <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
-                                                    <div class="image-wrapper-relative mx-auto">
+                                                    <div class="image-wrapper-relative mx-auto" style="max-width: 550px; width: 100%; display: block;">
                                                         @if ($isAdmin || $isDesigner)
+                                                            <button type="button" class="delete-image-btn"
+                                                                onclick="deleteOrderImage('custom_design_image_id', {{ $img->id }})"
+                                                                title="حذف الصورة">
+                                                                <i class="fas fa-trash-alt"></i>
+                                                            </button>
                                                             <div
                                                                 class="text-center mt-2 d-flex gap-2 justify-content-center flex-wrap">
                                                                 <button type="button"
                                                                     class="btn btn-sm btn-outline-secondary"
-                                                                    onclick="document.getElementById('direct_upload_design_file').click();">
+                                                                    onclick="document.getElementById('direct_upload_custom_design').click();">
                                                                     <i class="fas fa-file-upload me-1"></i> رفع ملف
-                                                                </button>
-                                                                <button type="button"
-                                                                    class="btn btn-sm btn-outline-primary"
-                                                                    onclick="document.getElementById('direct_upload_design_folder').click();">
-                                                                    <i class="fas fa-folder-open me-1"></i> رفع مجلد
                                                                 </button>
                                                             </div>
                                                         @endif
-                                                        <img src="{{ $img->resolved_url }}" class="unified-image mb-2"
-                                                            style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
+                                                        <img src="{{ $img->resolved_url }}" class="mb-2"
+                                                            style="width: 100%; max-width: 100%; height: auto; border-radius: 12px; display: block; margin: 0 auto;"
                                                             alt="تصميم آخر {{ $index + 1 }}">
                                                     </div>
                                                 </div>
                                             @endforeach
                                         </div>
 
-                                        <button class="carousel-control-prev custom-carousel-control" type="button"
-                                            data-bs-target="#anotherDesignCarousel" data-bs-slide="prev">
-                                            <span class="carousel-control-prev-icon"></span>
-                                            <span class="visually-hidden">السابق</span>
-                                        </button>
+                                        @if ($customDesignImages->count() > 1)
+                                            <button class="carousel-control-prev custom-carousel-control" type="button"
+                                                data-bs-target="#anotherDesignCarousel" data-bs-slide="prev">
+                                                <span class="carousel-control-prev-icon"></span>
+                                                <span class="visually-hidden">السابق</span>
+                                            </button>
 
-                                        <button class="carousel-control-next custom-carousel-control" type="button"
-                                            data-bs-target="#anotherDesignCarousel" data-bs-slide="next">
-                                            <span class="carousel-control-next-icon"></span>
-                                            <span class="visually-hidden">التالي</span>
-                                        </button>
+                                            <button class="carousel-control-next custom-carousel-control" type="button"
+                                                data-bs-target="#anotherDesignCarousel" data-bs-slide="next">
+                                                <span class="carousel-control-next-icon"></span>
+                                                <span class="visually-hidden">التالي</span>
+                                            </button>
+                                        @endif
 
                                     </div>
 
@@ -1827,7 +1868,25 @@
                                     </div>
                                 @else
                                     <p class="text-muted">لا يوجد تصميم آخر.</p>
+                                    @if ($isAdmin || $isDesigner)
+                                        <div class="mt-2">
+                                            <button type="button" class="btn btn-sm btn-outline-primary"
+                                                onclick="document.getElementById('direct_upload_custom_design').click();">
+                                                <i class="fas fa-file-upload me-1"></i> رفع ملف
+                                            </button>
+                                        </div>
+                                    @endif
                                 @endif
+
+                                <form id="directUploadForm_customDesign"
+                                    action="{{ route('orders.updateCustomDesignImage', $order->id) }}" method="POST"
+                                    enctype="multipart/form-data" style="display: none !important;">
+                                    @csrf
+                                    @method('PUT')
+                                    <input type="file" id="direct_upload_custom_design" name="custom_design_file"
+                                        accept="image/*" style="display: none !important;"
+                                        onchange="document.getElementById('directUploadForm_customDesign').submit();">
+                                </form>
                             </div>
 
                             {{-- 4️⃣ الصورة الأمامية --}}
@@ -1835,15 +1894,15 @@
                                 <strong class="d-block mb-2">الصورة الأمامية</strong>
 
                                 @if ($frontSrc)
-                                    <div class="image-wrapper-relative mx-auto">
+                                    <div class="image-wrapper-relative mx-auto" style="max-width: 550px; width: 100%; display: block;">
                                         @if ($isAdmin || $isDesigner)
                                             <button type="button" class="delete-image-btn"
                                                 onclick="deleteOrderImage('front_image_id')" title="حذف الصورة">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
                                         @endif
-                                        <img src="{{ $frontSrc }}" class="unified-image mb-2"
-                                            style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
+                                        <img src="{{ $frontSrc }}" class="mb-2"
+                                            style="width: 100%; max-width: 100%; height: auto; border-radius: 12px; display: block; margin: 0 auto;"
                                             alt="الصورة الأمامية">
                                     </div>
 
@@ -1871,7 +1930,8 @@
                                 </strong>
 
                                 @if ($backImages && $backImages->isNotEmpty())
-                                    <div id="finalBackImagesCarousel" class="carousel slide mb-3" data-bs-ride="false">
+                                    <div id="finalBackImagesCarousel" class="carousel slide mb-3" data-bs-ride="false"
+                                        style="max-width: 550px !important;">
                                         <div class="carousel-inner text-center">
                                             @foreach ($backImages as $index => $backImage)
                                                 @php
@@ -1880,7 +1940,7 @@
 
                                                 @if ($backSrc)
                                                     <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
-                                                        <div class="image-wrapper-relative mx-auto">
+                                                        <div class="image-wrapper-relative mx-auto" style="max-width: 550px; width: 100%; display: block;">
                                                             @if ($isAdmin || $isDesigner)
                                                                 <button type="button" class="delete-image-btn"
                                                                     onclick="deleteOrderImage('back_image_ids', {{ $backImage->id }})"
@@ -1888,8 +1948,8 @@
                                                                     <i class="fas fa-trash-alt"></i>
                                                                 </button>
                                                             @endif
-                                                            <img src="{{ $backSrc }}" class="unified-image mb-2"
-                                                                style="width:100%;max-width:350px;height:350px;object-fit:cover;object-position:center;border-radius:12px;display:block;margin:0 auto;"
+                                                            <img src="{{ $backSrc }}" class="mb-2"
+                                                                style="width: 100%; max-width: 100%; height: auto; border-radius: 12px; display: block; margin: 0 auto;"
                                                                 alt="الصورة الخلفية {{ $index + 1 }}">
                                                         </div>
                                                     </div>
@@ -2051,7 +2111,7 @@
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label class="form-label">نوع المنتج (Book Type)</label>
-                                <select name="book_type_id" class="form-select">
+                                <select name="book_type_id" id="modal_book_type_select" class="form-select">
                                     <option value="">اختر المنتج</option>
                                     @foreach ($bookTypes as $bt)
                                         <option value="{{ $bt->id }}"
@@ -2059,6 +2119,20 @@
                                             {{ $bt->name_ar }}
                                         </option>
                                     @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">لون المنتج (Book Color)</label>
+                                <select name="book_color_id" id="modal_book_color_select" class="form-select">
+                                    <option value="">بدون لون / افتراضي</option>
+                                    @if ($order->bookType && $order->bookType->colors && $order->bookType->colors->isNotEmpty())
+                                        @foreach ($order->bookType->colors as $col)
+                                            <option value="{{ $col->id }}"
+                                                {{ $order->book_color_id == $col->id ? 'selected' : '' }}>
+                                                {{ $col->name_ar }}
+                                            </option>
+                                        @endforeach
+                                    @endif
                                 </select>
                             </div>
                             <div class="mb-3">
@@ -3034,11 +3108,102 @@
                 setTimeout(() => URL.revokeObjectURL(url), 3000);
             });
         });
-        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
-            new bootstrap.Tooltip(el, {
-                trigger: 'hover'
+        if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+                new bootstrap.Tooltip(el, {
+                    trigger: 'hover'
+                });
+            });
+        }
+
+        window.copyPhoneNumber = function(btn, text) {
+            if (!text && btn) {
+                text = btn.getAttribute('data-clipboard-text');
+            }
+            if (!text) return;
+
+            const icon = btn ? btn.querySelector('i') : null;
+
+            function onDone() {
+                if (icon) {
+                    icon.className = 'fas fa-check text-success';
+                    setTimeout(() => {
+                        icon.className = 'far fa-copy text-secondary';
+                    }, 2000);
+                }
+                if (typeof toastr !== 'undefined') {
+                    toastr.success('تم نسخ الرقم بنجاح');
+                } else if (typeof Swal !== 'undefined') {
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true,
+                    });
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'تم نسخ الرقم بنجاح'
+                    });
+                }
+            }
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(onDone).catch(() => fallback(text, onDone));
+            } else {
+                fallback(text, onDone);
+            }
+
+            function fallback(val, cb) {
+                const ta = document.createElement('textarea');
+                ta.value = val;
+                ta.setAttribute('readonly', '');
+                ta.style.position = 'fixed';
+                ta.style.top = '0';
+                ta.style.left = '-9999px';
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                try {
+                    const ok = document.execCommand('copy');
+                    if (ok) cb();
+                } catch (e) {
+                    console.error('Fallback copy failed', e);
+                }
+                document.body.removeChild(ta);
+            }
+        };
+
+        document.querySelectorAll('.copy-text-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const text = this.getAttribute('data-clipboard-text');
+                window.copyPhoneNumber(this, text);
             });
         });
+
+        const bookTypesColorsMap = @json($bookTypes->mapWithKeys(function($bt) {
+            return [$bt->id => $bt->colors->map(function($c) {
+                return ['id' => $c->id, 'name_ar' => $c->name_ar];
+            })];
+        }));
+
+        const typeSelectEl = document.getElementById('modal_book_type_select');
+        if (typeSelectEl) {
+            typeSelectEl.addEventListener('change', function() {
+                const typeId = this.value;
+                const colorSelect = document.getElementById('modal_book_color_select');
+                if (!colorSelect) return;
+
+                colorSelect.innerHTML = '<option value="">بدون لون / افتراضي</option>';
+                const colors = bookTypesColorsMap[typeId] || [];
+                colors.forEach(function(c) {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = c.name_ar;
+                    colorSelect.appendChild(opt);
+                });
+            });
+        }
     </script>
     @if (session('success'))
     <script>

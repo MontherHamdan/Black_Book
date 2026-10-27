@@ -49,7 +49,8 @@ class OrderWebController extends Controller
 
         $order = Order::with([
             'discountCode',
-            'bookType',
+            'bookType.colors',
+            'bookColor',
             'governorate',
             'city',
             'area',
@@ -77,7 +78,7 @@ class OrderWebController extends Controller
         // نحمل المصمم لو مش محمل
         $order->loadMissing('designer');
 
-        $bookTypes = BookType::orderBy('name_ar')->get(['id', 'name_ar']);
+        $bookTypes = BookType::with('colors')->orderBy('name_ar')->get();
         $discountCodes = DiscountCode::orderBy('discount_code')->get(['id', 'discount_code', 'code_name']);
         $universities = University::with('majors')->orderBy('name')->get(['id', 'name']);
         $diplomas = Diploma::with('majors')->orderBy('name')->get(['id', 'name']);
@@ -2058,6 +2059,7 @@ class OrderWebController extends Controller
 
         $validated = $request->validate([
             'book_type_id' => 'nullable|exists:book_types,id',
+            'book_color_id' => 'nullable|exists:book_type_colors,id',
             'user_gender' => 'nullable|in:male,female',
             'final_price' => 'nullable|numeric',
             'final_price_with_discount' => 'nullable|numeric',
@@ -2149,28 +2151,40 @@ class OrderWebController extends Controller
                 $userImage = UserImage::create(['image_path' => $imageName]);
                 $backIds[] = $userImage->id;
             }
-            // Merge with existing or overwrite
+            // Merge with existing
             $existingIds = $order->back_image_ids;
             if (is_string($existingIds)) {
-                $existingIds = json_decode($existingIds, true) ?? [];
+                $decoded = json_decode($existingIds, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $existingIds = $decoded;
+                }
             }
-            $order->back_image_ids = json_encode(array_merge((array) $existingIds, $backIds));
+            if (! is_array($existingIds)) {
+                $existingIds = ! empty($existingIds) ? [(int) $existingIds] : [];
+            }
+            $order->back_image_ids = array_values(array_unique(array_merge($existingIds, $backIds)));
         }
 
-        // 🖼️ Custom Design Images upload (overwrite)
+        // 🖼️ Custom Design Images upload (إضافة الصور الجديدة إلى جانب الحالية)
         if ($request->hasFile('custom_design_images')) {
             $customIds = [];
             foreach ($request->file('custom_design_images') as $file) {
-                $imageName = time() . '_' . $file->getClientOriginalName();
+                $imageName = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
                 $file->storeAs('user_images', $imageName, 'public');
                 $userImage = UserImage::create(['image_path' => $imageName]);
                 $customIds[] = $userImage->id;
             }
             $existingIds = $order->custom_design_image_id;
             if (is_string($existingIds)) {
-                $existingIds = json_decode($existingIds, true) ?? [];
+                $decoded = json_decode($existingIds, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $existingIds = $decoded;
+                }
             }
-            $order->custom_design_image_id = json_encode(array_merge((array) $existingIds, $customIds));
+            if (! is_array($existingIds)) {
+                $existingIds = ! empty($existingIds) ? [(int) $existingIds] : [];
+            }
+            $order->custom_design_image_id = array_values(array_unique(array_merge($existingIds, $customIds)));
         }
 
         // SVG Upload
@@ -2506,6 +2520,51 @@ class OrderWebController extends Controller
         }
 
         return back()->with('success', 'تم تعديل صورة التصميم المختارة بنجاح.');
+    }
+
+    public function updateCustomDesignImage(Request $request, Order $order)
+    {
+        $user = $request->user();
+        if (! $user->isAdmin() && ! $user->isDesigner()) {
+            abort(403, 'غير مصرح لك بتعديل صور تصميم آخر.');
+        }
+
+        $request->validate([
+            'custom_design_file' => 'required|image|mimes:jpg,jpeg,png,webp|max:10240',
+        ]);
+
+        if ($request->hasFile('custom_design_file')) {
+            // 1. Delete all existing custom design images
+            $existingIds = $order->custom_design_image_id;
+            if (is_string($existingIds)) {
+                $decoded = json_decode($existingIds, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $existingIds = $decoded;
+                }
+            }
+            if (is_array($existingIds) && ! empty($existingIds)) {
+                $oldImages = UserImage::whereIn('id', $existingIds)->get();
+                foreach ($oldImages as $oldImg) {
+                    $this->deleteUserImageFile($oldImg);
+                    $oldImg->delete();
+                }
+            }
+
+            // 2. Upload the new single image
+            $file = $request->file('custom_design_file');
+            $imageName = time() . '_' . $file->getClientOriginalName();
+            $file->storeAs('user_images', $imageName, 'public');
+
+            $newUserImage = UserImage::create([
+                'image_path' => $imageName,
+            ]);
+
+            // 3. Set custom_design_image_id as an array with only this new image ID
+            $order->custom_design_image_id = [$newUserImage->id];
+            $order->save();
+        }
+
+        return back()->with('success', 'تم استبدال صورة تصميم آخر بنجاح.');
     }
 
     /**

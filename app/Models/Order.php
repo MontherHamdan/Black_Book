@@ -29,6 +29,7 @@ class Order extends Model
         'user_gender',
         'discount_code_id',
         'book_type_id',
+        'book_color_id',
         'book_design_id',
         'custom_design_image_id',
         'front_image_id',
@@ -132,6 +133,11 @@ class Order extends Model
     public function bookType()
     {
         return $this->belongsTo(BookType::class)->withTrashed();
+    }
+
+    public function bookColor()
+    {
+        return $this->belongsTo(BookTypeColor::class, 'book_color_id');
     }
 
     public function bookDesign()

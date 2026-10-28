@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PhoneNumbersConroller;
 use App\Http\Controllers\Api\PlanController;
 use App\Http\Controllers\Api\SpecializedDepartmentController;
+use App\Http\Controllers\Api\StatisticController;
 use App\Http\Controllers\Api\SvgController;
 use App\Http\Controllers\Api\UniversityController;
 use App\Http\Controllers\Api\UserImageController;
@@ -87,6 +88,9 @@ Route::prefix('v1')->name('api.')->group(function () {
 
     // Countries
     Route::get('countries', [CountryApiController::class, 'index']);
+
+    // Statistics (Our Story)
+    Route::get('/statistics', [StatisticController::class, 'index'])->name('statistics.index');
 
     Route::get('/locations/countries', [LocationController::class, 'getCountries']);
     Route::get('/locations/governorates', [LocationController::class, 'getGovernorates']);

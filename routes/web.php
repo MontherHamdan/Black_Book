@@ -22,6 +22,7 @@ use App\Http\Controllers\PhoneNumberController;
 use App\Http\Controllers\PlanWebController;
 use App\Http\Controllers\PrintQueueController;
 use App\Http\Controllers\SpecializedDepartmentWebController;
+use App\Http\Controllers\StatisticController;
 use App\Http\Controllers\SvgController;
 use App\Http\Controllers\SvgNameController;
 use App\Http\Controllers\UniversityController;
@@ -213,6 +214,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // Countries
     Route::resource('countries', CountryController::class);
+
+    // Statistics (Our Story)
+    Route::resource('statistics', StatisticController::class);
       Route::post('/locations/sync', function () {
         try {
             \Illuminate\Support\Facades\Artisan::call('logestechs:sync');

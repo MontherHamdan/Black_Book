@@ -247,6 +247,12 @@
                             <span> Countries </span>
                         </a>
                     </li>
+                    <li>
+                        <a href="{{ route('statistics.index') }}">
+                            <i class="mdi mdi-chart-box-outline"></i>
+                            <span> Statistics </span>
+                        </a>
+                    </li>
                     <li class="menu-title mt-2">Manager</li>
 
                     <li>

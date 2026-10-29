@@ -374,6 +374,35 @@ class OrderWebController extends Controller
     }
 
     /**
+     * عرض وطباعة فاتورة الطلب بصيغة PDF.
+     */
+    public function invoice($id)
+    {
+        $order = Order::with([
+            'discountCode',
+            'bookType',
+            'bookColor',
+            'governorate',
+            'city',
+            'area',
+            'bookDesign',
+            'bookDecoration',
+            'designer',
+            'university',
+            'universityMajor',
+            'diploma',
+            'diplomaMajor',
+            'deliveryUniversity',
+        ])->findOrFail($id);
+
+        $statusConfig = $this->statusConfig();
+        $statusLabel = $statusConfig[$order->status]['label'] ?? $order->status;
+        $statusClass = $statusConfig[$order->status]['class'] ?? 'badge-secondary';
+
+        return view('admin.order.invoice', compact('order', 'statusLabel', 'statusClass'));
+    }
+
+    /**
      * إعداد كونفيغ حالات الطلب (class + label) للاستخدام في جميع التبويبات.
      */
     private function statusConfig(): array

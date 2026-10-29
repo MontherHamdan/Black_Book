@@ -55,6 +55,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders/trashed', [OrderWebController::class, 'trashedOrders'])->name('orders.trashed')->middleware('admin');
     Route::get('/orders/trashed/fetch', [OrderWebController::class, 'fetchTrashedOrders'])->name('orders.trashed.fetch')->middleware('admin');
     Route::get('/orders/{id}', [OrderWebController::class, 'show'])->name('orders.show')->where('id', '[0-9]+');
+    Route::get('/orders/{id}/invoice', [OrderWebController::class, 'invoice'])->name('orders.invoice')->where('id', '[0-9]+');
     Route::delete('/orders/{order}/delete-image', [OrderWebController::class, 'deleteImage'])->name('orders.deleteImage');
     Route::get('/orders/{order}/back-images/download', [OrderWebController::class, 'downloadAllBackImages'])->name('orders.backImages.download');
     Route::get('/orders-export/excel', [OrderWebController::class, 'exportExcel'])->name('orders.exportExcel');

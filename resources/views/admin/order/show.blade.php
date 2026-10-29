@@ -20,13 +20,75 @@
             /* Overriding any aspect-ratio from external CSS */
         }
 
-        /* Standardizing all carousels container */
+        /* Standardizing default carousels container */
         #orderTabsContent .carousel {
             max-width: 380px !important;
             margin: 0 auto !important;
             background: #f8f9fa;
             border-radius: 12px;
             padding: 10px;
+        }
+
+        /* Allow final back images carousel & custom design carousel to show full images without cropping */
+        #orderTabsContent #finalBackImagesCarousel,
+        #orderTabsContent #anotherDesignCarousel,
+        #finalBackImagesCarousel,
+        #anotherDesignCarousel {
+            max-width: 550px !important;
+            width: 100% !important;
+            margin: 0 auto !important;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 10px;
+        }
+
+        #finalBackImagesCarousel .carousel-inner,
+        #anotherDesignCarousel .carousel-inner {
+            max-width: 100% !important;
+            border-radius: 12px;
+        }
+
+        #finalBackImagesCarousel .carousel-item,
+        #anotherDesignCarousel .carousel-item {
+            text-align: center;
+        }
+
+        #finalBackImagesCarousel .image-wrapper-relative,
+        #anotherDesignCarousel .image-wrapper-relative {
+            max-width: 550px !important;
+            width: 100% !important;
+            display: block !important;
+            margin: 0 auto !important;
+        }
+
+        #finalBackImagesCarousel img,
+        #anotherDesignCarousel img {
+            width: 100% !important;
+            max-width: 100% !important;
+            height: auto !important;
+            max-height: none !important;
+            object-fit: contain !important;
+            object-position: center !important;
+            border-radius: 12px !important;
+            display: block !important;
+            margin: 0 auto !important;
+        }
+
+        /* Invoice button in header */
+        .header-invoice-btn {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+            border: 1px solid #334155 !important;
+            white-space: nowrap;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+        }
+
+        .header-invoice-btn:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
+            border-color: #4338ca !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35) !important;
+            color: #ffffff !important;
         }
 
         /* Fix arrows visibility and position */
@@ -340,6 +402,16 @@
                     </div>
                 </div>
 
+            </div>
+
+            {{-- 🧾 إجراءات رأس الصفحة: تنزيل الفاتورة PDF --}}
+            <div class="order-page-header-actions d-flex flex-column align-items-end gap-2">
+                <a href="{{ route('orders.invoice', $order->id) }}" target="_blank"
+                    class="btn btn-primary d-inline-flex align-items-center gap-2 shadow-sm rounded-pill px-3 py-2 fw-bold text-white header-invoice-btn"
+                    title="عرض وتحميل فاتورة الطلب بصيغة PDF">
+                    <i class="fas fa-file-invoice-dollar fs-5"></i>
+                    <span>فاتورة الطلب (PDF)</span>
+                </a>
             </div>
         </div>
 
@@ -1949,7 +2021,7 @@
                                                                 </button>
                                                             @endif
                                                             <img src="{{ $backSrc }}" class="mb-2"
-                                                                style="width: 100%; max-width: 100%; height: auto; border-radius: 12px; display: block; margin: 0 auto;"
+                                                                style="width: 100% !important; max-width: 100% !important; height: auto !important; object-fit: contain !important; border-radius: 12px; display: block; margin: 0 auto;"
                                                                 alt="الصورة الخلفية {{ $index + 1 }}">
                                                         </div>
                                                     </div>
@@ -1957,17 +2029,19 @@
                                             @endforeach
                                         </div>
 
-                                        <button class="carousel-control-prev custom-carousel-control" type="button"
-                                            data-bs-target="#finalBackImagesCarousel" data-bs-slide="prev">
-                                            <span class="carousel-control-prev-icon"></span>
-                                            <span class="visually-hidden">السابق</span>
-                                        </button>
+                                        @if ($backImages->count() > 1)
+                                            <button class="carousel-control-prev custom-carousel-control" type="button"
+                                                data-bs-target="#finalBackImagesCarousel" data-bs-slide="prev">
+                                                <span class="carousel-control-prev-icon"></span>
+                                                <span class="visually-hidden">السابق</span>
+                                            </button>
 
-                                        <button class="carousel-control-next custom-carousel-control" type="button"
-                                            data-bs-target="#finalBackImagesCarousel" data-bs-slide="next">
-                                            <span class="carousel-control-next-icon"></span>
-                                            <span class="visually-hidden">التالي</span>
-                                        </button>
+                                            <button class="carousel-control-next custom-carousel-control" type="button"
+                                                data-bs-target="#finalBackImagesCarousel" data-bs-slide="next">
+                                                <span class="carousel-control-next-icon"></span>
+                                                <span class="visually-hidden">التالي</span>
+                                            </button>
+                                        @endif
                                     </div>
 
                                     <div class="download-buttons-wrapper">

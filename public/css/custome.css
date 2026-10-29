@@ -402,13 +402,20 @@ body {
 }
 
 #backImagesCarousel img,
-#internalImagesCarousel img,
-#finalBackImagesCarousel img,
-#anotherDesignCarousel img {
+#internalImagesCarousel img {
   max-width: 350px !important;
   height: 350px !important;
   object-fit: cover !important;
   object-position: top center !important;
+}
+
+#finalBackImagesCarousel img,
+#anotherDesignCarousel img {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  object-fit: contain !important;
+  object-position: center !important;
 }
 
 .custom-carousel-control {

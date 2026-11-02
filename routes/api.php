@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\MajorController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\OrderInvoiceApiController;
+use App\Http\Controllers\Api\PageOptionController;
 use App\Http\Controllers\Api\PhoneNumbersConroller;
 use App\Http\Controllers\Api\PlanController;
 use App\Http\Controllers\Api\SpecializedDepartmentController;
@@ -58,6 +59,10 @@ Route::prefix('v1')->name('api.')->group(function () {
 
     // *******************Book Decorations **********************************
     Route::resource('/book_decorations', BookDecorationController::class)->only(['index']);
+
+    // ******************* Page Options *************************************
+    Route::get('/page_options', [PageOptionController::class, 'index'])->name('page_options.index');
+    Route::get('/pages', [PageOptionController::class, 'index'])->name('pages.index');
 
     // *******************governorates and addresses **********************************
     Route::get('/governorates', [GovernorateController::class, 'index']);
@@ -110,4 +115,6 @@ Route::match(['get', 'post'], '/orders/{id}/pdf', [OrderInvoiceApiController::cl
 Route::match(['get', 'post'], '/orders/{id}/image', [OrderInvoiceApiController::class, 'downloadImage'])->where('id', '[0-9]+');
 Route::match(['get', 'post'], '/orders/pdf', [OrderInvoiceApiController::class, 'downloadPdf']);
 Route::match(['get', 'post'], '/orders/image', [OrderInvoiceApiController::class, 'downloadImage']);
+Route::get('/page_options', [PageOptionController::class, 'index']);
+Route::get('/pages', [PageOptionController::class, 'index']);
 

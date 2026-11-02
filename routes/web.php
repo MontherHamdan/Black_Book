@@ -18,6 +18,7 @@ use App\Http\Controllers\DiscountCodeController;
 use App\Http\Controllers\GovernorateController;
 use App\Http\Controllers\NotebookBindingController;
 use App\Http\Controllers\OrderWebController;
+use App\Http\Controllers\PageOptionController;
 use App\Http\Controllers\PhoneNumberController;
 use App\Http\Controllers\PlanWebController;
 use App\Http\Controllers\PrintQueueController;
@@ -146,6 +147,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // Book Decorations
     Route::resource('book-decorations', BookDecorationController::class);
+
+    // Page Options (عدد الأوراق)
+    Route::resource('page-options', PageOptionController::class);
+    Route::post('page-options/{pageOption}/toggle-active', [PageOptionController::class, 'toggleActive'])->name('page-options.toggleActive');
 
     // Governorates and Addresses
     Route::resource('governorates', GovernorateController::class);

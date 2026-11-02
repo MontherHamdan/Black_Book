@@ -164,6 +164,13 @@
                     </li>
 
                     <li>
+                        <a href="{{ route('page-options.index') }}">
+                            <i class="mdi mdi-book-open-page-variant-outline"></i>
+                            <span> Page Options </span>
+                        </a>
+                    </li>
+
+                    <li>
                         <a href="{{ route('governorates.index') }}">
                             <i class="mdi mdi-map-marker-outline"></i>
                             <span> Governorates </span>

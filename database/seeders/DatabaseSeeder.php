@@ -20,7 +20,8 @@ class DatabaseSeeder extends Seeder
                 // BookDesignSeeder::class,
                 AdminUserSeeder::class,
                 SvgSeeder::class,
-                UniversityMajorSeeder::class
+                UniversityMajorSeeder::class,
+                PageOptionSeeder::class,
             ]
         );
     }

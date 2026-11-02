@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\BookType;
 use App\Models\DiscountCode;
+use App\Models\PageOption;
 use Illuminate\Support\Facades\Log;
 
 class OrderPricingService
@@ -46,6 +47,20 @@ class OrderPricingService
             $additionalCost = $additionalCount * config('pricing.additional_image_cost_per_image', 1);
             $price += $additionalCost;
             $breakdown['additional_images'] = ['count' => $additionalCount, 'cost_each' => config('pricing.additional_image_cost_per_image', 1), 'total' => $additionalCost];
+        }
+
+        // 4. خيار عدد الأوراق (إذا كان هناك تكلفة إضافية لعدد الأوراق المحدد)
+        if (! empty($orderData['pages_number'])) {
+            $pageOption = PageOption::where('pages', (int) $orderData['pages_number'])->first();
+            if ($pageOption && (float) $pageOption->extra_price > 0) {
+                $extraPagesCost = (float) $pageOption->extra_price;
+                $price += $extraPagesCost;
+                $breakdown['page_option'] = [
+                    'pages' => $pageOption->pages,
+                    'label' => $pageOption->label,
+                    'extra_price' => $extraPagesCost,
+                ];
+            }
         }
 
         // 5. الإهداء (Custom = 3 دنانير، والباقي مجاني)

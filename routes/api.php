@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\GovernorateController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\MajorController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\OrderInvoiceApiController;
 use App\Http\Controllers\Api\PhoneNumbersConroller;
 use App\Http\Controllers\Api\PlanController;
 use App\Http\Controllers\Api\SpecializedDepartmentController;
@@ -69,6 +70,12 @@ Route::prefix('v1')->name('api.')->group(function () {
     Route::post('/user_upload_image', [UserImageController::class, 'store'])->middleware('throttle:20,1');
     Route::resource('orders', OrderController::class)->only(['store'])->middleware('throttle:10,1');
 
+    // ******************* Order Invoice PDF & Image APIs ******************
+    Route::match(['get', 'post'], '/orders/{id}/pdf', [OrderInvoiceApiController::class, 'downloadPdf'])->name('orders.invoice.pdf')->where('id', '[0-9]+');
+    Route::match(['get', 'post'], '/orders/{id}/image', [OrderInvoiceApiController::class, 'downloadImage'])->name('orders.invoice.image')->where('id', '[0-9]+');
+    Route::match(['get', 'post'], '/orders/pdf', [OrderInvoiceApiController::class, 'downloadPdf'])->name('orders.invoice.pdf.query');
+    Route::match(['get', 'post'], '/orders/image', [OrderInvoiceApiController::class, 'downloadImage'])->name('orders.invoice.image.query');
+
     // Diplomas Routes
     Route::resource('diplomas', DiplomaController::class)->only(['index', 'show']);
 
@@ -97,3 +104,10 @@ Route::prefix('v1')->name('api.')->group(function () {
     Route::get('/locations/cities/{governorate_id}', [LocationController::class, 'getCities']);
     Route::get('/locations/areas/{city_id}', [LocationController::class, 'getAreas']);
 });
+
+// Direct API Aliases (accessible without /v1 prefix: /api/orders/...)
+Route::match(['get', 'post'], '/orders/{id}/pdf', [OrderInvoiceApiController::class, 'downloadPdf'])->where('id', '[0-9]+');
+Route::match(['get', 'post'], '/orders/{id}/image', [OrderInvoiceApiController::class, 'downloadImage'])->where('id', '[0-9]+');
+Route::match(['get', 'post'], '/orders/pdf', [OrderInvoiceApiController::class, 'downloadPdf']);
+Route::match(['get', 'post'], '/orders/image', [OrderInvoiceApiController::class, 'downloadImage']);
+

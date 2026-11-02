@@ -63,8 +63,17 @@ class DashboardController extends Controller
         // Use the exact statuses from the cards for the chart, ensuring missing statuses (count = 0) are shown
         $orderStatuses = collect($statusCounts)->except(['out_for_delivery'])->toArray();
 
-        $ordersWithAdditives = (clone $ordersQuery)->where('is_with_additives', 1)->count();
-        $ordersWithoutAdditives = (clone $ordersQuery)->where('is_with_additives', 0)->count();
+        $deliveryStatuses = ['out_for_delivery', 'Received', 'returned', 'Canceled', 'Printed'];
+
+        $ordersWithAdditives = (clone $ordersQuery)
+            ->where('is_with_additives', 1)
+            ->whereIn('status', $deliveryStatuses)
+            ->count();
+
+        $ordersWithoutAdditives = (clone $ordersQuery)
+            ->where('is_with_additives', 0)
+            ->whereIn('status', $deliveryStatuses)
+            ->count();
 
         $topSellingProducts = (clone $ordersQuery)
             ->select('book_type_id', DB::raw('count(*) as total_orders'))
@@ -163,7 +172,13 @@ class DashboardController extends Controller
                 ->orderBy('updated_at', 'desc')
                 ->get(['id', 'username_ar', 'username_en', 'design_followup_note', 'binding_followup_note', 'notebook_followup_note']);
 
-            $designersPenaltyStats = User::where('role', User::ROLE_DESIGNER)
+            $designersPenaltyStats = User::where(function ($query) {
+                $query->where('role', User::ROLE_DESIGNER)
+                    ->orWhere(function ($q) {
+                        $q->where('role', User::ROLE_SUPERVISOR)
+                            ->whereHas('designerOrders');
+                    });
+            })
                 ->get()
                 ->map(function ($designer) use ($currentPenaltyThreshold) {
                     $modCount = Order::where('designer_id', $designer->id)->where('status', 'needs_modification')->count();
@@ -173,6 +188,7 @@ class DashboardController extends Controller
                     return (object) [
                         'id' => $designer->id,
                         'name' => $designer->name,
+                        'role' => $designer->role,
                         'mod_count' => $modCount,
                         'is_auto_penalized' => $isAutoPenalized,
                         'is_manual_penalized' => $isManualPenalized,
@@ -253,8 +269,8 @@ class DashboardController extends Controller
     {
         abort_if(!auth()->user()->isAdmin() && !(method_exists(auth()->user(), 'isSupervisor') && auth()->user()->isSupervisor()), 403);
 
-        if (!$user->isDesigner()) {
-            return response()->json(['success' => false, 'message' => 'هذا المستخدم ليس مصمماً'], 400);
+        if (!$user->isDesigner() && !$user->isSupervisor()) {
+            return response()->json(['success' => false, 'message' => 'هذا المستخدم ليس مصمماً أو مشرفاً'], 400);
         }
 
         $request->validate([

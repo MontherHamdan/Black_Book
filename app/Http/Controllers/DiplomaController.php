@@ -10,36 +10,50 @@ class DiplomaController extends Controller
 {
     public function index()
     {
-        // Fetch all diplomas along with the count of majors associated with each
-        $diplomas = Diploma::withCount('majors')->get();
+        // Fetch all diplomas along with location relations and the count of majors
+        $diplomas = Diploma::with(['governorate', 'city', 'area'])->withCount('majors')->get();
         return view('admin.diplomas.index', compact('diplomas'));
     }
 
     public function create()
     {
-        return view('admin.diplomas.create');
+        $governorates = \App\Models\Governorate::where('is_active', true)->get();
+        return view('admin.diplomas.create', compact('governorates'));
     }
+
     public function store(Request $request)
     {
         // Validate the incoming request data
         $request->validate([
             'name' => 'required|string|max:255',
-            'governorate_name' => 'required|string|max:255',  // Add validation for governorate_name
+            'governorate_id' => 'nullable|exists:governorates,id',
+            'city_id' => 'nullable|exists:cities,id',
+            'area_id' => 'nullable|exists:areas,id',
         ]);
 
+        $data = $request->only(['name', 'governorate_name', 'governorate_id', 'city_id', 'area_id']);
+        if ($request->filled('governorate_id') && empty($data['governorate_name'])) {
+            $gov = \App\Models\Governorate::find($request->governorate_id);
+            $data['governorate_name'] = $gov?->name_ar ?? null;
+        }
+
         // Create a new diploma
-        Diploma::create([
-            'name' => $request->name,
-            'governorate_name' => $request->governorate_name,  // Ensure governorate_name is saved
-        ]);
+        Diploma::create($data);
 
         return redirect()->route('diplomas.index')->with('success', 'Diploma added successfully.');
     }
 
-
     public function edit(Diploma $diploma)
     {
-        return view('admin.diplomas.edit', compact('diploma'));
+        $governorates = \App\Models\Governorate::where('is_active', true)->get();
+        $cities = $diploma->governorate_id
+            ? \App\Models\City::where('governorate_id', $diploma->governorate_id)->get()
+            : collect();
+        $areas = $diploma->city_id
+            ? \App\Models\Area::where('city_id', $diploma->city_id)->get()
+            : collect();
+
+        return view('admin.diplomas.edit', compact('diploma', 'governorates', 'cities', 'areas'));
     }
 
     public function update(Request $request, Diploma $diploma)
@@ -47,14 +61,19 @@ class DiplomaController extends Controller
         // Validate the incoming request data
         $request->validate([
             'name' => 'required|string|max:255',
-            'governorate_name' => 'required|string|max:255',  // Add validation for governorate_name
+            'governorate_id' => 'nullable|exists:governorates,id',
+            'city_id' => 'nullable|exists:cities,id',
+            'area_id' => 'nullable|exists:areas,id',
         ]);
 
+        $data = $request->only(['name', 'governorate_name', 'governorate_id', 'city_id', 'area_id']);
+        if ($request->filled('governorate_id') && empty($data['governorate_name'])) {
+            $gov = \App\Models\Governorate::find($request->governorate_id);
+            $data['governorate_name'] = $gov?->name_ar ?? null;
+        }
+
         // Update the diploma with new values
-        $diploma->update([
-            'name' => $request->name,
-            'governorate_name' => $request->governorate_name,  // Ensure governorate_name is updated
-        ]);
+        $diploma->update($data);
 
         return redirect()->route('diplomas.index')->with('success', 'Diploma updated successfully.');
     }

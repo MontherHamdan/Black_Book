@@ -74,21 +74,224 @@
             margin: 0 auto !important;
         }
 
-        /* Invoice button in header */
-        .header-invoice-btn {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
-            border: 1px solid #334155 !important;
-            white-space: nowrap;
-            transition: all 0.25s ease;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+        /* 🔹 Order Page Header & Top Bar */
+        .order-page-header {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+            border-radius: 20px !important;
+            padding: 18px 22px !important;
+            margin-bottom: 20px !important;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+            border: 1px solid rgba(226, 232, 240, 0.9) !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 16px !important;
         }
 
-        .header-invoice-btn:hover {
-            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
-            border-color: #4338ca !important;
+        .order-page-header-top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+        }
+
+        .order-page-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .order-page-title-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(99, 102, 241, 0.18) 100%);
+            color: #4f46e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.12);
+        }
+
+        .order-page-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .order-page-id-badge {
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 0.85rem;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(199, 210, 254, 0.8);
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .order-page-meta-sub {
+            font-size: 0.8rem;
+            color: #64748b;
+            font-weight: 600;
+            margin-top: 3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 🔹 Header Actions & Invoice Print Buttons */
+        .order-page-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-order-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none !important;
+            border-radius: 12px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        /* Quick Direct Print Button */
+        .btn-quick-print {
+            padding: 9px 16px;
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            color: #334155;
+            font-size: 0.88rem;
+            font-weight: 700;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+        }
+
+        .btn-quick-print i {
+            color: #4f46e5;
+            font-size: 0.95rem;
+            transition: transform 0.2s ease;
+        }
+
+        .btn-quick-print:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            color: #0f172a;
             transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35) !important;
+            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+        }
+
+        .btn-quick-print:hover i {
+            transform: scale(1.12);
+        }
+
+        /* Luxury PDF Invoice Button */
+        .btn-invoice-pdf {
+            padding: 6px 14px 6px 10px;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #312e81 100%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             color: #ffffff !important;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
+        }
+
+        .btn-invoice-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(239, 68, 68, 0.18);
+            color: #f87171;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: all 0.25s ease;
+            border: 1px solid rgba(239, 68, 68, 0.25);
+        }
+
+        .btn-invoice-content {
+            display: flex;
+            flex-direction: column;
+            text-align: right;
+            line-height: 1.2;
+        }
+
+        .btn-invoice-title {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.2px;
+        }
+
+        .btn-invoice-subtitle {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .btn-invoice-arrow {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-right: 4px;
+            transition: transform 0.25s ease, color 0.25s ease;
+        }
+
+        .btn-invoice-pdf:hover {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+            border-color: rgba(99, 102, 241, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.35);
+        }
+
+        .btn-invoice-pdf:hover .btn-invoice-icon {
+            background: #ef4444;
+            color: #ffffff;
+            transform: scale(1.08);
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-invoice-pdf:hover .btn-invoice-subtitle {
+            color: #c7d2fe;
+        }
+
+        .btn-invoice-pdf:hover .btn-invoice-arrow {
+            color: #ffffff;
+            transform: translate(-2px, -2px);
+        }
+
+        /* Ensure meta rows look great inside the new container */
+        .order-page-header .order-page-header-meta {
+            margin-top: 0 !important;
+        }
+
+        @media (max-width: 768px) {
+            .order-page-header {
+                padding: 16px !important;
+            }
+            .order-page-header-top-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .order-page-header-actions {
+                width: 100%;
+                justify-content: stretch;
+            }
+            .order-page-header-actions .btn-order-action {
+                flex: 1 1 auto;
+                justify-content: center;
+            }
         }
 
         /* Fix arrows visibility and position */
@@ -251,167 +454,199 @@
 
         {{-- 🔹 Header --}}
         <div class="order-page-header" style="direction: rtl; text-align: right;">
-            <div class="order-page-header-left">
-                <div class="order-page-title">تفاصيل الطلب</div>
-
-                {{-- 🟣 السطر الأول: رقم الطلب + المجموعة + الخريج + حالة التصميم --}}
-                <div class="order-page-header-meta order-page-header-meta-top">
-                    {{-- 🧾 رقم الطلب --}}
-                    <div class="order-header-chip">
-                        <div class="order-header-main">
-                            <div class="order-header-icon">
-                                <i class="fas fa-hashtag"></i>
-                            </div>
-                            <div class="order-header-body">
-                                <span class="order-header-label">رقم الطلب</span>
-                                <span class="order-header-value">#{{ $order->id }}</span>
-                            </div>
-                        </div>
+            {{-- 🌟 الشريط العلوي للهيدر: العنوان + إجراءات الفاتورة والطباعة --}}
+            <div class="order-page-header-top-bar">
+                <div class="order-page-title-group">
+                    <div class="order-page-title-icon">
+                        <i class="fas fa-file-invoice"></i>
                     </div>
-
-                    {{-- 👥 اسم المجموعة --}}
-                    <div class="order-header-chip order-header-chip-muted position-relative">
-                        <div class="order-header-main">
-                            <div class="order-header-icon">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <div class="order-header-body">
-                                <span class="order-header-label">المجموعة</span>
-                                <span class="order-header-value d-flex align-items-center gap-2">
-                                    @if ($groupNameHeader)
-                                        {{ $groupNameHeader }}
-                                        {{-- 🚨 أيقونة التحذير (تفتح المودال) --}}
-                                        @if (isset($groupWarning))
-                                            <button type="button" class="btn btn-link p-0 border-0 text-danger"
-                                                data-bs-toggle="modal" data-bs-target="#groupWarningModal"
-                                                title="تفاصيل التنبيه"
-                                                style="animation: pulse 1.5s infinite; line-height:1;">
-                                                <i class="fas fa-exclamation-triangle fa-lg"></i>
-                                            </button>
-                                        @endif
-                                    @else
-                                        <span class="text-muted">غير متوفر</span>
-                                    @endif
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <h2 class="order-page-title mb-0">تفاصيل الطلب</h2>
+                            <span class="order-page-id-badge">#{{ $order->id }}</span>
+                        </div>
+                        <div class="order-page-meta-sub">
+                            @if ($order->created_at)
+                                <span class="order-page-date">
+                                    <i class="far fa-calendar-alt text-primary me-1"></i>
+                                    تاريخ الطلب: {{ $order->created_at->format('Y/m/d') }}
                                 </span>
-                            </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                {{-- 🧾 إجراءات رأس الصفحة: تنزيل الفاتورة PDF والطباعة المباشرة --}}
+                <div class="order-page-header-actions">
+                    {{-- 🖨️ زر الطباعة الفورية المباشرة --}}
+                    <a href="{{ route('orders.invoice', $order->id) }}?auto_print=1" target="_blank"
+                        class="btn-order-action btn-quick-print"
+                        title="طباعة الفاتورة فورياً بصيغة PDF">
+                        <i class="fas fa-print"></i>
+                        <span>طباعة سريعة</span>
+                    </a>
+
+                    {{-- 📄 زر معاينة وتحميل الفاتورة PDF الفخم --}}
+                    <a href="{{ route('orders.invoice', $order->id) }}" target="_blank"
+                        class="btn-order-action btn-invoice-pdf"
+                        title="عرض وتحميل فاتورة الطلب بصيغة PDF">
+                        <span class="btn-invoice-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </span>
+                        <div class="btn-invoice-content">
+                            <span class="btn-invoice-title">فاتورة الطلب</span>
+                            <span class="btn-invoice-subtitle">معاينة وتحميل (PDF)</span>
+                        </div>
+                        <i class="fas fa-external-link-alt btn-invoice-arrow"></i>
+                    </a>
+                </div>
+            </div>
+
+            {{-- 🟣 السطر الأول: رقم الطلب + المجموعة + الخريج + حالة التصميم --}}
+            <div class="order-page-header-meta order-page-header-meta-top">
+                {{-- 🧾 رقم الطلب --}}
+                <div class="order-header-chip">
+                    <div class="order-header-main">
+                        <div class="order-header-icon">
+                            <i class="fas fa-hashtag"></i>
+                        </div>
+                        <div class="order-header-body">
+                            <span class="order-header-label">رقم الطلب</span>
+                            <span class="order-header-value">#{{ $order->id }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- 👥 اسم المجموعة --}}
+                <div class="order-header-chip order-header-chip-muted position-relative">
+                    <div class="order-header-main">
+                        <div class="order-header-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="order-header-body">
+                            <span class="order-header-label">المجموعة</span>
+                            <span class="order-header-value d-flex align-items-center gap-2">
+                                @if ($groupNameHeader)
+                                    {{ $groupNameHeader }}
+                                    {{-- 🚨 أيقونة التحذير (تفتح المودال) --}}
+                                    @if (isset($groupWarning))
+                                        <button type="button" class="btn btn-link p-0 border-0 text-danger"
+                                            data-bs-toggle="modal" data-bs-target="#groupWarningModal"
+                                            title="تفاصيل التنبيه"
+                                            style="animation: pulse 1.5s infinite; line-height:1;">
+                                            <i class="fas fa-exclamation-triangle fa-lg"></i>
+                                        </button>
+                                    @endif
+                                @else
+                                    <span class="text-muted">غير متوفر</span>
+                                @endif
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- 🎓 اسم الخريج --}}
+                <div class="order-header-chip order-header-chip-muted">
+                    <div class="order-header-main">
+                        <div class="order-header-icon">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <div class="order-header-body">
+                            <span class="order-header-label">الخريج</span>
+                            <span class="order-header-value">{{ $graduateNameHeader }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- 🎨 حالة التصميم --}}
+                <div class="order-header-chip order-header-chip-status order-header-chip--2lines">
+                    {{-- عنوان --}}
+                    <div class="order-chip-title-row">
+                        <span class="order-chip-title">حالة التصميم</span>
+                        <div class="order-chip-icon">
+                            <i class="fas fa-layer-group"></i>
                         </div>
                     </div>
 
+                    {{-- الكنترول + البادج --}}
+                    <div class="order-chip-body-row">
+                        @if ($canChangeStatusHeader)
+                            <div class="order-status-control">
+                                <select class="order-status-select js-order-status-select"
+                                    data-order-id="{{ $order->id }}">
+                                    @foreach ($statusConfigHeader as $value => $cfg)
+                                        <option value="{{ $value }}"
+                                            {{ $order->status === $value ? 'selected' : '' }}>
+                                            {{ $cfg['label'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
 
-                    {{-- 🎓 اسم الخريج --}}
-                    <div class="order-header-chip order-header-chip-muted">
-                        <div class="order-header-main">
-                            <div class="order-header-icon">
-                                <i class="fas fa-user-graduate"></i>
-                            </div>
-                            <div class="order-header-body">
-                                <span class="order-header-label">الخريج</span>
-                                <span class="order-header-value">{{ $graduateNameHeader }}</span>
-                            </div>
+                        <span
+                            class="order-status-pill badge-status {{ $currentStatusHeader['class'] }} js-order-status-badge-header">
+                            <span class="badge-status-dot"></span>
+                            <span class="badge-status-text">{{ $currentStatusHeader['label'] }}</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            {{-- 🔵 السطر الثاني: المصمم المسؤول --}}
+            <div class="order-page-header-meta order-page-header-meta-bottom">
+                <div class="order-header-chip order-header-chip-status order-header-chip--2lines">
+                    <div class="order-chip-title-row">
+                        <span class="order-chip-title">المصمم المسؤول</span>
+                        <div class="order-chip-icon">
+                            <i class="fas fa-user-tie"></i>
                         </div>
                     </div>
 
-                    {{-- 🎨 حالة التصميم --}}
-                    <div class="order-header-chip order-header-chip-status order-header-chip--2lines">
-                        {{-- عنوان --}}
-                        <div class="order-chip-title-row">
-                            <span class="order-chip-title">حالة التصميم</span>
-                            <div class="order-chip-icon">
-                                <i class="fas fa-layer-group"></i>
-                            </div>
-                        </div>
-
-                        {{-- الكنترول + البادج --}}
-                        <div class="order-chip-body-row">
-                            @if ($canChangeStatusHeader)
-                                <div class="order-status-control">
-                                    <select class="order-status-select js-order-status-select"
+                    <div class="order-chip-body-row">
+                        @if ($canChangeDesignerHeader && $authUser)
+                            <div class="order-status-control">
+                                @if ($authUser->isAdmin() || (method_exists($authUser, 'isSupervisor') && $authUser->isSupervisor()))
+                                    {{-- الأدمن أو المشرف: يختار أي مصمم أو مشرف --}}
+                                    <select class="order-status-select js-designer-select"
                                         data-order-id="{{ $order->id }}">
-                                        @foreach ($statusConfigHeader as $value => $cfg)
-                                            <option value="{{ $value }}"
-                                                {{ $order->status === $value ? 'selected' : '' }}>
-                                                {{ $cfg['label'] }}
+                                        <option value="">غير معيّن</option>
+                                        @foreach ($designers as $designer)
+                                            <option value="{{ $designer->id }}"
+                                                {{ (int) $order->designer_id === (int) $designer->id ? 'selected' : '' }}>
+                                                {{ $designer->name }}{{ $designer->role === 'supervisor' ? ' (مشرف)' : '' }}
                                             </option>
                                         @endforeach
                                     </select>
-                                </div>
-                            @endif
-
-                            <span
-                                class="order-status-pill badge-status {{ $currentStatusHeader['class'] }} js-order-status-badge-header">
-                                <span class="badge-status-dot"></span>
-                                <span class="badge-status-text">{{ $currentStatusHeader['label'] }}</span>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- 🔵 السطر الثاني: المصمم المسؤول --}}
-                <div class="order-page-header-meta order-page-header-meta-bottom">
-                    <div class="order-header-chip order-header-chip-status order-header-chip--2lines">
-                        <div class="order-chip-title-row">
-                            <span class="order-chip-title">المصمم المسؤول</span>
-                            <div class="order-chip-icon">
-                                <i class="fas fa-user-tie"></i>
-                            </div>
-                        </div>
-
-                        <div class="order-chip-body-row">
-                            @if ($canChangeDesignerHeader && $authUser)
-                                <div class="order-status-control">
-                                    @if ($authUser->isAdmin())
-                                        {{-- الأدمن: يختار أي مصمم --}}
-                                        <select class="order-status-select js-designer-select"
-                                            data-order-id="{{ $order->id }}">
-                                            <option value="">غير معيّن</option>
-                                            @foreach ($designers as $designer)
-                                                <option value="{{ $designer->id }}"
-                                                    {{ (int) $order->designer_id === (int) $designer->id ? 'selected' : '' }}>
-                                                    {{ $designer->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    @elseif ($authUser->isDesigner())
-                                        @if (!$order->designer_id)
-                                            <button type="button" class="btn btn-outline-primary btn-xs js-assign-me-btn"
-                                                data-order-id="{{ $order->id }}"
-                                                data-designer-id="{{ $authUser->id }}">
-                                                <i class="fas fa-user-check me-1"></i>
-                                                تعيين نفسي كمصمم للطلب
-                                            </button>
-                                        @elseif ((int) $order->designer_id === (int) $authUser->id)
-                                            <span class="badge bg-success">
-                                                أنت المصمم المسؤول عن هذا الطلب
-                                            </span>
-                                        @else
-                                            <span class="badge bg-secondary">
-                                                الطلب معيّن لمصمم آخر
-                                            </span>
-                                        @endif
+                                @elseif ($authUser->isDesigner())
+                                    @if (!$order->designer_id)
+                                        <button type="button" class="btn btn-outline-primary btn-xs js-assign-me-btn"
+                                            data-order-id="{{ $order->id }}"
+                                            data-designer-id="{{ $authUser->id }}">
+                                            <i class="fas fa-user-check me-1"></i>
+                                            تعيين نفسي كمصمم للطلب
+                                        </button>
+                                    @elseif ((int) $order->designer_id === (int) $authUser->id)
+                                        <span class="badge bg-success">
+                                            أنت المصمم المسؤول عن هذا الطلب
+                                        </span>
+                                    @else
+                                        <span class="badge bg-secondary">
+                                            الطلب معيّن لمصمم آخر
+                                        </span>
                                     @endif
-                                </div>
-                            @endif
+                                @endif
+                            </div>
+                        @endif
 
-                            <span class="order-status-pill badge-status js-designer-pill">
-                                <span class="badge-status-dot"></span>
-                                <span class="badge-status-text js-designer-name">
-                                    {{ $designerNameHeader ?? 'غير معيّن' }}
-                                </span>
+                        <span class="order-status-pill badge-status js-designer-pill">
+                            <span class="badge-status-dot"></span>
+                            <span class="badge-status-text js-designer-name">
+                                {{ $designerNameHeader ?? 'غير معيّن' }}
                             </span>
-                        </div>
+                        </span>
                     </div>
                 </div>
-
-            </div>
-
-            {{-- 🧾 إجراءات رأس الصفحة: تنزيل الفاتورة PDF --}}
-            <div class="order-page-header-actions d-flex flex-column align-items-end gap-2">
-                <a href="{{ route('orders.invoice', $order->id) }}" target="_blank"
-                    class="btn btn-primary d-inline-flex align-items-center gap-2 shadow-sm rounded-pill px-3 py-2 fw-bold text-white header-invoice-btn"
-                    title="عرض وتحميل فاتورة الطلب بصيغة PDF">
-                    <i class="fas fa-file-invoice-dollar fs-5"></i>
-                    <span>فاتورة الطلب (PDF)</span>
-                </a>
             </div>
         </div>
 

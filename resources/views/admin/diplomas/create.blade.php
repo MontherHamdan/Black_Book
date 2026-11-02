@@ -19,16 +19,37 @@
                         @csrf
                         <h4 class="mb-4 text-primary">Add New College</h4>
                         <div class="row mb-3">
-                            <!-- Diploma Name -->
                             <div class="col-md-6">
                                 <label class="form-label fw-bold" for="name">College Name</label>
-                                <input type="text" name="name" id="name" class="form-control" required>
+                                <input type="text" name="name" id="name" class="form-control" value="{{ old('name') }}" required>
                             </div>
 
-                            <!-- Governorate Name -->
                             <div class="col-md-6">
-                                <label class="form-label fw-bold" for="governorate_name">Governorate Name</label>
-                                <input type="text" name="governorate_name" id="governorate_name" class="form-control" required>
+                                <label class="form-label fw-bold" for="governorate_id">Governorate</label>
+                                <select name="governorate_id" id="governorate_id" class="form-select">
+                                    <option value="">-- Select Governorate --</option>
+                                    @foreach ($governorates as $gov)
+                                        <option value="{{ $gov->id }}" {{ old('governorate_id') == $gov->id ? 'selected' : '' }}>
+                                            {{ $gov->name_ar }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold" for="city_id">City</label>
+                                <select name="city_id" id="city_id" class="form-select" disabled>
+                                    <option value="">-- Select City --</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold" for="area_id">Area</label>
+                                <select name="area_id" id="area_id" class="form-select" disabled>
+                                    <option value="">-- Select Area --</option>
+                                </select>
                             </div>
                         </div>
 
@@ -41,4 +62,50 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            const governorateSelect = document.getElementById('governorate_id');
+            const citySelect = document.getElementById('city_id');
+            const areaSelect = document.getElementById('area_id');
+
+            governorateSelect.addEventListener('change', function () {
+                const govId = this.value;
+                citySelect.innerHTML = '<option value="">-- Select City --</option>';
+                areaSelect.innerHTML = '<option value="">-- Select Area --</option>';
+                citySelect.disabled = true;
+                areaSelect.disabled = true;
+
+                if (!govId) return;
+
+                fetch(`/api/v1/locations/cities/${govId}`)
+                    .then(r => r.json())
+                    .then(response => {
+                        const cities = response.data ?? [];
+                        cities.forEach(c => {
+                            citySelect.innerHTML += `<option value="${c.id}">${c.name_ar}</option>`;
+                        });
+                        citySelect.disabled = false;
+                    });
+            });
+
+            citySelect.addEventListener('change', function () {
+                const cityId = this.value;
+                areaSelect.innerHTML = '<option value="">-- Select Area --</option>';
+                areaSelect.disabled = true;
+
+                if (!cityId) return;
+
+                fetch(`/api/v1/locations/areas/${cityId}`)
+                    .then(r => r.json())
+                    .then(response => {
+                        const areas = response.data ?? [];
+                        areas.forEach(a => {
+                            areaSelect.innerHTML += `<option value="${a.id}">${a.name_ar}</option>`;
+                        });
+                        areaSelect.disabled = false;
+                    });
+            });
+        </script>
+    @endpush
 @endsection

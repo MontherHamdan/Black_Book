@@ -116,7 +116,7 @@
                             <th>المصمم</th>
                             <th>الحالة</th>
                             <th>المحافظة</th>
-                            <th>الجامعة</th>
+                            <th>الجامعة / الكلية</th>
                             <th>السعر</th>
                             <th>التاريخ</th>
                             <th></th>
@@ -136,8 +136,21 @@
                                 <td><span class="ao-status {{ $stClass }}">{{ $stLabel }}</span></td>
                                 <td>{{ $order->governorate->name_ar ?? '—' }}</td>
                                 <td>
-                                    @if($order->delivery_target === 'university' && $order->deliveryUniversity)
-                                        <span><i class="fas fa-university text-muted me-1" style="font-size:0.8rem;"></i>{{ $order->deliveryUniversity->name }}</span>
+                                    @if ($order->diploma)
+                                        <span class="d-inline-flex align-items-center gap-1 text-nowrap" title="كلية">
+                                            <i class="fas fa-graduation-cap text-warning" style="font-size:0.85rem;"></i>
+                                            <span>{{ $order->diploma->name }}</span>
+                                        </span>
+                                    @elseif ($order->university)
+                                        <span class="d-inline-flex align-items-center gap-1 text-nowrap" title="جامعة">
+                                            <i class="fas fa-university text-primary" style="font-size:0.85rem;"></i>
+                                            <span>{{ $order->university->name }}</span>
+                                        </span>
+                                    @elseif ($order->delivery_target === 'university' && $order->deliveryUniversity)
+                                        <span class="d-inline-flex align-items-center gap-1 text-nowrap text-muted" title="جامعة التوصيل">
+                                            <i class="fas fa-truck text-muted" style="font-size:0.8rem;"></i>
+                                            <span>{{ $order->deliveryUniversity->name }}</span>
+                                        </span>
                                     @else
                                         <span class="text-muted small">—</span>
                                     @endif

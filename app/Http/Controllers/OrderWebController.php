@@ -30,9 +30,9 @@ class OrderWebController extends Controller
 
     public function index()
     {
-        $designers = User::where('role', User::ROLE_DESIGNER)
+        $designers = User::whereIn('role', [User::ROLE_DESIGNER, User::ROLE_SUPERVISOR])
             ->orderBy('name')
-            ->get(['id', 'name']);
+            ->get(['id', 'name', 'role']);
         $discountCodes = DiscountCode::select('id', 'discount_code', 'code_name')
             ->orderBy('code_name')
             ->get();
@@ -71,9 +71,9 @@ class OrderWebController extends Controller
         $decorations = BookDecoration::orderBy('id')
             ->get(['id', 'name', 'image']);
 
-        $designers = User::where('role', User::ROLE_DESIGNER)
+        $designers = User::whereIn('role', [User::ROLE_DESIGNER, User::ROLE_SUPERVISOR])
             ->orderBy('name')
-            ->get(['id', 'name']);
+            ->get(['id', 'name', 'role']);
 
         // نحمل المصمم لو مش محمل
         $order->loadMissing('designer');
@@ -129,6 +129,7 @@ class OrderWebController extends Controller
 
         $canChangeDesignerHeader =
             $isAdmin ||
+            (method_exists($authUser, 'isSupervisor') && $authUser->isSupervisor()) ||
             (
                 $isDesigner
                 && (
@@ -1173,11 +1174,14 @@ class OrderWebController extends Controller
 
                 // 1. Validation أولاً
                 if ($order->delivery_target === 'university') {
-                    $uni = \App\Models\University::find($order->university_id);
-                    if (! $uni?->city_id) {
+                    $institution = $order->diploma_id
+                        ? \App\Models\Diploma::find($order->diploma_id)
+                        : \App\Models\University::find($order->university_id);
+                    if (! $institution?->city_id) {
+                        $label = $order->diploma_id ? 'الكلية' : 'الجامعة';
                         return response()->json([
                             'success' => false,
-                            'message' => "الطلب #{$order->id}: الجامعة المحددة ليس لها موقع محدد، يرجى إضافة موقعها أولاً.",
+                            'message' => "الطلب #{$order->id}: {$label} المحددة ليس لها موقع محدد، يرجى إضافة موقعها أولاً.",
                         ], 422);
                     }
                 } else {
@@ -1647,8 +1651,8 @@ class OrderWebController extends Controller
             }
         }
 
-        // ✅ لو مو Admin
-        if (! $user->isAdmin()) {
+        // ✅ لو مو Admin ومو Supervisor
+        if (! $user->isAdmin() && ! $user->isSupervisor()) {
 
             // لازم يكون Designer أصلاً
             if (! $user->isDesigner()) {

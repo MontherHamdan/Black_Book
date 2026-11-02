@@ -7,8 +7,12 @@
         <div class="row align-items-center mb-4">
             <div class="col-md-6">
                 <h2 class="fw-bold text-dark mb-0">كشف الحساب المالي</h2>
-                <p class="text-muted">سجل العمولات والمدفوعات للمصمم: <span
-                        class="text-primary fw-bold">{{ $user->name }}</span></p>
+                <p class="text-muted">سجل العمولات والمدفوعات لـ: <span
+                        class="text-primary fw-bold">{{ $user->name }}</span>
+                    @if($user->role === 'supervisor')
+                        <span class="badge bg-warning text-dark border border-warning rounded-pill px-2 py-0 ms-1 fw-bold" style="font-size: 0.75rem;">مشرف</span>
+                    @endif
+                </p>
             </div>
             <div class="col-md-6 text-md-start">
                 <a href="{{ route('designer-accounting.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm border">
@@ -63,7 +67,7 @@
                     @else
                         <div
                             class="alert alert-soft-success bg-success bg-opacity-20 border-0 text-success rounded-4 p-3 fw-bold">
-                            <i class="fas fa-check-double me-1"></i> الرصيد مُسدد بالكامل
+                            <i class="fas fa-check-double me-1 text-dark">الرصيد مُسدد بالكامل</i> 
                         </div>
                     @endif
                 </div>

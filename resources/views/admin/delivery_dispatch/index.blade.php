@@ -86,11 +86,27 @@
                                     $masterPhoneOne = $ordersGroup->first()->delivery_number_one;
                                     $masterPhoneTwo = $ordersGroup->first()->delivery_number_two;
                                     $firstOrder = $ordersGroup->first();
+                                    $isCollege = !empty($firstOrder->diploma_id) || ($firstOrder->user_type ?? null) === 'diploma';
+
                                     if ($firstOrder->delivery_target === 'university') {
-                                        $masterAddress = $firstOrder->deliveryUniversity->name ?? 'جامعة غير محددة';
-                                        $masterIcon = 'fas fa-university text-muted';
+                                        if ($isCollege) {
+                                            $deliveryTypeLabel = 'توصيل لكلية:';
+                                            $masterAddress = $firstOrder->diploma->name ?? $firstOrder->deliveryUniversity->name ?? 'كلية غير محددة';
+                                            $masterIcon = 'fas fa-graduation-cap text-warning';
+                                        } else {
+                                            $deliveryTypeLabel = 'توصيل لجامعة:';
+                                            $masterAddress = $firstOrder->deliveryUniversity->name ?? $firstOrder->university->name ?? 'جامعة غير محددة';
+                                            $masterIcon = 'fas fa-university text-primary';
+                                        }
                                     } else {
-                                        $masterAddress = current(array_filter([$firstOrder->governorate->name_ar ?? null, $firstOrder->address]));
+                                        $deliveryTypeLabel = 'توصيل منزلي:';
+                                        $addrParts = array_filter([
+                                            $firstOrder->governorate->name_ar ?? null,
+                                            $firstOrder->city->name_ar ?? null,
+                                            $firstOrder->area->name_ar ?? null,
+                                            $firstOrder->address ?? null,
+                                        ]);
+                                        $masterAddress = !empty($addrParts) ? implode(' - ', $addrParts) : 'توصيل منزلي';
                                         $masterIcon = 'fas fa-home text-muted';
                                     }
                                     $aggregatePrice = $ordersGroup->sum('final_price_with_discount');
@@ -173,6 +189,7 @@
                                                     </span>
                                                 @endforeach
                                             </div>
+
                                         </div>
                                     </td>
 
@@ -187,8 +204,11 @@
                                         <div class="d-flex flex-column gap-2">
                                             @if($masterAddress)
                                                 <div class="text-slate-700 fw-bold fs-6 d-flex align-items-center gap-2">
-                                                    <i class="{{ $masterIcon }} me-1" style="font-size: 0.9rem;"></i>
-                                                    <span>{{ $masterAddress }}</span>
+                                                    <i class="{{ $masterIcon }} me-1" style="font-size: 0.95rem;"></i>
+                                                    <span>
+                                                        <span class="text-muted fw-normal small me-1">{{ $deliveryTypeLabel }}</span>
+                                                        {{ $masterAddress }}
+                                                    </span>
                                                 </div>
                                             @endif
                                             <div class="d-flex flex-wrap gap-3 mt-1">
@@ -272,7 +292,18 @@
                                                                 <tr style="border-bottom: 1px solid #f1f5f9;">
                                                                     <td class="fw-bold text-slate-400 py-3">#{{ $order->id }}</td>
                                                                     <td class="py-3 fw-bold text-dark fs-6">
-                                                                        {{ current(array_filter([$order->username_ar, $order->username_en])) }}
+                                                                        <div>{{ current(array_filter([$order->username_ar, $order->username_en])) }}</div>
+                                                                        @if($order->diploma)
+                                                                            <div class="small text-warning fw-normal mt-1" style="font-size:0.78rem;">
+                                                                                <i class="fas fa-graduation-cap me-1"></i>كلية: {{ $order->diploma->name }}
+                                                                                @if($order->diplomaMajor) - {{ $order->diplomaMajor->name }} @endif
+                                                                            </div>
+                                                                        @elseif($order->university)
+                                                                            <div class="small text-primary fw-normal mt-1" style="font-size:0.78rem;">
+                                                                                <i class="fas fa-university me-1"></i>{{ $order->university->name }}
+                                                                                @if($order->universityMajor) - {{ $order->universityMajor->name }} @endif
+                                                                            </div>
+                                                                        @endif
                                                                     </td>
                                                                     <td class="py-3">
                                                                         <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded bg-white border"

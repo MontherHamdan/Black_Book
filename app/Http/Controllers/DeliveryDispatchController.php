@@ -16,7 +16,18 @@ class DeliveryDispatchController extends Controller
             abort(403);
         }
 
-        $paginatedOrders = Order::with(['bookType', 'university', 'diploma', 'discountCode', 'deliveryUniversity'])
+        $paginatedOrders = Order::with([
+            'bookType',
+            'university',
+            'diploma',
+            'universityMajor',
+            'diplomaMajor',
+            'discountCode',
+            'deliveryUniversity',
+            'governorate',
+            'city',
+            'area',
+        ])
             ->whereIn('status', ['out_for_delivery', 'Received', 'returned', 'Canceled', 'Printed'])
             ->orderBy('updated_at', 'desc')
             ->paginate(50);

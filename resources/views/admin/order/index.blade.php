@@ -1087,15 +1087,16 @@
                             DESIGNERS.forEach(function(designer) {
                                 const selected = (currentDesignerId === designer.id) ?
                                     'selected' : '';
+                                const roleLabel = designer.role === 'supervisor' ? ' (مشرف)' : '';
                                 optionsHtml +=
-                                    `<option value="${designer.id}" ${selected}>${designer.name}</option>`;
+                                    `<option value="${designer.id}" ${selected}>${designer.name}${roleLabel}</option>`;
                             });
 
                             const notAssignedOption = '<option value="">غير معيّن</option>';
 
                             let disabledAttr = '';
 
-                            if (!IS_ADMIN) {
+                            if (!IS_ADMIN && !IS_SUPERVISOR) {
                                 if (currentDesignerId && currentDesignerId !== CURRENT_USER_ID) {
                                     disabledAttr = 'disabled';
                                 }
@@ -1299,15 +1300,16 @@
                                                                                                                                                                                                                                                                                                 `
                         );
 
-                    // 3. فلتر المصمم (هاد اللي كان ناقص عندك)
-                    let designerOptions = '<option value="">تصفية حسب المصمم</option>';
+                    // 3. فلتر المصمم والمشرف
+                    let designerOptions = '<option value="">تصفية حسب المصمم / المشرف</option>';
                     designerOptions += '<option value="unassigned">غير معيّن</option>';
 
-                    // جلب المصممين من المصفوفة اللي تم تمريرها من الكونترولر
+                    // جلب المصممين والمشرفين من المصفوفة اللي تم تمريرها من الكونترولر
                     if (typeof DESIGNERS !== 'undefined') {
                         DESIGNERS.forEach(function(designer) {
+                            const roleLabel = designer.role === 'supervisor' ? ' (مشرف)' : '';
                             designerOptions +=
-                                `<option value="${designer.id}">${designer.name}</option>`;
+                                `<option value="${designer.id}">${designer.name}${roleLabel}</option>`;
                         });
                     }
 

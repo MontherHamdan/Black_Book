@@ -18,6 +18,8 @@
                                 <th>ID</th>
                                 <th>Name</th>
                                 <th>Governorate</th>
+                                <th>City</th>
+                                <th>Area</th>
                                 <th>Majors Count</th>
                                 <th>View Majors</th>
                                 <th class="text-center">Actions</th>
@@ -28,7 +30,9 @@
                                 <tr>
                                     <td>{{ $diploma->id }}</td>
                                     <td>{{ $diploma->name }}</td>
-                                    <td>{{ $diploma->governorate_name }}</td>
+                                    <td>{{ $diploma->governorate?->name_ar ?? $diploma->governorate_name ?? '—' }}</td>
+                                    <td>{{ $diploma->city?->name_ar ?? '—' }}</td>
+                                    <td>{{ $diploma->area?->name_ar ?? '—' }}</td>
                                     <td>{{ $diploma->majors_count }}</td>
                                     <td>
                                         <button type="button" class="btn btn-info" data-bs-toggle="modal"
@@ -68,7 +72,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted">No Colleges found.</td>
+                                    <td colspan="8" class="text-center text-muted">No Colleges found.</td>
                                 </tr>
                             @endforelse
                         </tbody>

@@ -16,7 +16,7 @@ class AllOrdersController extends Controller
             abort(403);
         }
 
-        $orders = Order::with(['bookType', 'designer', 'university', 'diploma'])
+        $orders = Order::with(['bookType', 'designer', 'university', 'diploma', 'governorate', 'deliveryUniversity'])
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 

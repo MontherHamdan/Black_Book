@@ -21,11 +21,23 @@ trait LogesTechsIntegration
         $companyId = env('LOGESTECHS_COMPANY_ID', 186);
 
         // Load relationships to access the logestechs_id of each area
-        if ($order->delivery_target === 'university' && $order->university_id) {
-            $order->load(['university.governorate', 'university.city', 'university.area']);
-            $governorate = $order->university?->governorate;
-            $city = $order->university?->city;
-            $area = $order->university?->area;
+        if ($order->delivery_target === 'university') {
+            if ($order->diploma_id) {
+                $order->load(['diploma.governorate', 'diploma.city', 'diploma.area']);
+                $governorate = $order->diploma?->governorate;
+                $city = $order->diploma?->city;
+                $area = $order->diploma?->area;
+            } elseif ($order->university_id) {
+                $order->load(['university.governorate', 'university.city', 'university.area']);
+                $governorate = $order->university?->governorate;
+                $city = $order->university?->city;
+                $area = $order->university?->area;
+            } else {
+                $order->load(['governorate', 'city', 'area']);
+                $governorate = $order->governorate;
+                $city = $order->city;
+                $area = $order->area;
+            }
         } else {
             $order->load(['governorate', 'city', 'area']);
             $governorate = $order->governorate;

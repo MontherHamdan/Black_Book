@@ -634,7 +634,7 @@
                                 <thead class="text-muted small fw-bold"
                                     style="position: sticky; top: 0; background: #fff; z-index: 2;">
                                     <tr>
-                                        <th class="ps-3">المصمم</th>
+                                        <th class="ps-3">المصمم / المشرف</th>
                                         <th class="text-center">التراكم (يوجد تعديل)</th>
                                         <th class="text-center">حالة النظام</th>
                                         <th class="text-end pe-3">الإجراء</th>
@@ -649,7 +649,12 @@
                                                         style="width: 40px; height: 40px;">
                                                         {{ mb_substr($stat->name, 0, 1, 'UTF-8') }}
                                                     </div>
-                                                    <span class="fw-bold text-dark">{{ $stat->name }}</span>
+                                                    <div>
+                                                        <span class="fw-bold text-dark">{{ $stat->name }}</span>
+                                                        @if(($stat->role ?? '') === 'supervisor')
+                                                            <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill ms-1" style="font-size: 0.72rem; font-weight: 700;">مشرف</span>
+                                                        @endif
+                                                    </div>
                                                 </div>
                                             </td>
                                             <td class="text-center">

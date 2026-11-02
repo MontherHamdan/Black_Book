@@ -11,13 +11,13 @@
                     </div>
                     <div>
                         <h2 class="fw-bolder text-dark mb-1" style="letter-spacing: -0.5px;">الإدارة المالية</h2>
-                        <p class="text-muted mb-0 fs-6">متابعة أرصدة المصممين وتسوية المستحقات المالية بدقة وسهولة</p>
+                        <p class="text-muted mb-0 fs-6">متابعة أرصدة المصممين والمشرفين وتسوية المستحقات المالية بدقة وسهولة</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-4 text-start d-none d-md-block">
                 <div class="badge bg-soft-info text-info p-2 rounded-pill px-3 fw-bold fs-6 border border-info">
-                    <i class="fas fa-users me-1"></i> إجمالي المصممين: {{ $designers->count() }}
+                    <i class="fas fa-users me-1"></i> إجمالي المصممين والمشرفين: {{ $designers->count() }}
                 </div>
             </div>
         </div>
@@ -44,9 +44,14 @@
                                 </div>
 
                                 <div class="me-3">
-                                    <h5 class="fw-bold mb-1 text-dark">{{ $designer->name }}</h5>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h5 class="fw-bold mb-1 text-dark">{{ $designer->name }}</h5>
+                                        @if($designer->role === 'supervisor')
+                                            <span class="badge bg-warning text-dark rounded-pill px-2 py-0 fw-bold" style="font-size: 0.72rem;">مشرف</span>
+                                        @endif
+                                    </div>
                                     <span class="badge bg-soft-primary text-primary rounded-pill px-3 py-1 fw-semibold">
-                                        {{ $designer->title ?? 'مصمم محترف' }}
+                                        {{ $designer->title ?? ($designer->role === 'supervisor' ? 'مشرف ومصمم' : 'مصمم محترف') }}
                                     </span>
                                 </div>
                             </div>

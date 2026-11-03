@@ -221,8 +221,10 @@ class OrderWebController extends Controller
         // 🔹 5) تبويب "تجليد الدفتر"
         // =========================
 
-        $canEditBinding = $isAdmin || $isDesigner;
+        $isSupervisorAssigned = (method_exists($authUser, 'isSupervisor') && $authUser->isSupervisor() && (int) $order->designer_id === (int) $authUser->id);
+        $canEditBinding = $isAdmin || $isDesigner || $isSupervisorAssigned;
         $canAddNote = $canEditBinding;
+        $canManageBindingFiles = $canEditBinding;
 
         $bindingInternalImages = $internalImages;
         $internalImagesCountBinding = $internalImagesCount;
@@ -354,6 +356,7 @@ class OrderWebController extends Controller
             'giftTypeBinding' => $giftTypeBinding,
             'transparentImagePath' => $transparentImagePath,
             'canEditBinding' => $canEditBinding,
+            'canManageBindingFiles' => $canManageBindingFiles,
             'canAddNote' => $canAddNote,
             'bindingFollowupText' => $bindingFollowupText,
 
@@ -1693,9 +1696,14 @@ class OrderWebController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = $request->user();
+        $order = Order::with('bookDecoration')->findOrFail($id);
 
-        // 🛡️ فقط أدمن أو ديزاينر
-        if (! $user->isAdmin() && ! $user->isDesigner()) {
+        $canUpdate = $user->isAdmin()
+            || $user->isDesigner()
+            || (method_exists($user, 'isSupervisor') && $user->isSupervisor() && (int) $order->designer_id === (int) $user->id);
+
+        // 🛡️ فقط أدمن أو ديزاينر أو مشرف مسند له الطلب
+        if (! $canUpdate) {
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
@@ -1705,8 +1713,6 @@ class OrderWebController extends Controller
 
             abort(403, 'غير مصرح لك بتعديل تجليد الدفتر.');
         }
-
-        $order = Order::with('bookDecoration')->findOrFail($id);
 
         // ✅ فاليديشين
         $validated = $request->validate([
@@ -2301,7 +2307,11 @@ class OrderWebController extends Controller
     public function updateBindingTab(Request $request, Order $order)
     {
         $user = $request->user();
-        if (! $user->isAdmin() && ! $user->isDesigner()) {
+        $canUpdate = $user->isAdmin()
+            || $user->isDesigner()
+            || (method_exists($user, 'isSupervisor') && $user->isSupervisor() && (int) $order->designer_id === (int) $user->id);
+
+        if (! $canUpdate) {
             abort(403, 'غير مصرح لك بتعديل التجليد.');
         }
 
@@ -2415,11 +2425,15 @@ class OrderWebController extends Controller
     public function deleteImage(Request $request, $id)
     {
         $user = $request->user();
-        if (! $user->isAdmin() && ! $user->isDesigner()) {
+        $order = Order::findOrFail($id);
+
+        $canDelete = $user->isAdmin()
+            || $user->isDesigner()
+            || (method_exists($user, 'isSupervisor') && $user->isSupervisor() && (int) $order->designer_id === (int) $user->id);
+
+        if (! $canDelete) {
             return response()->json(['success' => false, 'message' => 'غير مصرح لك بحذف الصور.'], 403);
         }
-
-        $order = Order::findOrFail($id);
 
         $request->validate([
             'field_name' => 'required|string',

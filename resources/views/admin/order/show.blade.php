@@ -1024,7 +1024,7 @@
                                 </div>
                                 <span>تجليد الدفتر</span>
                             </div>
-                            @if ($isAdmin || $isDesigner)
+                            @if ($canEditBinding)
                                 <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
                                     data-bs-target="#editBindingModal">
                                     <i class="fas fa-pencil-alt"></i> تعديل
@@ -1214,6 +1214,9 @@
                                         $missingBindingFiles[] = "الصور الداخلية ({$designerInternalCount}/{$userInternalCount})";
                                     }
                                     $isBindingReady = empty($missingBindingFiles);
+
+                                    $isSupervisorAssigned = $authUser && method_exists($authUser, 'isSupervisor') && $authUser->isSupervisor() && (int) $order->designer_id === (int) $authUser->id;
+                                    $canManageBindingFiles = $canManageBindingFiles ?? ($isAdmin || $isDesigner || $isSupervisorAssigned);
                                 @endphp
 
                                 <div class="final-files-section"> {{-- العنوان --}}
@@ -1274,10 +1277,10 @@
                                                             download class="final-file-dl-btn" title="تحميل">
                                                             <i class="fas fa-cloud-download-alt"></i> تحميل
                                                         </a>
-                                                        @if ($isAdmin || $isDesigner)
+                                                        @if ($canManageBindingFiles)
                                                             <button type="button" class="final-file-dl-btn"
                                                                 style="border:none; cursor:pointer;"
-                                                                onclick="document.getElementById('direct_upload_design').click();"
+                                                                onclick="document.getElementById('direct_upload_design_file').click();"
                                                                 title="تعديل">
                                                                 <i class="fas fa-upload"></i>
                                                             </button>
@@ -1290,10 +1293,10 @@
                                                         @endif
                                                     </div>
                                                 </div>
-                                                @if ($isAdmin || $isDesigner)
+                                                @if ($canManageBindingFiles)
                                                     <div class="text-center mt-2">
                                                         <button type="button" class="btn btn-sm btn-outline-secondary"
-                                                            onclick="document.getElementById('direct_upload_design').click();">
+                                                            onclick="document.getElementById('direct_upload_design_file').click();">
                                                             <i class="fas fa-upload me-1"></i> رفع ملف جديد
                                                         </button>
                                                     </div>
@@ -1302,7 +1305,7 @@
                                                 <div class="final-file-empty">
                                                     <i class="fas fa-file"></i>
                                                     <span>لم يتم الرفع بعد</span>
-                                                    @if ($isAdmin || $isDesigner)
+                                                    @if ($canManageBindingFiles)
                                                         <div class="d-flex gap-2 mt-2 justify-content-center flex-wrap">
                                                             <button type="button" class="btn btn-sm btn-outline-primary"
                                                                 onclick="document.getElementById('direct_upload_design_file').click();">
@@ -1345,10 +1348,10 @@
                                                             download class="final-file-dl-btn" title="تحميل">
                                                             <i class="fas fa-cloud-download-alt"></i> تحميل
                                                         </a>
-                                                        @if ($isAdmin || $isDesigner)
+                                                        @if ($canManageBindingFiles)
                                                             <button type="button" class="final-file-dl-btn"
                                                                 style="border:none; cursor:pointer;"
-                                                                onclick="document.getElementById('direct_upload_decoration').click();"
+                                                                onclick="document.getElementById('direct_upload_decoration_file').click();"
                                                                 title="تعديل">
                                                                 <i class="fas fa-upload"></i>
                                                             </button>
@@ -1361,7 +1364,7 @@
                                                         @endif
                                                     </div>
                                                 </div>
-                                                @if ($isAdmin || $isDesigner)
+                                                @if ($canManageBindingFiles)
                                                     <div
                                                         class="text-center mt-2 d-flex gap-2 justify-content-center flex-wrap">
                                                         <button type="button" class="btn btn-sm btn-outline-secondary"
@@ -1378,7 +1381,7 @@
                                                 <div class="final-file-empty">
                                                     <i class="fas fa-file"></i>
                                                     <span>لم يتم الرفع بعد</span>
-                                                    @if ($isAdmin || $isDesigner)
+                                                    @if ($canManageBindingFiles)
                                                         <div class="d-flex gap-2 mt-2 justify-content-center flex-wrap">
                                                             <button type="button" class="btn btn-sm btn-outline-primary"
                                                                 onclick="document.getElementById('direct_upload_decoration_file').click();">
@@ -1412,10 +1415,10 @@
                                                                 download class="final-file-dl-btn" title="تحميل">
                                                                 <i class="fas fa-cloud-download-alt"></i> تحميل
                                                             </a>
-                                                            @if ($isAdmin || $isDesigner)
+                                                            @if ($canManageBindingFiles)
                                                                 <button type="button" class="final-file-dl-btn"
                                                                     style="border:none; cursor:pointer;"
-                                                                    onclick="document.getElementById('direct_upload_gift').click();"
+                                                                    onclick="document.getElementById('direct_upload_gift_file').click();"
                                                                     title="تعديل">
                                                                     <i class="fas fa-upload"></i>
                                                                 </button>
@@ -1428,7 +1431,7 @@
                                                             @endif
                                                         </div>
                                                     </div>
-                                                    @if ($isAdmin || $isDesigner)
+                                                    @if ($canManageBindingFiles)
                                                         <div
                                                             class="text-center mt-2 d-flex gap-2 justify-content-center flex-wrap">
                                                             <button type="button"
@@ -1446,7 +1449,7 @@
                                                     <div class="final-file-empty">
                                                         <i class="fas fa-file"></i>
                                                         <span>لم يتم الرفع بعد</span>
-                                                        @if ($isAdmin || $isDesigner)
+                                                        @if ($canManageBindingFiles)
                                                             <div
                                                                 class="d-flex gap-2 mt-2 justify-content-center flex-wrap">
                                                                 <button type="button"
@@ -1546,7 +1549,7 @@
                                                                     title="تحميل {{ $fileName }}">
                                                                     <i class="fas fa-download"></i>
                                                                 </a>
-                                                                @if ($isAdmin || $isDesigner)
+                                                                @if ($canManageBindingFiles)
                                                                     <button type="button"
                                                                         onclick="deleteOrderImage('designer_internal_files', null, '{{ $internalFile }}')"
                                                                         title="حذف الملف"
@@ -1558,7 +1561,7 @@
                                                             </div>
                                                         </div>
                                                     @endforeach
-                                                    @if ($isAdmin || $isDesigner)
+                                                    @if ($canManageBindingFiles)
                                                         <div class="final-file-thumb-wrap d-flex flex-column justify-content-center align-items-center gap-2"
                                                             style="background: #eef2f5; border: 2px dashed #b5c4d1; border-radius: 8px; padding: 8px;">
                                                             <button type="button" class="btn btn-xs btn-outline-primary"
@@ -1579,7 +1582,7 @@
                                                 <div class="final-file-empty">
                                                     <i class="fas fa-images"></i>
                                                     <span>لم يتم الرفع بعد</span>
-                                                    @if ($isAdmin || $isDesigner)
+                                                    @if ($canManageBindingFiles)
                                                         <div class="d-flex gap-2 mt-2 justify-content-center flex-wrap">
                                                             <button type="button" class="btn btn-sm btn-outline-primary"
                                                                 onclick="document.getElementById('direct_upload_internal_file').click();">

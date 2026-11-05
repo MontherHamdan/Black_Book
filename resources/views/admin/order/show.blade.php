@@ -1196,20 +1196,30 @@
 
                                 {{-- ✅ ملفات التجليد النهائية — تصميم مبهر --}}
                                 @php
-                                    $missingBindingFiles = [];
-                                    if (!$order->designer_design_file) {
-                                        $missingBindingFiles[] = 'التصميم النهائي';
-                                    }
-                                    if (!empty($order->book_decorations_id) && !$order->designer_decoration_file) {
-                                        $missingBindingFiles[] = 'الزخرفة';
-                                    }
-                                    if ($order->gift_type === 'custom' && !$order->designer_gift_file) {
-                                        $missingBindingFiles[] = 'الإهداء المخصص';
-                                    }
+                                    $isDesignUploaded = !empty($order->designer_design_file);
+
+                                    $isDecorationRequired = !empty($order->book_decorations_id);
+                                    $isDecorationUploaded = !empty($order->designer_decoration_file);
+
+                                    $isGiftRequired = ($order->gift_type === 'custom');
+                                    $isGiftUploaded = !empty($order->designer_gift_file);
+
                                     $userInternalCount = $order->additionalImagesFromIds()->count();
                                     $designerInternalCount = is_array($order->designer_internal_files)
                                         ? count($order->designer_internal_files)
                                         : 0;
+                                    $internalRemaining = max(0, $userInternalCount - $designerInternalCount);
+
+                                    $missingBindingFiles = [];
+                                    if (!$isDesignUploaded) {
+                                        $missingBindingFiles[] = 'التصميم النهائي';
+                                    }
+                                    if ($isDecorationRequired && !$isDecorationUploaded) {
+                                        $missingBindingFiles[] = 'الزخرفة';
+                                    }
+                                    if ($isGiftRequired && !$isGiftUploaded) {
+                                        $missingBindingFiles[] = 'الإهداء المخصص';
+                                    }
                                     if ($userInternalCount > 0 && $designerInternalCount !== $userInternalCount) {
                                         $missingBindingFiles[] = "الصور الداخلية ({$designerInternalCount}/{$userInternalCount})";
                                     }
@@ -1250,7 +1260,18 @@
                                             <div class="final-file-card-icon design-icon">
                                                 <i class="fas fa-paint-brush"></i>
                                             </div>
-                                            <div class="final-file-card-label">التصميم النهائي</div>
+                                            <div class="final-file-card-label justify-content-between w-100 flex-wrap">
+                                                <span>التصميم النهائي</span>
+                                                @if ($isDesignUploaded)
+                                                    <span class="badge" style="background: #d1fae5; color: #065f46; font-size: 0.72rem; border-radius: 20px; padding: 3px 8px;">
+                                                        <i class="fas fa-check-circle me-1"></i> 1 / 1 (جاهز)
+                                                    </span>
+                                                @else
+                                                    <span class="badge" style="background: #fee2e2; color: #991b1b; font-size: 0.72rem; border-radius: 20px; padding: 3px 8px;">
+                                                        <i class="fas fa-exclamation-circle me-1"></i> 0 / 1 (متبقي 1)
+                                                    </span>
+                                                @endif
+                                            </div>
                                             @if (!empty($finalDesignSvg))
                                                 <div
                                                     class="text-center mb-2 d-flex gap-2 justify-content-center flex-wrap">
@@ -1304,7 +1325,7 @@
                                             @else
                                                 <div class="final-file-empty">
                                                     <i class="fas fa-file"></i>
-                                                    <span>لم يتم الرفع بعد</span>
+                                                    <span>لم يتم الرفع بعد (مطلوب 1)</span>
                                                     @if ($canManageBindingFiles)
                                                         <div class="d-flex gap-2 mt-2 justify-content-center flex-wrap">
                                                             <button type="button" class="btn btn-sm btn-outline-primary"
@@ -1328,7 +1349,22 @@
                                             <div class="final-file-card-icon decoration-icon">
                                                 <i class="fas fa-feather-alt"></i>
                                             </div>
-                                            <div class="final-file-card-label">الزخرفة</div>
+                                            <div class="final-file-card-label justify-content-between w-100 flex-wrap">
+                                                <span>الزخرفة</span>
+                                                @if (!$isDecorationRequired)
+                                                    <span class="badge" style="background: #f1f5f9; color: #64748b; font-size: 0.72rem; border-radius: 20px; padding: 3px 8px;" title="الزبون لم يختر زخرفة لهذا الطلب">
+                                                        <i class="fas fa-minus-circle me-1"></i> غير مطلوبة (0/0)
+                                                    </span>
+                                                @elseif ($isDecorationUploaded)
+                                                    <span class="badge" style="background: #d1fae5; color: #065f46; font-size: 0.72rem; border-radius: 20px; padding: 3px 8px;">
+                                                        <i class="fas fa-check-circle me-1"></i> 1 / 1 (جاهز)
+                                                    </span>
+                                                @else
+                                                    <span class="badge" style="background: #fee2e2; color: #991b1b; font-size: 0.72rem; border-radius: 20px; padding: 3px 8px;">
+                                                        <i class="fas fa-exclamation-circle me-1"></i> 0 / 1 (متبقي 1)
+                                                    </span>
+                                                @endif
+                                            </div>
                                             @if (!empty($decorationDesignSvg))
                                                 <div
                                                     class="text-center mb-2 d-flex gap-2 justify-content-center flex-wrap">
@@ -1379,8 +1415,12 @@
                                                 @endif
                                             @else
                                                 <div class="final-file-empty">
-                                                    <i class="fas fa-file"></i>
-                                                    <span>لم يتم الرفع بعد</span>
+                                                    <i class="fas fa-feather-alt" style="{{ !$isDecorationRequired ? 'opacity: 0.4;' : '' }}"></i>
+                                                    @if ($isDecorationRequired)
+                                                        <span>لم يتم الرفع بعد (مطلوب 1)</span>
+                                                    @else
+                                                        <span class="text-muted">لا توجد زخرفة مطلوبة لهذا الطلب</span>
+                                                    @endif
                                                     @if ($canManageBindingFiles)
                                                         <div class="d-flex gap-2 mt-2 justify-content-center flex-wrap">
                                                             <button type="button" class="btn btn-sm btn-outline-primary"
@@ -1399,90 +1439,138 @@
                                         </div>
 
                                         {{-- 3) الإهداء المخصص --}}
-                                        @if ($order->gift_type === 'custom')
-                                            <div class="final-file-card">
-                                                <div class="final-file-card-icon gift-icon">
-                                                    <i class="fas fa-gift"></i>
-                                                </div>
-                                                <div class="final-file-card-label">الإهداء المخصص</div>
-                                                @if ($order->designer_gift_file)
-                                                    <div class="final-file-img-wrap">
-                                                        <img src="{{ asset('storage/' . $order->designer_gift_file) }}"
-                                                            alt="الإهداء المخصص">
-                                                        <div
-                                                            class="final-file-img-overlay d-flex gap-2 justify-content-center">
-                                                            <a href="{{ asset('storage/' . $order->designer_gift_file) }}"
-                                                                download class="final-file-dl-btn" title="تحميل">
-                                                                <i class="fas fa-cloud-download-alt"></i> تحميل
-                                                            </a>
-                                                            @if ($canManageBindingFiles)
-                                                                <button type="button" class="final-file-dl-btn"
-                                                                    style="border:none; cursor:pointer;"
-                                                                    onclick="document.getElementById('direct_upload_gift_file').click();"
-                                                                    title="تعديل">
-                                                                    <i class="fas fa-upload"></i>
-                                                                </button>
-                                                                <button type="button" class="final-file-dl-btn"
-                                                                    style="border:none; cursor:pointer; background:rgba(220,53,69,0.85);"
-                                                                    onclick="deleteOrderImage('designer_gift_file')"
-                                                                    title="حذف">
-                                                                    <i class="fas fa-trash-alt"></i>
-                                                                </button>
-                                                            @endif
-                                                        </div>
+                                        <div class="final-file-card">
+                                            <div class="final-file-card-icon gift-icon">
+                                                <i class="fas fa-gift"></i>
+                                            </div>
+                                            <div class="final-file-card-label justify-content-between w-100 flex-wrap">
+                                                <span>الإهداء المخصص</span>
+                                                @if (!$isGiftRequired)
+                                                    <span class="badge" style="background: #f1f5f9; color: #64748b; font-size: 0.72rem; border-radius: 20px; padding: 3px 8px;" title="{{ $order->gift_type === 'default' ? 'الطلب بإهداء موحّد' : 'الطلب بدون إهداء' }}">
+                                                        <i class="fas fa-minus-circle me-1"></i> {{ $order->gift_type === 'default' ? 'موحّد (غير مطلوب)' : 'بدون إهداء (غير مطلوب)' }}
+                                                    </span>
+                                                @elseif ($isGiftUploaded)
+                                                    <span class="badge" style="background: #d1fae5; color: #065f46; font-size: 0.72rem; border-radius: 20px; padding: 3px 8px;">
+                                                        <i class="fas fa-check-circle me-1"></i> 1 / 1 (جاهز)
+                                                    </span>
+                                                @else
+                                                    <span class="badge" style="background: #fee2e2; color: #991b1b; font-size: 0.72rem; border-radius: 20px; padding: 3px 8px;">
+                                                        <i class="fas fa-exclamation-circle me-1"></i> 0 / 1 (متبقي 1)
+                                                    </span>
+                                                @endif
+                                            </div>
+                                            @if ($order->designer_gift_file)
+                                                <div class="final-file-img-wrap">
+                                                    <img src="{{ asset('storage/' . $order->designer_gift_file) }}"
+                                                        alt="الإهداء المخصص">
+                                                    <div
+                                                        class="final-file-img-overlay d-flex gap-2 justify-content-center">
+                                                        <a href="{{ asset('storage/' . $order->designer_gift_file) }}"
+                                                            download class="final-file-dl-btn" title="تحميل">
+                                                            <i class="fas fa-cloud-download-alt"></i> تحميل
+                                                        </a>
+                                                        @if ($canManageBindingFiles)
+                                                            <button type="button" class="final-file-dl-btn"
+                                                                style="border:none; cursor:pointer;"
+                                                                onclick="document.getElementById('direct_upload_gift_file').click();"
+                                                                title="تعديل">
+                                                                <i class="fas fa-upload"></i>
+                                                            </button>
+                                                            <button type="button" class="final-file-dl-btn"
+                                                                style="border:none; cursor:pointer; background:rgba(220,53,69,0.85);"
+                                                                onclick="deleteOrderImage('designer_gift_file')"
+                                                                title="حذف">
+                                                                <i class="fas fa-trash-alt"></i>
+                                                            </button>
+                                                        @endif
                                                     </div>
+                                                </div>
+                                                @if ($canManageBindingFiles)
+                                                    <div
+                                                        class="text-center mt-2 d-flex gap-2 justify-content-center flex-wrap">
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-outline-secondary"
+                                                            onclick="document.getElementById('direct_upload_gift_file').click();">
+                                                            <i class="fas fa-file-upload me-1"></i> رفع ملف
+                                                        </button>
+                                                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                                            onclick="document.getElementById('direct_upload_gift_folder').click();">
+                                                            <i class="fas fa-folder-open me-1"></i> رفع مجلد
+                                                        </button>
+                                                    </div>
+                                                @endif
+                                            @else
+                                                <div class="final-file-empty">
+                                                    <i class="fas fa-gift" style="{{ !$isGiftRequired ? 'opacity: 0.4;' : '' }}"></i>
+                                                    @if ($isGiftRequired)
+                                                        <span>لم يتم الرفع بعد (مطلوب 1 إهداء مخصص)</span>
+                                                    @else
+                                                        <span class="text-muted">{{ $order->gift_type === 'default' ? 'إهداء موحّد (لا يتطلب ملف مخصص)' : 'الطلب بدون إهداء' }}</span>
+                                                    @endif
                                                     @if ($canManageBindingFiles)
                                                         <div
-                                                            class="text-center mt-2 d-flex gap-2 justify-content-center flex-wrap">
+                                                            class="d-flex gap-2 mt-2 justify-content-center flex-wrap">
                                                             <button type="button"
-                                                                class="btn btn-sm btn-outline-secondary"
+                                                                class="btn btn-sm btn-outline-primary"
                                                                 onclick="document.getElementById('direct_upload_gift_file').click();">
                                                                 <i class="fas fa-file-upload me-1"></i> رفع ملف
                                                             </button>
-                                                            <button type="button" class="btn btn-sm btn-outline-primary"
+                                                            <button type="button"
+                                                                class="btn btn-sm btn-outline-secondary"
                                                                 onclick="document.getElementById('direct_upload_gift_folder').click();">
                                                                 <i class="fas fa-folder-open me-1"></i> رفع مجلد
                                                             </button>
                                                         </div>
                                                     @endif
-                                                @else
-                                                    <div class="final-file-empty">
-                                                        <i class="fas fa-file"></i>
-                                                        <span>لم يتم الرفع بعد</span>
-                                                        @if ($canManageBindingFiles)
-                                                            <div
-                                                                class="d-flex gap-2 mt-2 justify-content-center flex-wrap">
-                                                                <button type="button"
-                                                                    class="btn btn-sm btn-outline-primary"
-                                                                    onclick="document.getElementById('direct_upload_gift_file').click();">
-                                                                    <i class="fas fa-file-upload me-1"></i> رفع ملف
-                                                                </button>
-                                                                <button type="button"
-                                                                    class="btn btn-sm btn-outline-secondary"
-                                                                    onclick="document.getElementById('direct_upload_gift_folder').click();">
-                                                                    <i class="fas fa-folder-open me-1"></i> رفع مجلد
-                                                                </button>
-                                                            </div>
-                                                        @endif
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        @endif
-
-
-
+                                                </div>
+                                            @endif
+                                        </div>
 
                                         {{-- 4) الصور الداخلية --}}
                                         <div class="final-file-card final-file-card-internal">
                                             <div class="final-file-card-icon internal-icon">
                                                 <i class="fas fa-images"></i>
                                             </div>
-                                            <div class="final-file-card-label">
-                                                الصور الداخلية
-                                                <span class="final-file-count-badge">
-                                                    {{ is_array($order->designer_internal_files) ? count($order->designer_internal_files) : 0 }}
-                                                </span>
+                                            <div class="final-file-card-label justify-content-between w-100 flex-wrap">
+                                                <span>الصور الداخلية</span>
+                                                @if ($userInternalCount > 0)
+                                                    @if ($designerInternalCount >= $userInternalCount)
+                                                        <span class="badge" style="background: #d1fae5; color: #065f46; font-size: 0.72rem; border-radius: 20px; padding: 3px 8px;">
+                                                            <i class="fas fa-check-circle me-1"></i> {{ $designerInternalCount }} / {{ $userInternalCount }} (مكتمل)
+                                                        </span>
+                                                    @else
+                                                        <span class="badge" style="background: #fee2e2; color: #991b1b; font-size: 0.72rem; border-radius: 20px; padding: 3px 8px;">
+                                                            <i class="fas fa-exclamation-circle me-1"></i> {{ $designerInternalCount }} / {{ $userInternalCount }} (متبقي {{ $internalRemaining }})
+                                                        </span>
+                                                    @endif
+                                                @else
+                                                    @if ($designerInternalCount > 0)
+                                                        <span class="badge" style="background: #e0e7ff; color: #3730a3; font-size: 0.72rem; border-radius: 20px; padding: 3px 8px;">
+                                                            {{ $designerInternalCount }} مرفوع (غير مطلوبة)
+                                                        </span>
+                                                    @else
+                                                        <span class="badge" style="background: #f1f5f9; color: #64748b; font-size: 0.72rem; border-radius: 20px; padding: 3px 8px;">
+                                                            <i class="fas fa-minus-circle me-1"></i> 0 / 0 (غير مطلوبة)
+                                                        </span>
+                                                    @endif
+                                                @endif
                                             </div>
+
+                                            {{-- شريط توضيحي لتفاصيل الأعداد --}}
+                                            <div class="d-flex align-items-center justify-content-between px-2 py-1 mb-2 rounded w-100" style="background: #f8fafc; border: 1px solid #e2e8f0; font-size: 0.78rem;">
+                                                <span><i class="fas fa-user text-primary me-1"></i> طلب الزبون: <strong>{{ $userInternalCount }}</strong> صور</span>
+                                                <span><i class="fas fa-cloud-upload-alt text-success me-1"></i> تم رفع: <strong>{{ $designerInternalCount }}</strong></span>
+                                                @if ($userInternalCount > 0)
+                                                    @if ($internalRemaining > 0)
+                                                        <span class="text-danger fw-bold"><i class="fas fa-hourglass-half me-1"></i> متبقي: {{ $internalRemaining }}</span>
+                                                    @else
+                                                        <span class="text-success fw-bold"><i class="fas fa-check-double me-1"></i> مكتمل</span>
+                                                    @endif
+                                                @else
+                                                    <span class="text-muted"><i class="fas fa-minus-circle me-1"></i> غير مطلوب</span>
+                                                @endif
+                                            </div>
+
                                             @if (is_array($order->designer_internal_files) && count($order->designer_internal_files) > 0)
                                                 <div class="final-file-internal-grid">
                                                     @foreach ($order->designer_internal_files as $idx => $internalFile)
@@ -1580,8 +1668,12 @@
                                                 </div>
                                             @else
                                                 <div class="final-file-empty">
-                                                    <i class="fas fa-images"></i>
-                                                    <span>لم يتم الرفع بعد</span>
+                                                    <i class="fas fa-images" style="{{ $userInternalCount === 0 ? 'opacity: 0.4;' : '' }}"></i>
+                                                    @if ($userInternalCount > 0)
+                                                        <span>لم يتم الرفع بعد (مطلوب {{ $userInternalCount }} صور)</span>
+                                                    @else
+                                                        <span class="text-muted">لا توجد صور داخلية مطلوبة لهذا الطلب</span>
+                                                    @endif
                                                     @if ($canManageBindingFiles)
                                                         <div class="d-flex gap-2 mt-2 justify-content-center flex-wrap">
                                                             <button type="button" class="btn btn-sm btn-outline-primary"

@@ -103,7 +103,7 @@ class DashboardController extends Controller
 
         $today = Carbon::today();
 
-        $designersScoreboard = User::where('role', User::ROLE_DESIGNER)
+        $designersScoreboard = User::whereIn('role', [User::ROLE_DESIGNER, User::ROLE_SUPERVISOR])
             ->withCount([
                 'designerOrders as total_orders',
                 'designerOrders as completed_orders' => function ($q) {

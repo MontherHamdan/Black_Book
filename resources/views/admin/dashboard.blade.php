@@ -767,8 +767,13 @@
                             <div class="flex-grow-1">
                                 <h6 class="mb-1 fw-bold text-dark text-truncate" style="max-width: 140px;">{{ $designer->name }}
                                 </h6>
-                                <span class="badge bg-light text-muted border px-2 py-1 fw-normal"
-                                    style="font-size: 0.7rem;">Designer</span>
+                                @if($designer->role === 'supervisor')
+                                    <span class="badge bg-light text-primary border border-primary-subtle px-2 py-1 fw-semibold"
+                                        style="font-size: 0.7rem;">Supervisor</span>
+                                @else
+                                    <span class="badge bg-light text-muted border px-2 py-1 fw-normal"
+                                        style="font-size: 0.7rem;">Designer</span>
+                                @endif
                             </div>
                         </div>
 
@@ -820,7 +825,7 @@
         @empty
             <div class="col-12 text-center py-5 bg-white rounded-4 shadow-sm border border-dashed">
                 <i class="fas fa-users-slash text-muted mb-3" style="font-size: 3rem; opacity: 0.5;"></i>
-                <h5 class="text-dark fw-bold">No designers found.</h5>
+                <h5 class="text-dark fw-bold">No designers or supervisors found.</h5>
             </div>
         @endforelse
     </div>

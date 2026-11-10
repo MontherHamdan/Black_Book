@@ -465,7 +465,7 @@
                                 <th>اسم المستخدم</th>
                                 <th>نوع الطلب</th>
                                 <th>المنطقة</th>
-                                <th>الجامعة</th>
+                                <th>الجامعة او الديبلوم</th>
                                 <th>الهاتف</th>
                                 <th>السعر</th>
                                 <th class="text-center">حالة الخصم</th>
@@ -1009,12 +1009,8 @@
 
                             const allStatuses = Object.keys(@json($allowedStatuses));
 
-                            // هل المستخدم يقدر يغير الحالة؟
-                            const canChangeStatus =
-                                IS_ADMIN ||
-                                IS_SUPERVISOR ||
-                                IS_PRINTER ||
-                                (row.designer && row.designer.id === CURRENT_USER_ID);
+                            // هل المستخدم يقدر يغير الحالة؟ متاح للجميع مثل الأدمن
+                            const canChangeStatus = true;
 
                             // المدة اللي رجعناها من الـ Controller
                             const durationText = row.status_created_diff ?
@@ -1144,13 +1140,35 @@
                         }
                     },
                     {
-                        data: 'school_name',
+                        data: 'institution',
                         name: 'school_name',
+                        title: 'الجامعة او الديبلوم',
                         orderable: false,
                         responsivePriority: 10,
                         render: function(data, type, row) {
-                            if (row.delivery_target === 'university' && data) {
-                                return `<div class="text-nowrap"><i class="fas fa-university text-muted me-1" style="font-size:0.75rem;"></i>${data}</div>`;
+                            if (data && data.name) {
+                                if (data.type === 'diploma') {
+                                    return `<span class="d-inline-flex align-items-center gap-1 text-nowrap" title="${data.label || 'كلية'}">
+                                        <i class="fas fa-graduation-cap text-warning" style="font-size:0.85rem;"></i>
+                                        <span>${data.name}</span>
+                                    </span>`;
+                                } else if (data.type === 'university') {
+                                    return `<span class="d-inline-flex align-items-center gap-1 text-nowrap" title="${data.label || 'جامعة'}">
+                                        <i class="fas fa-university text-primary" style="font-size:0.85rem;"></i>
+                                        <span>${data.name}</span>
+                                    </span>`;
+                                } else if (data.type === 'delivery_university') {
+                                    return `<span class="d-inline-flex align-items-center gap-1 text-nowrap text-muted" title="${data.label || 'جامعة التوصيل'}">
+                                        <i class="fas fa-truck text-muted" style="font-size:0.8rem;"></i>
+                                        <span>${data.name}</span>
+                                    </span>`;
+                                }
+                            }
+                            if (row.school_name) {
+                                return `<span class="d-inline-flex align-items-center gap-1 text-nowrap">
+                                    <i class="fas fa-university text-muted" style="font-size:0.85rem;"></i>
+                                    <span>${row.school_name}</span>
+                                </span>`;
                             }
                             return '<span class="text-muted small">—</span>';
                         }

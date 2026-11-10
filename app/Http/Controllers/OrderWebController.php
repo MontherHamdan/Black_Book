@@ -122,10 +122,7 @@ class OrderWebController extends Controller
             'label' => $order->status,
         ];
 
-        $canChangeStatusHeader = $isAdmin
-            || (method_exists($authUser, 'isSupervisor') && $authUser->isSupervisor())
-            || (method_exists($authUser, 'isPrinter') && $authUser->isPrinter())
-            || ($order->designer && $order->designer->id === $authUser->id);
+        $canChangeStatusHeader = true;
 
         $canChangeDesignerHeader =
             $isAdmin ||
@@ -456,27 +453,11 @@ class OrderWebController extends Controller
     }
 
     /**
-     * إرجاع الحالات المسموحة بناءً على دور المستخدم.
+     * إرجاع الحالات المسموحة (متاحة للجميع كما تظهر للمدير).
      */
-    private function getAllowedStatuses($user): array
+    private function getAllowedStatuses($user = null): array
     {
-        $all = $this->statusConfig();
-
-        if ($user->isAdmin()) {
-            return $all;
-        }
-
-        if ($user->isDesigner()) {
-            $allowed = ['new_order', 'Pending', 'needs_modification', 'Completed', 'preparing'];
-        } elseif ($user->isSupervisor()) {
-            $allowed = ['needs_modification', 'Completed', 'Printed', 'Received', 'out_for_delivery', 'returned', 'Canceled'];
-        } elseif ($user->isPrinter()) {
-            $allowed = ['preparing', 'Printed', 'out_for_delivery'];
-        } else {
-            $allowed = [];
-        }
-
-        return array_intersect_key($all, array_flip($allowed));
+        return $this->statusConfig();
     }
 
     /**
@@ -525,6 +506,8 @@ class OrderWebController extends Controller
             'transparentPrinting',
             'designer',
             'deliveryUniversity',
+            'university',
+            'diploma',
             'governorate',
             'city',
         ]);
@@ -561,6 +544,15 @@ class OrderWebController extends Controller
                     ->orWhereHas('city', function ($q) use ($searchValue) {
                         $q->where('name_ar', 'like', "%{$searchValue}%")
                             ->orWhere('name_en', 'like', "%{$searchValue}%");
+                    })
+                    ->orWhereHas('university', function ($q) use ($searchValue) {
+                        $q->where('name', 'like', "%{$searchValue}%");
+                    })
+                    ->orWhereHas('diploma', function ($q) use ($searchValue) {
+                        $q->where('name', 'like', "%{$searchValue}%");
+                    })
+                    ->orWhereHas('deliveryUniversity', function ($q) use ($searchValue) {
+                        $q->where('name', 'like', "%{$searchValue}%");
                     })
                     ->orWhere('user_phone_number', 'like', "%{$searchValue}%")
                     ->orWhere('delivery_number_two', 'like', "%{$searchValue}%")
@@ -679,6 +671,28 @@ class OrderWebController extends Controller
                 ];
             }
 
+            // 🎓 الجامعة أو الدبلوم / الكلية (مع دعم جامعة التوصيل)
+            $institution = null;
+            if ($order->diploma) {
+                $institution = [
+                    'type' => 'diploma',
+                    'name' => $order->diploma->name,
+                    'label' => 'كلية / دبلوم',
+                ];
+            } elseif ($order->university) {
+                $institution = [
+                    'type' => 'university',
+                    'name' => $order->university->name,
+                    'label' => 'جامعة',
+                ];
+            } elseif ($order->delivery_target === 'university' && $order->deliveryUniversity) {
+                $institution = [
+                    'type' => 'delivery_university',
+                    'name' => $order->deliveryUniversity->name,
+                    'label' => 'جامعة التوصيل',
+                ];
+            }
+
             return [
                 'id' => $order->id,
                 'data' => $createdAtFormatted,
@@ -691,8 +705,9 @@ class OrderWebController extends Controller
                 'address' => $order->address,
                 'delivery_target' => $order->delivery_target,
 
-                // جامعة التوصيل (تُعرض في عمود "الجامعة" بجدول الطلبات)
-                'school_name' => $order->deliveryUniversity?->name ?? '',
+                // الجامعة أو الدبلوم
+                'institution' => $institution,
+                'school_name' => $institution['name'] ?? '',
 
                 'phone' => $order->user_phone_number,
                 'phone2' => $order->delivery_number_two,
@@ -733,17 +748,7 @@ class OrderWebController extends Controller
         $user = $request->user();
         $order = Order::with('designer')->findOrFail($request->id); // جلبنا الديزاينر مع الطلب
 
-        // 🛡️ التحقق من الصلاحيات
-        if (! $user->isAdmin() && ! $user->isSupervisor() && ! $user->isPrinter()) {
-            if (! $user->isDesigner() || $order->designer_id !== $user->id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'غير مصرح لك بتحديث حالة هذا الطلب.',
-                ], 403);
-            }
-        }
-
-        // 🛡️ التحقق من الحالة المسموحة للدور
+        // 🛡️ التحقق من الحالة المسموحة
         $allowedStatuses = $this->getAllowedStatuses($user);
         if (! array_key_exists($request->status, $allowedStatuses)) {
             return response()->json([

@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\SvgName;
 use App\Services\OrderPricingService;
+use App\Services\CustomDesignOrderService;
 use App\Support\ArabicNameNormalizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
 {
@@ -40,6 +42,9 @@ class OrderController extends Controller
 
             'front_image_id' => 'nullable|exists:user_images,id',
             'book_decorations_id' => 'nullable|exists:book_decorations,id',
+            'custom_decoration_upload_id' => 'nullable|uuid|exists:custom_design_uploads,id|prohibits:book_decorations_id',
+            'custom_gift_upload_id' => ['nullable', 'uuid', 'exists:custom_design_uploads,id', Rule::prohibitedIf($request->input('gift_type') !== 'custom')],
+            'design_upload_token' => 'nullable|uuid|required_with:custom_decoration_upload_id,custom_gift_upload_id',
 
             'back_image_ids' => 'nullable|array',
             'back_image_ids.*' => 'exists:user_images,id',
@@ -83,7 +88,7 @@ class OrderController extends Controller
             'status' => 'nullable|in:new_order,needs_modification,preparing,shipping,completed,canceled,Pending,Received,Out for Delivery',
 
             'gift_type' => 'required|in:default,custom,none',
-            'gift_title' => 'nullable|string|required_if:gift_type,custom',
+            'gift_title' => ['nullable', 'string', Rule::requiredIf($request->input('gift_type') === 'custom' && ! $request->filled('custom_gift_upload_id'))],
             'is_with_additives' => 'nullable|boolean',
 
             'university_id' => 'required_if:user_type,university|prohibited_if:user_type,diploma|exists:universities,id',
@@ -227,7 +232,7 @@ class OrderController extends Controller
 
         $data['address'] = $data['address'] ?? '';
 
-        $order = Order::create($data);
+        $order = app(CustomDesignOrderService::class)->create($data);
 
         $firstArabicName = ArabicNameNormalizer::firstArabicName($order->username_ar ?? '');
 
@@ -245,7 +250,7 @@ class OrderController extends Controller
 
         return response()->json([
             'message' => 'Order created successfully.',
-            'order' => $order->fresh(),
+            'order' => $order->fresh(['customDecorationUpload', 'customGiftUpload']),
 
             'pricing' => [
                 'final_price' => $order->final_price,

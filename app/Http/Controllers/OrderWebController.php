@@ -56,6 +56,8 @@ class OrderWebController extends Controller
             'area',
             'bookDesign',
             'bookDecoration',
+            'customDecorationUpload',
+            'customGiftUpload',
             'frontImage',
             'transparentPrinting',
             'svg',
@@ -767,7 +769,7 @@ class OrderWebController extends Controller
                 $missingFiles[] = 'صورة تصميم الدفتر النهائي';
             }
 
-            if (! empty($order->book_decorations_id) && ! $order->designer_decoration_file) {
+            if ($order->hasDecoration() && ! $order->designer_decoration_file) {
                 $missingFiles[] = 'صورة الزخرفة';
             }
 
@@ -906,7 +908,7 @@ class OrderWebController extends Controller
         $commission = (float) ($designer->base_order_price ?? 0);
 
         // 1. فحص الزخرفة
-        if (! empty($order->book_decorations_id)) {
+        if ($order->hasDecoration()) {
             $commission += (float) ($designer->decoration_price ?? 0);
         }
 
@@ -2694,7 +2696,7 @@ class OrderWebController extends Controller
         $replacements = [
             '>الاسفنج<' => '>' . e($shape($order->is_sponge ? 'مع اسفنج' : $dash)) . '<',
             '>الاسم<' => '>' . e($shape(! empty($order->username_ar) ? $order->username_ar : $dash)) . '<',
-            '>مزخرف<' => '>' . e($shape($order->book_decorations_id ? 'مزخرف' : $dash)) . '<',
+            '>مزخرف<' => '>' . e($shape($order->hasDecoration() ? 'مزخرف' : $dash)) . '<',
             '>صور<' => '>' . e($shape($internalImagesCount > 0 ? 'مع صور (' . $toArabicNumerals($internalImagesCount) . ')' : $dash)) . '<',
             '>عدد الورق<' => '>' . e($order->pages_number ? $toArabicNumerals($order->pages_number) : $shape($dash)) . '<',
             '>عبارة مخصصة<' => '>' . e($shape($giftMap[$order->gift_type] ?? $dash)) . '<',
@@ -2753,7 +2755,7 @@ class OrderWebController extends Controller
             '>اهداء مخصص<' => '>' . e($shape($giftMap[$order->gift_type] ?? $dash)) . '<',
             '>عدد الورق<' => '>' . e($order->pages_number ? $toArabicNumerals($order->pages_number) : $shape($dash)) . '<',
             '>عدد الصور<' => '>' . e($shape($internalImagesCount > 0 ? 'مع صور (' . $toArabicNumerals($internalImagesCount) . ')' : $dash)) . '<',
-            '>مع زخرفة<' => '>' . e($shape($order->book_decorations_id ? 'مزخرف' : $dash)) . '<',
+            '>مع زخرفة<' => '>' . e($shape($order->hasDecoration() ? 'مزخرف' : $dash)) . '<',
         ];
 
         return str_replace(array_keys($replacements), array_values($replacements), $svg);

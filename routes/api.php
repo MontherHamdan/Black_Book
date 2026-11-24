@@ -73,6 +73,10 @@ Route::prefix('v1')->name('api.')->group(function () {
 
     // *******************User Upload Image ******************************************
     Route::post('/user_upload_image', [UserImageController::class, 'store'])->middleware('throttle:20,1');
+    Route::post('/custom-designs', [\App\Http\Controllers\Api\CustomDesignUploadController::class, 'store'])->middleware('throttle:20,1');
+    Route::get('/custom-designs/{upload}', [\App\Http\Controllers\Api\CustomDesignUploadController::class, 'preview'])
+        ->middleware('signed')->name('custom-designs.preview');
+    Route::delete('/custom-designs/{upload}', [\App\Http\Controllers\Api\CustomDesignUploadController::class, 'destroy'])->middleware('throttle:20,1');
     Route::resource('orders', OrderController::class)->only(['store'])->middleware('throttle:10,1');
 
     // ******************* Order Invoice PDF & Image APIs ******************

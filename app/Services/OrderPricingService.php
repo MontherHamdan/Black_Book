@@ -35,10 +35,10 @@ class OrderPricingService
         }
 
         // 2. الزخرفة (2.5 دينار)
-        if (! empty($orderData['book_decorations_id'])) {
+        if (! empty($orderData['book_decorations_id']) || ! empty($orderData['custom_decoration_upload_id'])) {
             $decorationCost = config('pricing.decoration_cost', 2.5);
             $price += $decorationCost;
-            $breakdown['decoration'] = ['id' => $orderData['book_decorations_id'], 'cost' => $decorationCost];
+            $breakdown['decoration'] = ['id' => $orderData['book_decorations_id'] ?? $orderData['custom_decoration_upload_id'], 'cost' => $decorationCost];
         }
 
         // 3. الصور الإضافية (1 دينار للصورة)

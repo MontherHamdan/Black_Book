@@ -34,7 +34,7 @@ class BackfillDesignerCommission extends Command
 
             $commission = (float) ($designer->base_order_price ?? 0);
 
-            if (!empty($order->book_decorations_id)) {
+            if ($order->hasDecoration()) {
                 $commission += (float) ($designer->decoration_price ?? 0);
             }
 

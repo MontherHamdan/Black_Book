@@ -908,7 +908,9 @@
                             <div class="mb-4 text-center" id="decorationImageBlock">
                                 <strong class="d-block mb-2">صورة الزخرفة</strong>
 
-                                @if ($order->bookDecoration)
+                                @if ($order->customDecorationUpload)
+                                    @include('admin.order.customer-design', ['upload' => $order->customDecorationUpload, 'label' => 'الزخرفة'])
+                                @elseif ($order->bookDecoration)
                                     <p class="mb-1" style="font-weight: bold;">
                                         {{ $order->bookDecoration->name }}
                                     </p>
@@ -952,6 +954,7 @@
                             {{-- الإهداء --}}
                             <div class="mb-3">
                                 <strong>الإهداء:</strong>
+                                @include('admin.order.customer-design', ['upload' => $order->customGiftUpload, 'label' => 'الإهداء'])
 
                                 <div class="mt-2">
                                     @if ($giftTypeInternal === 'none')
@@ -968,7 +971,7 @@
                                             </div>
                                         @else
                                             <div class="note-box-light text-muted mt-2">
-                                                لا توجد عبارة مضافة للإهداء المخصّص.
+                                                {{ $order->customGiftUpload ? 'الإهداء موجود في ملف العميل المرفق.' : 'لا توجد عبارة مضافة للإهداء المخصّص.' }}
                                             </div>
                                         @endif
                                     @else
@@ -1113,10 +1116,12 @@
                                             {{-- زخرفة --}}
                                             <div class="form-check mb-2">
                                                 <input class="form-check-input" type="checkbox" disabled
-                                                    {{ $order->bookDecoration ? 'checked' : '' }}>
+                                                    {{ $order->hasDecoration() ? 'checked' : '' }}>
                                                 <label class="form-check-label">
                                                     زخرفة
-                                                    @if ($order->bookDecoration)
+                                                    @if ($order->customDecorationUpload)
+                                                        (تصميم رفعه العميل)
+                                                    @elseif ($order->bookDecoration)
                                                         @if (!empty($order->bookDecoration->name))
                                                             ({{ $order->bookDecoration->name }})
                                                         @else
@@ -1176,7 +1181,9 @@
                                 <div class="mb-3">
                                     <div class="section-label">صورة الزخرفة في تجليد الدفتر</div>
 
-                                    @if ($order->bookDecoration)
+                                    @if ($order->customDecorationUpload)
+                                        @include('admin.order.customer-design', ['upload' => $order->customDecorationUpload, 'label' => 'الزخرفة'])
+                                    @elseif ($order->bookDecoration)
                                         <p class="mb-1" style="font-weight: bold;">
                                             {{ $order->bookDecoration->name }}
                                         </p>
@@ -1194,11 +1201,13 @@
                                 </div>
                                 <div class="section-separator"></div>
 
+                                @include('admin.order.customer-design', ['upload' => $order->customGiftUpload, 'label' => 'الإهداء'])
+
                                 {{-- ✅ ملفات التجليد النهائية — تصميم مبهر --}}
                                 @php
                                     $isDesignUploaded = !empty($order->designer_design_file);
 
-                                    $isDecorationRequired = !empty($order->book_decorations_id);
+                                    $isDecorationRequired = $order->hasDecoration();
                                     $isDecorationUploaded = !empty($order->designer_decoration_file);
 
                                     $isGiftRequired = ($order->gift_type === 'custom');

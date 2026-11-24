@@ -499,7 +499,7 @@
                                                 <td class="fw-bold">#{{ $history->id }}</td>
                                                 <td class="fw-semibold text-dark">{{ $history->username_ar }}</td>
 
-                                                <td>{!! $history->book_decorations_id ? '<span class="text-success fw-bold">نعم</span>' : '<span class="text-muted">لا</span>' !!}
+                                                <td>{!! $history->hasDecoration() ? '<span class="text-success fw-bold">نعم</span>' : '<span class="text-muted">لا</span>' !!}
                                                 </td>
 
                                                 <td>{!! $history->gift_type === 'custom' ? '<span class="text-warning fw-bold">نعم</span>' : '<span class="text-muted">لا</span>' !!}

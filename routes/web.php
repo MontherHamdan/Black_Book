@@ -46,6 +46,8 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/dashboard/orders/{id}/dismiss-notes', [DashboardController::class, 'dismissNotes'])->name('dashboard.dismissNotes');
 
     // Orders (Admin + Designers)
+    Route::get('/orders/{order}/customer-design/{purpose}', [\App\Http\Controllers\Api\CustomDesignUploadController::class, 'orderFile'])
+        ->whereIn('purpose', ['decoration', 'gift'])->name('orders.customerDesign');
     Route::get('/orders', [OrderWebController::class, 'index'])->name('orders.index');
     Route::get('/orders/fetch', [OrderWebController::class, 'fetchOrders'])->name('orders.fetch');
     Route::post('/orders/update-status', [OrderWebController::class, 'updateStatus'])->name('orders.updateStatus');

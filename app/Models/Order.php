@@ -75,6 +75,8 @@ class Order extends Model
         'commission_paid_at',
         'designer_id',
         'book_decorations_id',
+        'custom_decoration_upload_id',
+        'custom_gift_upload_id',
         'gift_type',
         'gift_title',
         'designer_read_notes',
@@ -123,6 +125,11 @@ class Order extends Model
         static::saving(function (Order $order) {
             $order->recalculateAdditivesFlag();
         });
+        static::forceDeleted(function (Order $order) {
+            CustomDesignUpload::whereIn('id', array_filter([
+                $order->custom_decoration_upload_id, $order->custom_gift_upload_id,
+            ]))->get()->each->delete();
+        });
     }
 
     public function discountCode()
@@ -148,6 +155,21 @@ class Order extends Model
     public function bookDecoration()
     {
         return $this->belongsTo(BookDecoration::class, 'book_decorations_id');
+    }
+
+    public function customDecorationUpload()
+    {
+        return $this->belongsTo(CustomDesignUpload::class, 'custom_decoration_upload_id');
+    }
+
+    public function customGiftUpload()
+    {
+        return $this->belongsTo(CustomDesignUpload::class, 'custom_gift_upload_id');
+    }
+
+    public function hasDecoration(): bool
+    {
+        return ! empty($this->book_decorations_id) || ! empty($this->custom_decoration_upload_id);
     }
 
     public function frontImage()

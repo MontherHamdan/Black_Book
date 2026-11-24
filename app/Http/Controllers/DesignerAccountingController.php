@@ -180,7 +180,7 @@ class DesignerAccountingController extends Controller
         $commission = (float) ($user->base_order_price ?? 0);
 
         // 1. فحص الزخرفة
-        if (!empty($order->book_decorations_id)) {
+        if ($order->hasDecoration()) {
             $commission += (float) ($user->decoration_price ?? 0);
         }
 

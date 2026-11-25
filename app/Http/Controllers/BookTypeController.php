@@ -7,6 +7,27 @@ use Illuminate\Http\Request;
 
 class BookTypeController extends Controller
 {
+    public function editQuestion(BookType $bookType)
+    {
+        abort_unless(auth()->user()->isAdmin(), 403);
+        return view('admin.book_types.question', compact('bookType'));
+    }
+
+    public function updateQuestion(Request $request, BookType $bookType)
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+        $data = $request->validate([
+            'question_enabled' => 'required|boolean',
+            'question_text' => 'nullable|string|max:500|required_if:question_enabled,1',
+            'question_required' => 'required|boolean',
+        ]);
+        $data['question_required'] = $request->boolean('question_required');
+        $bookType->update($data);
+
+        return redirect()->route('book-types.question.edit', $bookType)
+            ->with('success', 'تم حفظ إعدادات سؤال المنتج بنجاح.');
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -37,6 +58,9 @@ class BookTypeController extends Controller
             'price' => 'required|numeric|max:255',
             'description_en' => 'nullable|string',
             'description_ar' => 'nullable|string',
+            'question_enabled' => 'required|boolean',
+            'question_text' => 'nullable|string|max:500|required_if:question_enabled,1',
+            'question_required' => 'required|boolean',
         ]);
 
         // Store the uploaded image in the "book_types" folder under the "public" disk
@@ -56,6 +80,9 @@ class BookTypeController extends Controller
             'price' => $validated['price'],
             'description_en' => $validated['description_en'],
             'description_ar' => $validated['description_ar'],
+            'question_enabled' => $validated['question_enabled'],
+            'question_text' => $validated['question_text'] ?? null,
+            'question_required' => $validated['question_enabled'] && $validated['question_required'],
         ]);
 
         // Redirect to the index page with a success message
@@ -85,6 +112,9 @@ class BookTypeController extends Controller
             'price' => 'required|numeric',
             'description_en' => 'nullable|string',
             'description_ar' => 'nullable|string',
+            'question_enabled' => 'required|boolean',
+            'question_text' => 'nullable|string|max:500|required_if:question_enabled,1',
+            'question_required' => 'required|boolean',
         ]);
 
         // Check if an image is uploaded
@@ -110,6 +140,7 @@ class BookTypeController extends Controller
         }
 
         // Update the book type with the validated data
+        $validated['question_required'] = $validated['question_enabled'] && $validated['question_required'];
         $bookType->update($validated);
 
         // Redirect to the index page with a success message

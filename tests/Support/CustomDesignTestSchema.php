@@ -36,6 +36,11 @@ trait CustomDesignTestSchema
             $table->id();
             $table->decimal('price', 10, 2);
             $table->string('name_ar')->nullable();
+            $table->string('name_en')->nullable();
+            $table->string('image')->nullable();
+            $table->text('description_ar')->nullable();
+            $table->text('description_en')->nullable();
+            $table->timestamps();
             $table->softDeletes();
         });
         foreach (['book_designs', 'book_decorations', 'universities'] as $name) {
@@ -61,5 +66,6 @@ trait CustomDesignTestSchema
         DB::table('book_types')->insert(['id' => 1, 'price' => 13]);
         DB::table('majors')->insert(['id' => 1, 'university_id' => 1]);
         (require database_path('migrations/2026_11_25_000000_create_custom_design_uploads.php'))->up();
+        (require database_path('migrations/2026_11_25_010000_add_product_questions.php'))->up();
     }
 }

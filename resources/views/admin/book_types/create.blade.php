@@ -88,6 +88,8 @@
                             </div>
                         </div>
 
+                        @include('admin.book_types.question-fields')
+
                         <!-- Submit Button -->
                         <div class="text-end">
                             <button type="submit" class="btn btn-success px-4">Add Book Type</button>

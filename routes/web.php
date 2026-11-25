@@ -136,6 +136,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('subcategories', BookDesignSubCategoryController::class);
 
     // book type
+    Route::get('book-types/{bookType}/question', [BookTypeController::class, 'editQuestion'])->name('book-types.question.edit');
+    Route::put('book-types/{bookType}/question', [BookTypeController::class, 'updateQuestion'])->name('book-types.question.update');
     Route::resource('book-types', BookTypeController::class);
 
     // book type sub media

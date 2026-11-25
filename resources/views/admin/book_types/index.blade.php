@@ -77,6 +77,7 @@
                                 <th class="text-center" style="width: 140px;">Colors</th>
                                 <th class="text-center">Description (AR)</th>
                                 <th class="text-center">Description (EN)</th>
+                                <th class="text-center" style="min-width:180px;">سؤال العميل</th>
                                 <th class="text-center" style="width: 90px;">Actions</th>
                             </tr>
                         </thead>
@@ -129,6 +130,13 @@
                                 <td class="text-center text-muted small" style="max-width: 180px;">
                                     {{ Str::limit($bookType->description_en, 60, '...') ?: '-' }}
                                 </td>
+                                <td class="text-center" dir="rtl">
+                                    <span class="badge {{ $bookType->question_enabled ? 'bg-success' : 'bg-secondary' }} mb-2">{{ $bookType->question_enabled ? ($bookType->question_required ? 'مفعّل · إجباري' : 'مفعّل · اختياري') : 'متوقف' }}</span>
+                                    @if($bookType->question_text)
+                                        <p class="small mb-2" title="{{ $bookType->question_text }}">{{ Str::limit($bookType->question_text, 55) }}</p>
+                                    @endif
+                                    <a href="{{ route('book-types.question.edit', $bookType) }}" class="btn btn-sm btn-outline-primary d-block">إعداد سؤال العميل</a>
+                                </td>
                                 <td class="text-center">
                                     <!-- Actions Dropdown -->
                                     <div class="dropdown">
@@ -179,7 +187,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="9" class="text-center text-muted py-4">
+                                <td colspan="10" class="text-center text-muted py-4">
                                     <i class="fas fa-inbox fa-2x mb-2 d-block text-secondary"></i>
                                     لا توجد أنواع دفاتر مضافة حتى الآن.
                                 </td>

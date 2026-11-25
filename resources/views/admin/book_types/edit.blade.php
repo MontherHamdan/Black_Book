@@ -95,6 +95,8 @@
                             </div>
                         </div>
 
+                        @include('admin.book_types.question-fields')
+
                         <!-- Submit Button -->
                         <div class="text-end">
                             <button type="submit" class="btn btn-primary px-4">Update Book Type</button>

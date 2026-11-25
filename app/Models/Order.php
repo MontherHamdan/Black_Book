@@ -79,6 +79,8 @@ class Order extends Model
         'custom_gift_upload_id',
         'gift_type',
         'gift_title',
+        'product_question',
+        'product_answer',
         'designer_read_notes',
         'is_with_additives',
         'deleted_at',

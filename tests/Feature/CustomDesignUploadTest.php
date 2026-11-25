@@ -181,4 +181,56 @@ class CustomDesignUploadTest extends TestCase
         $this->postJson('/api/v1/orders', $payload)->assertUnprocessable();
         $this->assertSame(0, Order::count());
     }
+
+    public function test_product_question_required_optional_and_disabled_rules(): void
+    {
+        $product = \App\Models\BookType::findOrFail(1);
+        $product->update(['question_enabled' => true, 'question_text' => 'ما الاسم المطلوب؟', 'question_required' => true]);
+        $payload = $this->orderData(['product_question' => 'ما الاسم المطلوب؟', 'product_answer' => '   ']);
+        $this->postJson('/api/v1/orders', $payload)->assertUnprocessable()->assertJsonValidationErrors('product_answer');
+        $payload['product_answer'] = 'ليان أحمد';
+        $this->postJson('/api/v1/orders', $payload)->assertCreated()->assertJsonPath('order.product_answer', 'ليان أحمد')
+            ->assertJsonPath('order.product_question', 'ما الاسم المطلوب؟')->assertJsonPath('pricing.final_price', 13);
+        $order = Order::firstOrFail();
+        $product->update(['question_text' => 'ما العبارة المطلوبة؟', 'question_required' => false]);
+        $this->assertSame('ما الاسم المطلوب؟', $order->fresh()->product_question);
+        $this->postJson('/api/v1/orders', $payload)->assertUnprocessable();
+        $this->postJson('/api/v1/orders', $this->orderData(['product_question' => 'ما العبارة المطلوبة؟']))
+            ->assertCreated()->assertJsonPath('order.product_answer', null);
+        $product->update(['question_enabled' => false]);
+        $this->postJson('/api/v1/orders', $payload)->assertCreated()->assertJsonPath('order.product_question', null)->assertJsonPath('order.product_answer', null);
+        $this->view('admin.order.product-question', ['order' => $order])->assertSee('ما الاسم المطلوب؟')->assertSee('ليان أحمد');
+    }
+
+    public function test_admin_can_configure_product_question_and_blank_prompt_is_rejected(): void
+    {
+        $this->actingAs((new User)->forceFill(['id' => 123, 'role' => 'admin']));
+        $settings = ['name_ar' => 'ستاند', 'name_en' => 'Stand', 'price' => 13,
+            'question_enabled' => 1, 'question_required' => 1, 'question_text' => ''];
+        $this->putJson('/book-types/1', $settings)->assertUnprocessable()->assertJsonValidationErrors('question_text');
+        $settings['question_text'] = 'اكتب الاسم';
+        $this->putJson('/book-types/1', $settings)->assertRedirect();
+        $product = \App\Models\BookType::findOrFail(1);
+        $this->assertTrue($product->question_enabled);
+        $this->assertTrue($product->question_required);
+        $settings['question_enabled'] = 0;
+        $this->putJson('/book-types/1', $settings)->assertRedirect();
+        $this->assertFalse($product->fresh()->question_required);
+        $this->putJson('/book-types/1/question', [
+            'question_enabled' => 1, 'question_text' => 'اسم الستاند؟', 'question_required' => 1,
+        ])->assertRedirect(route('book-types.question.edit', 1));
+        $this->assertSame('اسم الستاند؟', $product->fresh()->question_text);
+        $this->assertEquals(13, $product->fresh()->price);
+        $this->putJson('/book-types/1/question', [
+            'question_enabled' => 0, 'question_text' => 'اسم الستاند؟', 'question_required' => 1,
+        ])->assertRedirect();
+        $this->assertFalse($product->fresh()->question_enabled);
+        $this->assertSame('اسم الستاند؟', $product->fresh()->question_text);
+        $this->actingAs((new User)->forceFill(['id' => 124, 'role' => 'designer']));
+        $this->putJson('/book-types/1/question', [
+            'question_enabled' => 1, 'question_text' => 'سؤال', 'question_required' => 0,
+        ])->assertForbidden();
+        $this->assertFalse($product->fresh()->question_enabled);
+
+    }
 }

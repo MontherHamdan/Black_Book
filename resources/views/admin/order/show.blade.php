@@ -652,6 +652,8 @@
 
         {{-- ✅ Tabs --}}
         <div class="order-tabs">
+            @include('admin.order.product-question')
+
             <ul class="nav nav-tabs justify-content-center" id="orderTabs" role="tablist" style="direction: rtl;">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="tab-order-details-tab" data-bs-toggle="tab"

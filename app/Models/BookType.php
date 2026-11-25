@@ -12,7 +12,9 @@ class BookType extends Model
 
     protected $table = "book_types";
 
-    protected $fillable = ['image', 'name_en', 'name_ar', 'price', 'description_en', 'description_ar', 'deleted_at'];
+    protected $fillable = ['image', 'name_en', 'name_ar', 'price', 'description_en', 'description_ar', 'deleted_at', 'question_enabled', 'question_text', 'question_required'];
+
+    protected $casts = ['question_enabled' => 'boolean', 'question_required' => 'boolean'];
 
     public function subMedia()
     {

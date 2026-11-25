@@ -56,6 +56,8 @@ class OrderController extends Controller
             'svg_id' => 'nullable|exists:svgs,id',
             'svg_title' => 'nullable|string|max:255',
             'note' => 'nullable|string',
+            'product_answer' => 'nullable|string|max:1000',
+            'product_question' => 'nullable|string|max:500',
             'user_phone_number' => 'required|string|max:20',
             'is_sponge' => 'required|boolean',
             'pages_number' => 'required|integer',
@@ -178,6 +180,22 @@ class OrderController extends Controller
         }
 
         $data = $validator->validated();
+        $product = \App\Models\BookType::findOrFail($data['book_type_id']);
+        $answer = trim($data['product_answer'] ?? '');
+        if ($product->question_enabled) {
+            if (($data['product_question'] ?? null) !== $product->question_text) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['product_answer' => 'تم تحديث سؤال المنتج، يرجى إعادة اختيار المنتج والإجابة عن السؤال الحالي.']);
+            }
+            if ($product->question_required && $answer === '') {
+                throw \Illuminate\Validation\ValidationException::withMessages(['product_answer' => 'يرجى الإجابة عن سؤال المنتج.']);
+            }
+            $data['product_question'] = $product->question_text;
+            $data['product_answer'] = $answer !== '' ? $answer : null;
+        } else {
+            $data['product_question'] = null;
+            $data['product_answer'] = null;
+        }
+
 
         $data['book_design_id'] = $data['book_design_id'] ?? null;
         $data['custom_design_image_id'] = $data['custom_design_image_id'] ?? [];

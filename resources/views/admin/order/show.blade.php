@@ -845,6 +845,19 @@
                                     @endif
                                 </strong>
 
+                                @if (filled($order->additional_images_placement))
+                                    <div class="mb-3">
+                                        <span class="text-muted">موضع الصور الداخلية:</span>
+                                        @if ($order->additional_images_placement === 'beginning')
+                                            <span class="badge bg-primary">في البداية</span>
+                                        @elseif ($order->additional_images_placement === 'distributed')
+                                            <span class="badge bg-info text-dark">موزعة</span>
+                                        @else
+                                            <span class="badge bg-secondary">{{ $order->additional_images_placement }}</span>
+                                        @endif
+                                    </div>
+                                @endif
+
                                 @if ($internalImagesCount > 0)
                                     <div id="internalImagesCarousel" class="carousel slide mb-3" data-bs-ride="false">
                                         <div class="carousel-inner text-center">

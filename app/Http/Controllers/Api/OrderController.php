@@ -66,6 +66,7 @@ class OrderController extends Controller
             // 🔥 تصحيح 1: تعديل الاسم ليطابق الداتابيس و Postman
             'additional_image_id' => 'nullable|array',
             'additional_image_id.*' => 'exists:user_images,id',
+            'additional_images_placement' => 'nullable|string|in:distributed,beginning',
 
             // 🔥 تصحيح 2: تعديل الاسم والنوع (مفرد وليس مصفوفة لأنه BigInt)
             'transparent_printing_id' => 'nullable|exists:user_images,id',

@@ -48,6 +48,7 @@ class Order extends Model
         'is_sponge',
         'pages_number',
         'additional_image_id',
+        'additional_images_placement',
         'transparent_printing_id',
         'delivery_number_one',
         'delivery_number_two',

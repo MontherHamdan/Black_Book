@@ -67,5 +67,6 @@ trait CustomDesignTestSchema
         DB::table('majors')->insert(['id' => 1, 'university_id' => 1]);
         (require database_path('migrations/2026_11_25_000000_create_custom_design_uploads.php'))->up();
         (require database_path('migrations/2026_11_25_010000_add_product_questions.php'))->up();
+        (require database_path('migrations/2026_11_27_204500_add_decoration_note_to_orders_table.php'))->up();
     }
 }

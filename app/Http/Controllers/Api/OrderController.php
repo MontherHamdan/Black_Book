@@ -42,6 +42,7 @@ class OrderController extends Controller
 
             'front_image_id' => 'nullable|exists:user_images,id',
             'book_decorations_id' => 'nullable|exists:book_decorations,id',
+            'decoration_note' => 'nullable|string|max:255',
             'custom_decoration_upload_id' => 'nullable|uuid|exists:custom_design_uploads,id|prohibits:book_decorations_id',
             'custom_gift_upload_id' => ['nullable', 'uuid', 'exists:custom_design_uploads,id', Rule::prohibitedIf($request->input('gift_type') !== 'custom')],
             'design_upload_token' => 'nullable|uuid|required_with:custom_decoration_upload_id,custom_gift_upload_id',

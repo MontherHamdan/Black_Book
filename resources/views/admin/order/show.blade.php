@@ -951,6 +951,16 @@
                                 @else
                                     <p class="text-muted">لا توجد زخرفة محددة.</p>
                                 @endif
+
+                                @if (filled($order->decoration_note))
+                                    <div class="mt-3" style="text-align: right;">
+                                        <strong class="d-block mb-1">ملاحظة الزخرفة:</strong>
+                                        <div class="note-box auto-dir" dir="auto"
+                                            @if (function_exists('detectLang')) lang="{{ detectLang($order->decoration_note) }}" @endif>
+                                            {!! nl2br(e($order->decoration_note)) !!}
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
 
                             {{-- الإهداء --}}

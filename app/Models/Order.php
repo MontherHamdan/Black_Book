@@ -75,6 +75,7 @@ class Order extends Model
         'commission_paid_at',
         'designer_id',
         'book_decorations_id',
+        'decoration_note',
         'custom_decoration_upload_id',
         'custom_gift_upload_id',
         'gift_type',
